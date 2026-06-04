@@ -24,35 +24,22 @@ export default function StaggerGridPage() {
 
   const buildTimeline = useCallback((ctx: gsap.Context) => {
     ctx.add(() => {
-      const tl = gsap.timeline({ repeat: -1, repeatDelay: 0.6 });
+      // Tiles stay visible at all times; the wave ripples scale + rotation
+      // outward from the center and yoyos back, so the grid is never empty.
+      gsap.set(".stagger-tile", { scale: 1, opacity: 1, rotation: 0 });
 
-      tl.from(".stagger-tile", {
-        scale: 0,
-        opacity: 0,
-        rotation: -45,
-        duration: 0.7,
-        ease: "power2.inOut",
+      const tl = gsap.timeline({ repeat: -1, yoyo: true });
+      tl.to(".stagger-tile", {
+        scale: 0.45,
+        rotation: 180,
+        duration: 1.2,
+        ease: "sine.inOut",
         stagger: {
-          each: 0.04,
+          each: 0.045,
           from: "center",
           grid: [ROWS, COLS],
         },
-      }).to(
-        ".stagger-tile",
-        {
-          scale: 0,
-          opacity: 0,
-          rotation: 45,
-          duration: 0.55,
-          ease: "power2.in",
-          stagger: {
-            each: 0.03,
-            from: "center",
-            grid: [ROWS, COLS],
-          },
-        },
-        "+=0.5",
-      );
+      });
 
       timelineRef.current = tl;
     });

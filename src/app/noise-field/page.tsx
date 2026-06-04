@@ -110,11 +110,16 @@ export default function NoiseFieldPage() {
         const hue = map(p.x, 0, width, BASE_HUE, BASE_HUE + HUE_RANGE);
         const color = hslString(hsl(hue, 0.85, 0.62), STROKE_ALPHA);
 
-        ctx.beginPath();
-        ctx.strokeStyle = color;
-        ctx.moveTo(p.x, p.y);
-        ctx.lineTo(next.x, next.y);
-        ctx.stroke();
+        // A wrapped step jumps a full canvas dimension; drawing that segment
+        // would streak a line across the screen, so skip it and just relocate.
+        const wrapped = Math.abs(next.x - p.x) > SPEED * 2 || Math.abs(next.y - p.y) > SPEED * 2;
+        if (!wrapped) {
+          ctx.beginPath();
+          ctx.strokeStyle = color;
+          ctx.moveTo(p.x, p.y);
+          ctx.lineTo(next.x, next.y);
+          ctx.stroke();
+        }
 
         particles[i] = next;
       }

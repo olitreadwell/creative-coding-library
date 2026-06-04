@@ -27,7 +27,7 @@ export function AppDetail({ meta, synopsis, tutorial }: AppDetailProps) {
           <ArrowLeft className="size-4" aria-hidden="true" />
           <span className="hidden sm:inline">Catalog</span>
         </Link>
-        <h1 className="min-w-0 flex-1 truncate text-sm font-medium tracking-wide sm:text-base">
+        <h1 className="min-w-0 flex-1 truncate px-2 text-center text-sm font-medium tracking-wide sm:text-base">
           {meta.title}
         </h1>
         <a

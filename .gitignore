@@ -34,3 +34,7 @@ coverage
 # generated
 src/lib/creative/registry.generated.ts
 tsconfig.tsbuildinfo
+.vercel
+
+# claude transient
+.claude/scheduled_tasks.lock

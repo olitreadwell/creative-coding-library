@@ -4,6 +4,9 @@
 // against the canvas background. Protanopia (red-blind) is prioritized: hues are
 // separated by lightness and by the blue/orange/teal axis rather than red/green.
 
+import { lerp } from "./math";
+import { hsl, hslString } from "./color";
+
 /** The full Okabe-Ito categorical palette (8 colors). */
 export const OKABE_ITO = [
   "#000000", // black
@@ -48,4 +51,16 @@ export function cbColor(i: number, theme: ThemeName | undefined): string {
   const palette = cbColors(theme);
   const idx = ((i % palette.length) + palette.length) % palette.length;
   return palette[idx] as string;
+}
+
+/**
+ * Colorblind-safe SEQUENTIAL ramp for continuous fields (heatmaps, gradients).
+ * Runs blue -> teal -> yellow, the protanopia-safe axis, with lightness rising
+ * so it also reads in grayscale. `t` is clamped to [0, 1].
+ */
+export function cbRamp(t: number, theme: ThemeName | undefined): string {
+  const x = t < 0 ? 0 : t > 1 ? 1 : t;
+  const hue = lerp(250, 55, x); // blue -> yellow
+  const light = theme === "light" ? lerp(0.28, 0.55, x) : lerp(0.32, 0.66, x);
+  return hslString(hsl(hue, 0.72, light));
 }

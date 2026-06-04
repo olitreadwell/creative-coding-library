@@ -1,9 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
 import { useTheme } from "next-themes";
+import { PlayShell } from "@/components/play-shell";
 import { hsl, hslString } from "@/lib/creative/color";
 import { map } from "@/lib/creative/math";
 import { makeRng } from "@/lib/creative/random";
@@ -147,27 +146,20 @@ export default function ConwayLifePlayPage() {
     setPlaying((prev) => !prev);
   }
 
+  const btnClass =
+    "text-sm px-3 py-1 rounded border border-border hover:border-foreground/50 text-foreground/70 hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
+
   return (
-    <main className="min-h-screen bg-background text-foreground flex flex-col">
-      <header className="px-4 sm:px-6 py-3 sm:py-4 flex flex-wrap items-center gap-2 justify-between border-b border-border shrink-0">
-        <nav aria-label="Back navigation">
-          <Link
-            href="/conway-life"
-            aria-label="Back to Game of Life detail page"
-            className="inline-flex items-center gap-1 text-sm text-foreground/70 hover:text-foreground underline underline-offset-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded"
-          >
-            <ArrowLeft aria-hidden="true" className="w-4 h-4" />
-            Back
-          </Link>
-        </nav>
-        <h1 className="text-sm font-medium tracking-wide text-foreground/80">
-          Game of Life — play
-        </h1>
-        <div className="flex items-center gap-3">
+    <PlayShell
+      slug="conway-life"
+      title="Game of Life"
+      visualLabel="Animated grid of cells evolving according to Conway's Game of Life rules"
+      controls={
+        <>
           <button
             type="button"
             onClick={handleRandomize}
-            className="text-sm px-3 py-1 rounded border border-border hover:border-foreground/50 text-foreground/70 hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className={btnClass}
             aria-label="Randomize with a new seed"
           >
             Randomize
@@ -175,36 +167,35 @@ export default function ConwayLifePlayPage() {
           <button
             type="button"
             onClick={handlePlayPause}
-            className="text-sm px-3 py-1 rounded border border-border hover:border-foreground/50 text-foreground/70 hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className={btnClass}
             aria-label={playing ? "Pause simulation" : "Play simulation"}
           >
             {playing ? "Pause" : "Play"}
           </button>
-        </div>
-      </header>
-
-      <section className="flex-1 relative" aria-label="Conway's Game of Life simulation canvas">
-        <canvas
-          ref={canvasRef}
-          className="absolute inset-0 w-full h-full"
-          aria-label="Animated grid of cells evolving according to Conway's Game of Life rules"
-          style={{ background: canvasBg }}
-        />
-      </section>
-
-      <footer className="px-4 sm:px-6 py-3 sm:py-4 text-xs text-foreground/70 border-t border-border shrink-0">
-        Technique: toroidal Conway step + Canvas 2D. Original concept by{" "}
-        <a
-          href="https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="underline underline-offset-2 hover:text-foreground/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded"
-        >
-          John Conway (1970)
-        </a>
-        .
-      </footer>
-    </main>
+        </>
+      }
+      attribution={
+        <>
+          Technique: toroidal Conway step + Canvas 2D. Original concept by{" "}
+          <a
+            href="https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline underline-offset-2 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded"
+          >
+            John Conway (1970)
+          </a>
+          .
+        </>
+      }
+    >
+      <canvas
+        ref={canvasRef}
+        className="absolute inset-0 h-full w-full"
+        aria-label="Animated grid of cells evolving according to Conway's Game of Life rules"
+        style={{ background: canvasBg }}
+      />
+    </PlayShell>
   );
 }
 

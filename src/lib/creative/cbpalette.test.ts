@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { OKABE_ITO, CB_ON_DARK, CB_ON_LIGHT, cbColors, cbColor } from "./cbpalette";
+import { OKABE_ITO, CB_ON_DARK, CB_ON_LIGHT, cbColors, cbColor, cbRamp } from "./cbpalette";
 
 const HEX = /^#[0-9a-fA-F]{6}$/;
 
@@ -26,5 +26,12 @@ describe("cbpalette", () => {
     expect(cbColor(0, "dark")).toBe(CB_ON_DARK[0]);
     expect(cbColor(len, "dark")).toBe(CB_ON_DARK[0]);
     expect(cbColor(-1, "dark")).toBe(CB_ON_DARK[len - 1]);
+  });
+
+  it("cbRamp clamps, varies across t, and is deterministic", () => {
+    expect(cbRamp(0, "dark")).toBe(cbRamp(-1, "dark"));
+    expect(cbRamp(1, "dark")).toBe(cbRamp(2, "dark"));
+    expect(cbRamp(0, "dark")).not.toBe(cbRamp(1, "dark"));
+    expect(cbRamp(0.5, "light")).toBe(cbRamp(0.5, "light"));
   });
 });

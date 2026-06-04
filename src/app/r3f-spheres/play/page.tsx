@@ -1,12 +1,11 @@
 "use client";
 
 import { useRef } from "react";
-import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
 import { useTheme } from "next-themes";
 import { Canvas, useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { map } from "@/lib/creative/math";
+import { PlayShell } from "@/components/play-shell";
 import {
   spherePositions,
   bob,
@@ -82,76 +81,55 @@ export default function R3FSpheresPage(): React.ReactElement {
   const isLight = (resolvedTheme ?? "dark") === "light";
 
   const bgColor = isLight ? "#eef0f4" : "#07080d";
-  const borderColor = isLight ? "border-black/10" : "border-white/10";
-  const textMuted = isLight ? "text-black/60" : "text-white/70";
-  const textHeading = isLight ? "text-black/80" : "text-white/80";
-  const linkHover = isLight
-    ? "hover:text-black focus-visible:ring-black/50"
-    : "hover:text-white focus-visible:ring-white/70";
 
   return (
-    <main className="min-h-screen text-foreground flex flex-col" style={{ background: bgColor }}>
-      <header
-        className={`px-4 py-3 flex flex-wrap items-center gap-3 border-b ${borderColor} sm:px-6`}
-      >
-        <nav aria-label="Back to detail page">
-          <Link
-            href="/r3f-spheres"
-            className={`inline-flex items-center gap-1 text-sm ${textMuted} ${linkHover} underline underline-offset-2 focus-visible:outline-none focus-visible:ring-2 rounded`}
+    <PlayShell
+      slug="r3f-spheres"
+      title="Sphere Field"
+      visualLabel="Interactive 3D animation: a grid of spheres rippling in a travelling sine wave, lit with warm and cool directional lights"
+      attribution={
+        <>
+          Built with{" "}
+          <a
+            href="https://threejs.org/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline underline-offset-2 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded"
           >
-            <ArrowLeft size={14} aria-hidden="true" />
-            Back
-          </Link>
-        </nav>
-        <h1 className={`text-sm font-medium tracking-wide ${textHeading}`}>Sphere Field</h1>
-      </header>
-
-      <section
-        className="flex-1 relative"
-        aria-label="Interactive 3D animation: a grid of spheres rippling in a travelling sine wave, lit with warm and cool directional lights"
+            three.js
+          </a>{" "}
+          and{" "}
+          <a
+            href="https://r3f.docs.pmnd.rs/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline underline-offset-2 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded"
+          >
+            React Three Fiber
+          </a>{" "}
+          by Poimandres.
+        </>
+      }
+    >
+      <Canvas
+        camera={{ position: [14, 10, 18], fov: 45 }}
+        style={{ position: "absolute", inset: 0, background: bgColor }}
       >
-        <Canvas
-          camera={{ position: [14, 10, 18], fov: 45 }}
-          style={{ position: "absolute", inset: 0, background: bgColor }}
-        >
-          <ambientLight intensity={isLight ? 1.2 : 0.7} />
-          <directionalLight position={[6, 12, 8]} intensity={isLight ? 3.0 : 2.4} color="#ffffff" />
-          <directionalLight
-            position={[-8, 4, -6]}
-            intensity={isLight ? 1.2 : 0.9}
-            color={isLight ? "#7a8aff" : "#9aa6ff"}
-          />
-          <pointLight
-            position={[0, 8, 10]}
-            intensity={isLight ? 80 : 60}
-            color={isLight ? "#ff7a50" : "#ff9f7a"}
-            decay={2}
-          />
-          <SphereField isLight={isLight} />
-        </Canvas>
-      </section>
-
-      <footer className={`px-4 py-4 text-xs ${textMuted} border-t ${borderColor} sm:px-6`}>
-        Built with{" "}
-        <a
-          href="https://threejs.org/"
-          target="_blank"
-          rel="noopener noreferrer"
-          className={`underline underline-offset-2 ${linkHover} focus-visible:outline-none focus-visible:ring-2 rounded`}
-        >
-          three.js
-        </a>{" "}
-        and{" "}
-        <a
-          href="https://r3f.docs.pmnd.rs/"
-          target="_blank"
-          rel="noopener noreferrer"
-          className={`underline underline-offset-2 ${linkHover} focus-visible:outline-none focus-visible:ring-2 rounded`}
-        >
-          React Three Fiber
-        </a>{" "}
-        by Poimandres.
-      </footer>
-    </main>
+        <ambientLight intensity={isLight ? 1.2 : 0.7} />
+        <directionalLight position={[6, 12, 8]} intensity={isLight ? 3.0 : 2.4} color="#ffffff" />
+        <directionalLight
+          position={[-8, 4, -6]}
+          intensity={isLight ? 1.2 : 0.9}
+          color={isLight ? "#7a8aff" : "#9aa6ff"}
+        />
+        <pointLight
+          position={[0, 8, 10]}
+          intensity={isLight ? 80 : 60}
+          color={isLight ? "#ff7a50" : "#ff9f7a"}
+          decay={2}
+        />
+        <SphereField isLight={isLight} />
+      </Canvas>
+    </PlayShell>
   );
 }

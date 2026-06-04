@@ -1,10 +1,9 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
 import { useTheme } from "next-themes";
-import { hsl, hslString } from "@/lib/creative/color";
+import { PlayShell } from "@/components/play-shell";
+import { cbColor } from "@/lib/creative";
 import { map } from "@/lib/creative/math";
 import { makePerlinNoise2D, type PerlinNoise2D } from "@/lib/creative/noise";
 import { makeRng } from "@/lib/creative/random";
@@ -19,16 +18,17 @@ const SPEED = 1.8;
 const DARK_BG = "#050a12";
 const DARK_TRAIL_ALPHA = 0.018;
 const DARK_STROKE_ALPHA = 0.55;
-const DARK_BASE_HUE = 200;
-const DARK_HUE_RANGE = 160;
 
-// Light theme: ink-on-paper. Source-over blend, deep blue/indigo strokes on
+// Light theme: ink-on-paper. Source-over blend, deep strokes on
 // a near-white canvas with a low-alpha light fade each frame.
 const LIGHT_BG = "#f5f4f0";
 const LIGHT_TRAIL_ALPHA = 0.04;
 const LIGHT_STROKE_ALPHA = 0.45;
-const LIGHT_BASE_HUE = 225;
-const LIGHT_HUE_RANGE = 60;
+
+// Number of colorblind-safe palette entries (CB_ON_DARK and CB_ON_LIGHT each
+// have 6). Particles cycle through them; position within the field blends
+// between two adjacent entries so the flow still shifts across the canvas.
+const CB_PALETTE_SIZE = 6;
 
 type FieldState = {
   perlin: PerlinNoise2D;
@@ -50,6 +50,44 @@ function randomSeedString(): string {
   return Math.random().toString(36).slice(2, 10);
 }
 
+/**
+ * Resolve a colorblind-safe stroke color for the i-th particle at position x.
+ * x / width maps position to a blend between palette entry i and i+1, so the
+ * flow field still exhibits a gradient across the canvas while remaining
+ * protanopia-safe. Alpha is applied via rgba() wrapping the hex color.
+ */
+function particleColor(
+  i: number,
+  x: number,
+  width: number,
+  theme: "light" | "dark",
+  alpha: number,
+): string {
+  // Cycle the palette index by particle index, then blend toward the next
+  // entry based on horizontal position — preserves the left-to-right hue shift
+  // without using red/green hue arithmetic.
+  const idxA = i % CB_PALETTE_SIZE;
+  const idxB = (i + 1) % CB_PALETTE_SIZE;
+  const t = map(x, 0, width, 0, 1);
+
+  const colorA = cbColor(idxA, theme);
+  const colorB = cbColor(idxB, theme);
+
+  // Lerp the two hex colors in RGB space.
+  const rA = parseInt(colorA.slice(1, 3), 16);
+  const gA = parseInt(colorA.slice(3, 5), 16);
+  const bA = parseInt(colorA.slice(5, 7), 16);
+  const rB = parseInt(colorB.slice(1, 3), 16);
+  const gB = parseInt(colorB.slice(3, 5), 16);
+  const bB = parseInt(colorB.slice(5, 7), 16);
+
+  const r = Math.round(rA + (rB - rA) * t);
+  const g = Math.round(gA + (gB - gA) * t);
+  const b = Math.round(bA + (bB - bA) * t);
+
+  return `rgba(${r},${g},${b},${alpha})`;
+}
+
 export default function NoiseFieldPlayPage() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const stateRef = useRef<FieldState | null>(null);
@@ -57,7 +95,7 @@ export default function NoiseFieldPlayPage() {
   const { resolvedTheme } = useTheme();
   // Guard undefined (SSR / hydrating). Default to "dark" so the canvas
   // renders correctly before next-themes resolves on the client.
-  const theme = resolvedTheme ?? "dark";
+  const theme = (resolvedTheme ?? "dark") as "light" | "dark";
   const isLight = theme === "light";
 
   const initField = useCallback(
@@ -119,6 +157,7 @@ export default function NoiseFieldPlayPage() {
 
       const { perlin, particles, width, height } = state;
       const light = isLightRef.current;
+      const activeTheme: "light" | "dark" = light ? "light" : "dark";
 
       // Fade the canvas each frame to build trailing ink lines.
       ctx.globalCompositeOperation = "source-over";
@@ -131,8 +170,8 @@ export default function NoiseFieldPlayPage() {
       }
       ctx.fillRect(0, 0, width, height);
 
-      // Light theme: normal blend — additive glow reads as blown-out white on
-      // a light canvas. Dark theme: additive so overlapping strokes glow.
+      // Light theme: normal blend. Dark theme: additive so overlapping
+      // strokes build up a glow without blowing out on a light canvas.
       ctx.globalCompositeOperation = light ? "source-over" : "lighter";
       ctx.lineWidth = 1;
 
@@ -143,18 +182,8 @@ export default function NoiseFieldPlayPage() {
         const angle = flowAngle(perlin, p.x, p.y, FIELD_SCALE);
         const next = stepParticle(p, angle, SPEED, width, height);
 
-        // Map horizontal position to a hue so the field shifts across the
-        // spectrum as particles drift left to right.
-        let color: string;
-        if (light) {
-          // Deep blue/indigo range — narrow hue span keeps it ink-like.
-          const hue = map(p.x, 0, width, LIGHT_BASE_HUE, LIGHT_BASE_HUE + LIGHT_HUE_RANGE);
-          // Low lightness (0.22) gives dark, saturated strokes on the pale BG.
-          color = hslString(hsl(hue, 0.75, 0.22), LIGHT_STROKE_ALPHA);
-        } else {
-          const hue = map(p.x, 0, width, DARK_BASE_HUE, DARK_BASE_HUE + DARK_HUE_RANGE);
-          color = hslString(hsl(hue, 0.85, 0.62), DARK_STROKE_ALPHA);
-        }
+        const strokeAlpha = light ? LIGHT_STROKE_ALPHA : DARK_STROKE_ALPHA;
+        const color = particleColor(i, p.x, width, activeTheme, strokeAlpha);
 
         // A wrapped step jumps a full canvas dimension; drawing that segment
         // would streak a line across the screen, so skip it and just relocate.
@@ -179,72 +208,45 @@ export default function NoiseFieldPlayPage() {
     setSeed(randomSeedString());
   }
 
-  // Theme-aware chrome classes. Light uses dark-on-light tokens; dark keeps
-  // the existing near-black chrome with white text. Both pass AA contrast.
-  const chromeBase = isLight ? "bg-stone-100 text-stone-800" : "bg-black text-foreground";
-  const borderClass = isLight ? "border-stone-300" : "border-white/10";
-  const linkClass = isLight
-    ? "text-stone-600 hover:text-stone-900"
-    : "text-white/70 hover:text-white";
-  const titleClass = isLight ? "text-stone-800" : "text-white/90";
-  const btnClass = isLight
-    ? "border-stone-400 hover:border-stone-600 text-stone-700 hover:text-stone-900 focus-visible:ring-stone-500"
-    : "border-white/30 hover:border-white/60 text-white/80 hover:text-white focus-visible:ring-white/70";
-  const footerTextClass = isLight ? "text-stone-500" : "text-white/70";
+  const btnClass =
+    "text-sm px-3 py-1 rounded border border-border hover:border-foreground/50 text-foreground/70 hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
 
   return (
-    <main className={`min-h-screen flex flex-col ${chromeBase}`}>
-      {/* Header: wraps on narrow viewports; no overflow. */}
-      <header
-        className={`px-4 py-3 flex flex-wrap items-center gap-x-4 gap-y-2 justify-between border-b ${borderClass} shrink-0`}
-      >
-        <nav aria-label="Back navigation">
-          <Link
-            href="/noise-field"
-            aria-label="Back to Noise Field"
-            className={`inline-flex items-center gap-1 text-sm underline underline-offset-2
-                        focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current rounded
-                        ${linkClass}`}
-          >
-            <ArrowLeft size={14} aria-hidden="true" />
-            Back
-          </Link>
-        </nav>
-        <h1 className={`text-sm font-medium tracking-wide ${titleClass}`}>Noise Field — Live</h1>
+    <PlayShell
+      slug="noise-field"
+      title="Noise Field"
+      visualLabel="Animated canvas showing thousands of particles streaming through a Perlin noise flow field"
+      controls={
         <button
           type="button"
           onClick={handleNewSeed}
-          className={`text-sm px-3 py-1 rounded border transition-colors
-                      focus-visible:outline-none focus-visible:ring-2 ${btnClass}`}
+          className={btnClass}
           aria-label="Regenerate the flow field with a new random seed"
         >
           New seed
         </button>
-      </header>
-
-      {/* Canvas stage: background matches the current theme's canvas BG. */}
-      <section className="flex-1 relative" aria-label="Perlin noise flow field animation">
-        <canvas
-          ref={canvasRef}
-          className="absolute inset-0 w-full h-full"
-          aria-label="Animated canvas showing thousands of particles streaming through a Perlin noise flow field. No interactive controls."
-          style={{ background: isLight ? LIGHT_BG : DARK_BG }}
-        />
-      </section>
-
-      <footer className={`px-4 py-3 text-xs border-t ${borderClass} shrink-0 ${footerTextClass}`}>
-        Technique: Perlin flow field + particle trails. Concept from{" "}
-        <a
-          href="https://natureofcode.com/"
-          target="_blank"
-          rel="noopener noreferrer"
-          className={`underline underline-offset-2 hover:opacity-80
-                      focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current rounded`}
-        >
-          The Nature of Code
-        </a>{" "}
-        by Daniel Shiffman.
-      </footer>
-    </main>
+      }
+      attribution={
+        <>
+          Technique: Perlin flow field + particle trails. Concept from{" "}
+          <a
+            href="https://natureofcode.com/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline underline-offset-2 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded"
+          >
+            The Nature of Code
+          </a>{" "}
+          by Daniel Shiffman.
+        </>
+      }
+    >
+      <canvas
+        ref={canvasRef}
+        className="absolute inset-0 h-full w-full"
+        aria-label="Animated canvas showing thousands of particles streaming through a Perlin noise flow field. No interactive controls."
+        style={{ background: isLight ? LIGHT_BG : DARK_BG }}
+      />
+    </PlayShell>
   );
 }

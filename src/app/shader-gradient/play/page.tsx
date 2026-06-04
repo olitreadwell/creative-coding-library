@@ -1,9 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
 import { useTheme } from "next-themes";
+import { PlayShell } from "@/components/play-shell";
 import { useAnimationFrame } from "@/lib/creative/useAnimationFrame";
 import type { Renderer as OGLRenderer, Program as OGLProgram, Mesh as OGLMesh } from "ogl";
 import { vertex, fragment, paletteSpeed, type PaletteLabel } from "../shader";
@@ -134,64 +133,58 @@ export default function ShaderGradientPage() {
     });
   };
 
+  const btnClass =
+    "text-sm px-3 py-1 rounded border border-border hover:border-foreground/50 text-foreground/70 hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
+
   return (
-    <main className="min-h-screen bg-black text-white flex flex-col">
-      <header className="px-4 sm:px-6 py-3 sm:py-4 flex flex-wrap items-center gap-y-2 justify-between border-b border-white/10 z-10 relative">
-        <nav aria-label="Site navigation">
-          <Link
-            href="/shader-gradient"
-            aria-label="Back to shader gradient detail page"
-            className="inline-flex items-center gap-1 text-sm text-white/70 hover:text-white underline underline-offset-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70 rounded"
-          >
-            <ArrowLeft size={14} aria-hidden="true" />
-            Back
-          </Link>
-        </nav>
-        <h1 className="text-sm font-medium tracking-wide text-white/90">Shader Gradient</h1>
+    <PlayShell
+      slug="shader-gradient"
+      title="Shader Gradient"
+      visualLabel="Fullscreen animated GLSL gradient"
+      controls={
         <button
           type="button"
           onClick={cyclePalette}
-          className="text-sm px-3 py-1 rounded border border-white/30 text-white/90 hover:border-white/60 hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
+          className={btnClass}
           aria-label={`Current palette: ${palette}. Click to cycle to next palette.`}
         >
           palette: {palette}
         </button>
-      </header>
-
-      <section aria-label="Fullscreen animated GLSL gradient" className="flex-1 relative">
-        <div
-          ref={containerRef}
-          className="absolute inset-0"
-          aria-hidden="true"
-          style={{ lineHeight: 0 }}
-          role="img"
-          aria-label="WebGL canvas rendering an animated color gradient driven by a fragment shader"
-        />
-      </section>
-
-      <footer className="px-4 sm:px-6 py-3 sm:py-4 text-xs text-white/70 border-t border-white/10 z-10 relative flex flex-wrap gap-x-2 gap-y-1">
-        <span>Technique: fullscreen triangle + GLSL fragment shader via</span>
-        <a
-          href="https://github.com/oframe/ogl"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="underline underline-offset-2 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70 rounded"
-          aria-label="ogl library on GitHub (opens in new tab)"
-        >
-          ogl
-        </a>
-        <span>/ palette cosine method from</span>
-        <a
-          href="https://thebookofshaders.com/"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="underline underline-offset-2 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70 rounded"
-          aria-label="The Book of Shaders website (opens in new tab)"
-        >
-          The Book of Shaders
-        </a>
-        <span>by Patricio Gonzalez Vivo</span>
-      </footer>
-    </main>
+      }
+      attribution={
+        <>
+          <span>Technique: fullscreen triangle + GLSL fragment shader via</span>{" "}
+          <a
+            href="https://github.com/oframe/ogl"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline underline-offset-2 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded"
+            aria-label="ogl library on GitHub (opens in new tab)"
+          >
+            ogl
+          </a>{" "}
+          <span>/ palette cosine method from</span>{" "}
+          <a
+            href="https://thebookofshaders.com/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline underline-offset-2 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded"
+            aria-label="The Book of Shaders website (opens in new tab)"
+          >
+            The Book of Shaders
+          </a>{" "}
+          <span>by Patricio Gonzalez Vivo</span>
+        </>
+      }
+    >
+      <div
+        ref={containerRef}
+        className="absolute inset-0 h-full w-full"
+        aria-hidden="true"
+        style={{ lineHeight: 0 }}
+        role="img"
+        aria-label="WebGL canvas rendering an animated color gradient driven by a fragment shader"
+      />
+    </PlayShell>
   );
 }

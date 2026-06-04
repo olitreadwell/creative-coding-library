@@ -1,9 +1,10 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import Link from "next/link";
-import { ArrowLeft, Shuffle } from "lucide-react";
+import { Shuffle } from "lucide-react";
 import { useTheme } from "next-themes";
+import { PlayShell } from "@/components/play-shell";
+import { cbColor } from "@/lib/creative";
 import { hsl, hslString } from "@/lib/creative/color";
 import { clamp } from "@/lib/creative/math";
 import { makeRng, randRange } from "@/lib/creative/random";
@@ -130,6 +131,9 @@ const BLOB_HUE = 200;
  * The segments from marching squares are connected into paths by grouping
  * adjacent endpoints (simple O(n^2) stitching — acceptable for ≤a few thousand
  * segs at 60 Hz on a coarse grid).
+ *
+ * `contourColor` is a colorblind-safe hex string (from cbColor) used for the
+ * blob stroke, improving protanopia legibility.
  */
 function drawFrame(
   ctx: CanvasRenderingContext2D,
@@ -139,6 +143,7 @@ function drawFrame(
   rows: number,
   cellSize: number,
   theme: Theme,
+  contourColor: string,
 ): void {
   const w = ctx.canvas.width;
   const h = ctx.canvas.height;
@@ -165,16 +170,17 @@ function drawFrame(
   const EPSILON = cellSize * 0.55; // slightly more than half a cell diagonal
   const used = new Uint8Array(segments.length);
 
-  // Fill color: translucent blob interior.
+  // Fill color: translucent blob interior. Stroke uses the colorblind-safe
+  // contour color for protanopia legibility.
   if (theme === "dark") {
     ctx.fillStyle = hslString(hsl(BLOB_HUE, 0.85, 0.55), 0.22);
-    ctx.strokeStyle = hslString(hsl(BLOB_HUE, 0.9, 0.78), 1.0);
+    ctx.strokeStyle = contourColor;
     ctx.lineWidth = 2;
     ctx.shadowBlur = 12;
-    ctx.shadowColor = hslString(hsl(BLOB_HUE, 1.0, 0.7), 0.9);
+    ctx.shadowColor = contourColor;
   } else {
     ctx.fillStyle = hslString(hsl(BLOB_HUE, 0.8, 0.46), 0.18);
-    ctx.strokeStyle = hslString(hsl(BLOB_HUE, 0.85, 0.3), 1.0);
+    ctx.strokeStyle = contourColor;
     ctx.lineWidth = 2;
     ctx.shadowBlur = 0;
     ctx.shadowColor = "transparent";
@@ -312,6 +318,9 @@ export default function MetaballsPage() {
   // Animation loop
   // -------------------------------------------------------------------
 
+  // Colorblind-safe contour color: index 0 = sky blue on dark, deep blue on light.
+  const contourColor = cbColor(0, resolvedTheme as "light" | "dark" | undefined);
+
   useAnimationFrame(
     useCallback(
       ({ dt }) => {
@@ -336,9 +345,10 @@ export default function MetaballsPage() {
           rowsRef.current,
           cellSizeRef.current,
           theme,
+          contourColor,
         );
       },
-      [size, theme],
+      [size, theme, contourColor],
     ),
   );
 
@@ -350,75 +360,47 @@ export default function MetaballsPage() {
     setSeed(Date.now());
   }, []);
 
-  // -------------------------------------------------------------------
-  // Theme-aware style tokens
-  // -------------------------------------------------------------------
-
-  const isDark = theme === "dark";
-  const pageBg = isDark ? "bg-[#0a0a0f] text-white" : "bg-[#f5f5f7] text-foreground";
-  const borderColor = isDark ? "border-white/10" : "border-border";
-  const mutedText = isDark ? "text-white/60" : "text-foreground/60";
-  const headingText = isDark ? "text-white/80" : "text-foreground/80";
-  const btnBase =
-    "inline-flex items-center gap-1.5 rounded border px-3 py-1.5 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2";
-  const btnVariant = isDark
-    ? "border-white/20 text-white/80 hover:border-white/50 hover:text-white focus-visible:ring-white/60"
-    : "border-border text-foreground/70 hover:border-foreground/50 hover:text-foreground focus-visible:ring-foreground/40";
+  const btnClass =
+    "inline-flex items-center gap-1.5 rounded border border-border px-3 py-1.5 text-sm text-foreground/70 transition-colors hover:border-foreground/50 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
 
   return (
-    <main className={`min-h-screen flex flex-col ${pageBg}`}>
-      <header
-        className={`px-4 py-3 flex flex-wrap items-center gap-x-3 gap-y-2 border-b ${borderColor} shrink-0 sm:px-6 sm:py-4`}
-      >
-        <nav aria-label="Page navigation">
-          <Link
-            href="/metaballs"
-            className={`inline-flex items-center gap-1 text-sm ${mutedText} hover:text-foreground underline underline-offset-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-foreground/40 rounded`}
-            aria-label="Back to Metaballs detail page"
+    <PlayShell
+      slug="metaballs"
+      title="Metaballs"
+      visualLabel="Organic blobs drifting and merging on a canvas"
+      controls={
+        <>
+          <button
+            type="button"
+            onClick={handleShuffle}
+            className={btnClass}
+            aria-label="Shuffle: spawn new ball positions"
           >
-            <ArrowLeft className="size-4" aria-hidden="true" />
-            Back
-          </Link>
-        </nav>
-
-        <h1 className={`flex-1 min-w-0 truncate text-sm font-medium tracking-wide ${headingText}`}>
-          Metaballs
-        </h1>
-
-        <button
-          type="button"
-          onClick={handleShuffle}
-          className={`${btnBase} ${btnVariant}`}
-          aria-label="Shuffle: spawn new ball positions"
-        >
-          <Shuffle className="size-4" aria-hidden="true" />
-          Shuffle
-        </button>
-      </header>
-
-      <section
-        className="flex-1 relative"
-        aria-label="Metaballs canvas — organic blobs merging and splitting"
-      >
-        <canvas
-          ref={canvasRef}
-          className="absolute inset-0 w-full h-full"
-          aria-label="Animated metaballs: several glowing blobs drift around and merge when they get close, then separate again."
-        />
-      </section>
-
-      <footer className={`px-4 py-3 sm:px-6 text-xs ${mutedText} border-t ${borderColor} shrink-0`}>
-        Scalar field + marching squares iso-contour. Technique from{" "}
-        <a
-          href="https://en.wikipedia.org/wiki/Metaballs"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="underline underline-offset-2 hover:opacity-70"
-        >
-          Jim Blinn&apos;s 1982 paper
-        </a>
-        . Canvas 2D, no external dependencies.
-      </footer>
-    </main>
+            <Shuffle className="size-4" aria-hidden="true" />
+            Shuffle
+          </button>
+        </>
+      }
+      attribution={
+        <>
+          Scalar field + marching squares iso-contour. Technique from{" "}
+          <a
+            href="https://en.wikipedia.org/wiki/Metaballs"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline underline-offset-2 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded"
+          >
+            Jim Blinn&apos;s 1982 paper
+          </a>
+          . Canvas 2D, no external dependencies.
+        </>
+      }
+    >
+      <canvas
+        ref={canvasRef}
+        className="absolute inset-0 h-full w-full"
+        aria-label="Animated metaballs: several glowing blobs drift around and merge when they get close, then separate again."
+      />
+    </PlayShell>
   );
 }

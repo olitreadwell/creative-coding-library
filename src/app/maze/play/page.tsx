@@ -1,9 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
 import { useTheme } from "next-themes";
+import { PlayShell } from "@/components/play-shell";
 import { hsl, hslString } from "@/lib/creative/color";
 import { makeRng } from "@/lib/creative/random";
 import { generateMaze, carveSteps } from "../maze";
@@ -300,6 +299,32 @@ export default function MazePlayPage() {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    if (reducedMotion) {
+      // Skip animation: apply all steps at once and draw the finished maze.
+      const state = stateRef.current;
+      const ctx = canvas.getContext("2d");
+      if (state && ctx) {
+        applyStepsUpTo(state.cells, state.steps, 0, state.steps.length, state.cols);
+        state.stepCursor = state.steps.length;
+        state.done = true;
+        doneRef.current = true;
+        setDone(true);
+        drawMaze(
+          ctx,
+          state.cells,
+          state.cols,
+          state.rows,
+          state.cellPx,
+          tokensRef.current,
+          -1,
+          true,
+        );
+      }
+      return;
+    }
+
     let running = true;
 
     const loop = () => {
@@ -368,40 +393,19 @@ export default function MazePlayPage() {
     setSeed(randomSeed());
   }, []);
 
-  // ── Theme-aware Tailwind tokens ────────────────────────────────────────────
-
-  const isDark = resolvedTheme !== "light";
-
-  const pageBg = isDark ? "bg-[#0d0d12] text-white" : "bg-slate-100 text-slate-900";
-  const borderCls = isDark ? "border-white/10" : "border-slate-300";
-  const mutedText = isDark ? "text-white/60" : "text-slate-500";
-  const headingText = isDark ? "text-white/80" : "text-slate-700";
-  const btnCls = isDark
-    ? "border-white/20 text-white/70 hover:border-white/50 hover:text-white focus-visible:ring-white/50"
-    : "border-slate-300 text-slate-600 hover:border-slate-500 hover:text-slate-900 focus-visible:ring-slate-400";
+  const btnClass =
+    "text-sm px-3 py-1 rounded border border-border hover:border-foreground/50 text-foreground/70 hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
 
   return (
-    <main className={`min-h-screen flex flex-col ${pageBg}`}>
-      <header
-        className={`px-4 sm:px-6 py-3 sm:py-4 flex flex-wrap items-center gap-2 justify-between border-b ${borderCls} shrink-0`}
-      >
-        <nav aria-label="Page navigation">
-          <Link
-            href="/maze"
-            aria-label="Back to Maze detail page"
-            className={`inline-flex items-center gap-1 text-sm ${mutedText} hover:text-foreground underline underline-offset-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-foreground/40 rounded`}
-          >
-            <ArrowLeft aria-hidden="true" className="size-4" />
-            Back
-          </Link>
-        </nav>
-
-        <h1 className={`text-sm font-medium tracking-wide ${headingText}`}>Maze</h1>
-
-        <div className="flex items-center gap-2">
+    <PlayShell
+      slug="maze"
+      title="Maze"
+      visualLabel="Depth-first maze being carved passage by passage"
+      controls={
+        <>
           {done && (
             <span
-              className={`text-xs ${mutedText}`}
+              className="text-xs text-foreground/60"
               aria-live="polite"
               aria-label="Maze carving complete"
             >
@@ -412,38 +416,33 @@ export default function MazePlayPage() {
             type="button"
             onClick={handleNewMaze}
             aria-label="Generate a new maze with a random seed"
-            className={`text-sm px-3 py-1 rounded border ${btnCls} transition-colors focus-visible:outline-none focus-visible:ring-2`}
+            className={btnClass}
           >
             New maze
           </button>
-        </div>
-      </header>
-
-      <section
-        className="flex-1 relative"
-        aria-label="Maze carving animation. The algorithm carves passages depth-first."
-      >
-        <canvas
-          ref={canvasRef}
-          className="absolute inset-0 w-full h-full"
-          aria-label="Animated maze being carved by a depth-first backtracker. Watch passages open as the algorithm explores."
-        />
-      </section>
-
-      <footer
-        className={`px-4 sm:px-6 py-3 sm:py-4 text-xs ${mutedText} border-t ${borderCls} shrink-0`}
-      >
-        Recursive backtracker algorithm. Reference:{" "}
-        <a
-          href="https://en.wikipedia.org/wiki/Maze_generation_algorithm"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="underline underline-offset-2 hover:opacity-70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded"
-        >
-          Maze generation algorithm
-        </a>
-        . MIT licensed.
-      </footer>
-    </main>
+        </>
+      }
+      attribution={
+        <>
+          Recursive backtracker algorithm. Reference:{" "}
+          <a
+            href="https://en.wikipedia.org/wiki/Maze_generation_algorithm"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline underline-offset-2 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded"
+          >
+            Maze generation algorithm
+          </a>
+          . MIT licensed.
+        </>
+      }
+    >
+      <canvas
+        ref={canvasRef}
+        className="absolute inset-0 h-full w-full"
+        aria-label="Animated maze being carved by a depth-first backtracker. Watch passages open as the algorithm explores."
+        style={{ background: tokens.bg }}
+      />
+    </PlayShell>
   );
 }

@@ -1,8 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
+import { PlayShell } from "@/components/play-shell";
 import { hsl, hslToRgb, rgbToHex, hslString } from "@/lib/creative/color";
 import type { Hsl } from "@/lib/creative/color";
 import { generatePalette } from "../palette";
@@ -114,23 +113,13 @@ export default function HslPalettePage() {
   const palette = generatePalette(base, scheme);
 
   return (
-    <main className="min-h-screen bg-background text-foreground flex flex-col">
-      <header className="px-6 py-4 flex items-center justify-between border-b border-border shrink-0">
-        <nav aria-label="Site navigation">
-          <Link
-            href="/hsl-palette"
-            aria-label="Back to HSL Palette detail page"
-            className="inline-flex items-center gap-1 text-sm text-foreground/70 hover:text-foreground underline underline-offset-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded"
-          >
-            <ArrowLeft className="size-4" aria-hidden="true" />
-            Back
-          </Link>
-        </nav>
-        <h1 className="text-sm font-medium tracking-wide">HSL Palette</h1>
-        <div className="w-20" aria-hidden="true" />
-      </header>
-
-      <div className="flex flex-col lg:flex-row flex-1">
+    <PlayShell
+      slug="hsl-palette"
+      title="HSL Palette"
+      visualLabel="Interactive HSL color palette generator"
+      attribution={<>Original work. HSL harmony math using hue rotation on the base color.</>}
+    >
+      <div className="flex h-full w-full flex-col lg:flex-row overflow-auto">
         <aside
           className="w-full lg:w-72 shrink-0 px-6 py-8 border-b lg:border-b-0 lg:border-r border-border flex flex-col gap-8 bg-card"
           aria-label="Color controls"
@@ -219,10 +208,6 @@ export default function HslPalettePage() {
           </div>
         </section>
       </div>
-
-      <footer className="px-6 py-4 text-xs text-foreground/70 border-t border-border bg-card">
-        Original work. HSL harmony math using hue rotation on the base color.
-      </footer>
-    </main>
+    </PlayShell>
   );
 }

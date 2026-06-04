@@ -1,9 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
 import { useTheme } from "next-themes";
+import { PlayShell } from "@/components/play-shell";
 import { hsl, hslString } from "@/lib/creative/color";
 import { map } from "@/lib/creative/math";
 import { useAnimationFrame } from "@/lib/creative/useAnimationFrame";
@@ -187,42 +186,18 @@ export default function LissajousPage() {
   );
 
   const bg = isDark ? DARK_BG : LIGHT_BG;
-  const borderColor = isDark ? "border-white/10" : "border-black/10";
-  const textMuted = isDark ? "text-white/70" : "text-black/60";
-  const textPrimary = isDark ? "text-white/90" : "text-black/85";
-  const btnActive = isDark
-    ? "border-white/60 text-white bg-white/10"
-    : "border-black/50 text-black bg-black/8";
-  const btnInactive = isDark
-    ? "border-white/25 text-white/70 hover:border-white/50 hover:text-white/90"
-    : "border-black/20 text-black/60 hover:border-black/40 hover:text-black/80";
-  const focusRing = isDark ? "focus-visible:ring-white/70" : "focus-visible:ring-black/50";
+
+  const btnActive = "border-foreground/60 text-foreground bg-foreground/10";
+  const btnInactive =
+    "border-border text-foreground/70 hover:border-foreground/50 hover:text-foreground";
 
   return (
-    <main className="min-h-screen text-foreground flex flex-col" style={{ background: bg }}>
-      <header
-        className={`px-4 sm:px-6 py-3 sm:py-4 flex flex-wrap items-center gap-3 border-b ${borderColor}`}
-      >
-        <nav aria-label="Back to detail page" className="shrink-0">
-          <Link
-            href="/lissajous"
-            aria-label="Back to Lissajous detail page"
-            className={`inline-flex items-center gap-1.5 text-sm ${textMuted} hover:${isDark ? "text-white" : "text-black"} underline underline-offset-2 focus-visible:outline-none focus-visible:ring-2 ${focusRing} rounded`}
-          >
-            <ArrowLeft size={14} aria-hidden="true" />
-            Back
-          </Link>
-        </nav>
-
-        <h1 className={`text-sm font-medium tracking-wide ${textPrimary} flex-1 min-w-0 truncate`}>
-          Lissajous — live sketch
-        </h1>
-
-        <div
-          role="group"
-          aria-label="Frequency ratio presets"
-          className="flex flex-wrap gap-2 shrink-0"
-        >
+    <PlayShell
+      slug="lissajous"
+      title="Lissajous — live sketch"
+      visualLabel="Lissajous curve animation. Two sine waves combine to trace a morphing path."
+      controls={
+        <div role="group" aria-label="Frequency ratio presets" className="flex flex-wrap gap-2">
           {RATIO_PRESETS.map((r) => (
             <button
               key={r.label}
@@ -232,7 +207,7 @@ export default function LissajousPage() {
               aria-label={`Frequency ratio ${r.label}`}
               className={[
                 "text-xs px-3 py-1 rounded border transition-colors",
-                `focus-visible:outline-none focus-visible:ring-2 ${focusRing}`,
+                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                 ratio.label === r.label ? btnActive : btnInactive,
               ].join(" ")}
             >
@@ -240,30 +215,29 @@ export default function LissajousPage() {
             </button>
           ))}
         </div>
-      </header>
-
-      <section className="flex-1 relative" aria-label="Animated Lissajous harmonograph">
-        <canvas
-          ref={canvasRef}
-          className="absolute inset-0 w-full h-full"
-          aria-label="Lissajous curve animation. Two sine waves combine to trace a morphing path."
-          style={{ background: bg }}
-        />
-      </section>
-
-      <footer className={`px-4 sm:px-6 py-3 sm:py-4 text-xs ${textMuted} border-t ${borderColor}`}>
-        Technique: parametric sine curves
-        {isDark ? " with additive glow" : " rendered as pen drawing"}. Named after{" "}
-        <a
-          href="https://en.wikipedia.org/wiki/Lissajous_curve"
-          target="_blank"
-          rel="noopener noreferrer"
-          className={`underline underline-offset-2 hover:${isDark ? "text-white/90" : "text-black/85"} focus-visible:outline-none focus-visible:ring-2 ${focusRing} rounded`}
-        >
-          Jules Antoine Lissajous
-        </a>
-        .
-      </footer>
-    </main>
+      }
+      attribution={
+        <>
+          Technique: parametric sine curves
+          {isDark ? " with additive glow" : " rendered as pen drawing"}. Named after{" "}
+          <a
+            href="https://en.wikipedia.org/wiki/Lissajous_curve"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline underline-offset-2 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded"
+          >
+            Jules Antoine Lissajous
+          </a>
+          .
+        </>
+      }
+    >
+      <canvas
+        ref={canvasRef}
+        className="absolute inset-0 h-full w-full"
+        aria-label="Lissajous curve animation. Two sine waves combine to trace a morphing path."
+        style={{ background: bg }}
+      />
+    </PlayShell>
   );
 }

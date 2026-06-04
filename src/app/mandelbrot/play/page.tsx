@@ -1,9 +1,9 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import Link from "next/link";
-import { ArrowLeft, Minus, Plus } from "lucide-react";
+import { Minus, Plus } from "lucide-react";
 import { useTheme } from "next-themes";
+import { PlayShell } from "@/components/play-shell";
 import { hsl, hslToRgb } from "@/lib/creative/color";
 import { clamp, map } from "@/lib/creative/math";
 import { mandelEscape, pixelToComplex } from "../fractal";
@@ -199,95 +199,63 @@ export default function MandelbrotPage() {
 
   const zoom = size ? zoomLevel(view) : 1;
 
-  // Tailwind classes vary by theme. Using a data-attribute-driven approach via
-  // conditional strings keeps the markup readable without a separate CSS file.
-  const isDark = theme === "dark";
-
-  // Chrome color tokens: dark uses white-on-black, light uses foreground-on-background.
-  const pageBg = isDark ? "bg-black text-white" : "bg-background text-foreground";
-  const borderColor = isDark ? "border-white/10" : "border-border";
-  const mutedText = isDark ? "text-white/70" : "text-foreground/60";
-  const headingText = isDark ? "text-white/80" : "text-foreground/80";
-  const btnBorder = isDark
-    ? "border-white/25 text-white/80 hover:border-white/60 hover:text-white focus-visible:ring-white/70"
-    : "border-border text-foreground/70 hover:border-foreground/50 hover:text-foreground focus-visible:ring-foreground/40";
+  const btnClass =
+    "inline-flex size-8 items-center justify-center rounded border border-border text-foreground/70 hover:border-foreground/50 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring transition-colors";
+  const resetBtnClass =
+    "text-sm px-3 py-1 rounded border border-border text-foreground/70 hover:border-foreground/50 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring transition-colors";
 
   return (
-    <main className={`min-h-screen flex flex-col ${pageBg}`}>
-      <header
-        className={`px-6 py-4 flex items-center justify-between border-b ${borderColor} shrink-0`}
-      >
-        <nav aria-label="Page navigation">
-          <Link
-            href="/mandelbrot"
-            className={`inline-flex items-center gap-1 text-sm ${mutedText} hover:text-foreground underline underline-offset-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-foreground/40 rounded`}
-            aria-label="Back to Mandelbrot detail page"
-          >
-            <ArrowLeft className="size-4" aria-hidden="true" />
-            Back
-          </Link>
-        </nav>
-        <h1 className={`text-sm font-medium tracking-wide ${headingText}`}>Mandelbrot</h1>
-        <div className="flex items-center gap-2">
+    <PlayShell
+      slug="mandelbrot"
+      title="Mandelbrot"
+      visualLabel="Mandelbrot set; click to zoom in, Alt-click to zoom out"
+      controls={
+        <>
           <span
-            className={`mr-1 text-xs tabular-nums ${mutedText}`}
+            className="mr-1 text-xs tabular-nums text-foreground/60"
             aria-live="polite"
             aria-label={`Zoom level ${zoom.toFixed(2)}x`}
           >
             {zoom.toFixed(2)}x
           </span>
-          <button
-            type="button"
-            onClick={zoomOut}
-            className={`inline-flex size-8 items-center justify-center rounded border ${btnBorder} focus-visible:outline-none focus-visible:ring-2 transition-colors`}
-            aria-label="Zoom out"
-          >
+          <button type="button" onClick={zoomOut} className={btnClass} aria-label="Zoom out">
             <Minus className="size-4" aria-hidden="true" />
           </button>
-          <button
-            type="button"
-            onClick={zoomIn}
-            className={`inline-flex size-8 items-center justify-center rounded border ${btnBorder} focus-visible:outline-none focus-visible:ring-2 transition-colors`}
-            aria-label="Zoom in"
-          >
+          <button type="button" onClick={zoomIn} className={btnClass} aria-label="Zoom in">
             <Plus className="size-4" aria-hidden="true" />
           </button>
           <button
             type="button"
             onClick={handleReset}
-            className={`text-sm px-3 py-1 rounded border ${btnBorder} transition-colors focus-visible:outline-none focus-visible:ring-2`}
+            className={resetBtnClass}
             aria-label="Reset to default view"
           >
             Reset
           </button>
-        </div>
-      </header>
-
-      <section
-        className="flex-1 relative"
-        aria-label="Mandelbrot set. Click to zoom in, Alt-click to zoom out."
-      >
-        <canvas
-          ref={canvasRef}
-          onClick={handleCanvasClick}
-          className={`absolute inset-0 w-full h-full ${zoomOutMode ? "cursor-zoom-out" : "cursor-zoom-in"}`}
-          aria-label="Mandelbrot set canvas. Click to zoom in, hold Alt and click to zoom out. Plus and minus keys also zoom."
-          style={{ imageRendering: "pixelated" }}
-        />
-      </section>
-
-      <footer className={`px-6 py-4 text-xs ${mutedText} border-t ${borderColor} shrink-0`}>
-        Escape-time algorithm. Original mathematics by{" "}
-        <a
-          href="https://en.wikipedia.org/wiki/Mandelbrot_set"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="underline underline-offset-2 hover:opacity-70"
-        >
-          Benoit Mandelbrot
-        </a>
-        . Smooth coloring via the log-log method.
-      </footer>
-    </main>
+        </>
+      }
+      attribution={
+        <>
+          Escape-time algorithm. Original mathematics by{" "}
+          <a
+            href="https://en.wikipedia.org/wiki/Mandelbrot_set"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline underline-offset-2 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded"
+          >
+            Benoit Mandelbrot
+          </a>
+          . Smooth coloring via the log-log method.
+        </>
+      }
+    >
+      <canvas
+        ref={canvasRef}
+        onClick={handleCanvasClick}
+        className={`absolute inset-0 w-full h-full ${zoomOutMode ? "cursor-zoom-out" : "cursor-zoom-in"}`}
+        aria-label="Mandelbrot set canvas. Click to zoom in, hold Alt and click to zoom out. Plus and minus keys also zoom."
+        style={{ imageRendering: "pixelated" }}
+      />
+    </PlayShell>
   );
 }

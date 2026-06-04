@@ -1,9 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
 import { useTheme } from "next-themes";
+import { PlayShell } from "@/components/play-shell";
 import { hsl, hslString } from "@/lib/creative/color";
 import { clamp, map } from "@/lib/creative/math";
 import { makeRng } from "@/lib/creative/random";
@@ -166,24 +165,20 @@ export default function LSystemTreePage(): React.ReactElement {
   }, []);
 
   return (
-    <main className="min-h-screen bg-background text-foreground flex flex-col">
-      <header className="px-4 py-3 sm:px-6 sm:py-4 flex items-center gap-3 border-b border-border flex-wrap">
-        <nav aria-label="Back navigation">
-          <Link
-            href="/lsystem-tree"
-            aria-label="Back to L-System Tree"
-            className="inline-flex items-center gap-1 text-sm text-foreground/70 hover:text-foreground underline underline-offset-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded"
+    <PlayShell
+      slug="lsystem-tree"
+      title="L-System Tree"
+      visualLabel="L-system fractal plant. Use the Iterations slider to control depth. Use Re-roll to randomize branch jitter."
+      controls={
+        <>
+          <button
+            type="button"
+            onClick={handleReroll}
+            className="text-sm px-3 py-1 rounded border border-border hover:border-foreground/50 text-foreground/70 hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            aria-label="Re-roll with a new random seed"
           >
-            <ArrowLeft size={14} aria-hidden="true" />
-            Back
-          </Link>
-        </nav>
-
-        <h1 className="text-sm font-medium tracking-wide text-foreground/80 mr-auto">
-          L-System Tree — play
-        </h1>
-
-        <div className="flex items-center gap-4 flex-wrap">
+            Re-roll
+          </button>
           <label
             htmlFor="iterations-slider"
             className="flex items-center gap-2 text-sm text-foreground/70"
@@ -206,39 +201,29 @@ export default function LSystemTreePage(): React.ReactElement {
               {iterations}
             </span>
           </label>
-
-          <button
-            type="button"
-            onClick={handleReroll}
-            className="text-sm px-3 py-1 rounded border border-border hover:border-foreground/50 text-foreground/70 hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            aria-label="Re-roll with a new random seed"
+        </>
+      }
+      attribution={
+        <>
+          Technique: L-system expansion + turtle graphics. Based on the work of{" "}
+          <a
+            href="https://en.wikipedia.org/wiki/Aristid_Lindenmayer"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline underline-offset-2 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded"
           >
-            Re-roll
-          </button>
-        </div>
-      </header>
-
-      <section className="flex-1 relative" aria-label="L-system fractal plant canvas">
-        <canvas
-          ref={canvasRef}
-          className="absolute inset-0 w-full h-full"
-          aria-label="L-system fractal plant. Use the Iterations slider to control depth. Use Re-roll to randomize branch jitter."
-          style={{ background: bgColor }}
-        />
-      </section>
-
-      <footer className="px-4 py-3 sm:px-6 sm:py-4 text-xs text-foreground/70 border-t border-border">
-        Technique: L-system expansion + turtle graphics. Based on the work of{" "}
-        <a
-          href="https://en.wikipedia.org/wiki/Aristid_Lindenmayer"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="underline underline-offset-2 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded"
-        >
-          Aristid Lindenmayer
-        </a>
-        .
-      </footer>
-    </main>
+            Aristid Lindenmayer
+          </a>
+          .
+        </>
+      }
+    >
+      <canvas
+        ref={canvasRef}
+        className="absolute inset-0 h-full w-full"
+        aria-label="L-system fractal plant. Use the Iterations slider to control depth. Use Re-roll to randomize branch jitter."
+        style={{ background: bgColor }}
+      />
+    </PlayShell>
   );
 }

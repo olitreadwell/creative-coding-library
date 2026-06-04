@@ -1,9 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
 import { useTheme } from "next-themes";
+import { PlayShell } from "@/components/play-shell";
 import { hslString, hsl } from "@/lib/creative/color";
 import { useAnimationFrame } from "@/lib/creative/useAnimationFrame";
 import { epicycleArms, SQUARE_WAVE_TERMS } from "../epicycles";
@@ -192,66 +191,46 @@ export default function FourierEpicyclesPage() {
     setResetKey((k) => k + 1);
   }, []);
 
-  const isDark = theme === "dark";
-  const pageBg = isDark ? "bg-black text-white" : "bg-background text-foreground";
-  const borderColor = isDark ? "border-white/10" : "border-border";
-  const mutedText = isDark ? "text-white/70" : "text-foreground/60";
-  const headingText = isDark ? "text-white/80" : "text-foreground/80";
-  const btnBorder = isDark
-    ? "border-white/25 text-white/80 hover:border-white/60 hover:text-white focus-visible:ring-white/70"
-    : "border-border text-foreground/70 hover:border-foreground/50 hover:text-foreground focus-visible:ring-foreground/40";
+  const btnClass =
+    "text-sm px-3 py-1 rounded border border-border hover:border-foreground/50 text-foreground/70 hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
 
   return (
-    <main className={`min-h-screen flex flex-col ${pageBg}`}>
-      <header
-        className={`px-6 py-4 flex items-center justify-between border-b ${borderColor} shrink-0`}
-      >
-        <nav aria-label="Page navigation">
-          <Link
-            href="/fourier-epicycles"
-            className={`inline-flex items-center gap-1 text-sm ${mutedText} hover:text-foreground underline underline-offset-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-foreground/40 rounded`}
-            aria-label="Back to Fourier Epicycles detail page"
+    <PlayShell
+      slug="fourier-epicycles"
+      title="Fourier Epicycles"
+      visualLabel="Rotating circles of decreasing size trace a square wave via Fourier series"
+      controls={
+        <>
+          <button
+            type="button"
+            onClick={handleReset}
+            className={btnClass}
+            aria-label="Reset the traced path"
           >
-            <ArrowLeft className="size-4" aria-hidden="true" />
-            Back
-          </Link>
-        </nav>
-
-        <h1 className={`text-sm font-medium tracking-wide ${headingText}`}>Fourier Epicycles</h1>
-
-        <button
-          type="button"
-          onClick={handleReset}
-          className={`text-sm px-3 py-1 rounded border ${btnBorder} transition-colors focus-visible:outline-none focus-visible:ring-2`}
-          aria-label="Reset the traced path"
-        >
-          Reset
-        </button>
-      </header>
-
-      <section
-        className="flex-1 relative"
-        aria-label="Fourier epicycles animation. Rotating circles of decreasing size trace a square wave."
-      >
-        <canvas
-          ref={canvasRef}
-          className="absolute inset-0 w-full h-full"
-          aria-label="Animated chain of rotating circles tracing a square wave shape using Fourier series."
-        />
-      </section>
-
-      <footer className={`px-6 py-4 text-xs ${mutedText} border-t ${borderColor} shrink-0`}>
-        Square-wave Fourier approximation using 8 odd harmonics. Mathematics by{" "}
-        <a
-          href="https://en.wikipedia.org/wiki/Fourier_series"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="underline underline-offset-2 hover:opacity-70"
-        >
-          Joseph Fourier
-        </a>
-        . Each circle is one frequency component.
-      </footer>
-    </main>
+            Reset
+          </button>
+        </>
+      }
+      attribution={
+        <>
+          Square-wave Fourier approximation using 8 odd harmonics. Mathematics by{" "}
+          <a
+            href="https://en.wikipedia.org/wiki/Fourier_series"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline underline-offset-2 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded"
+          >
+            Joseph Fourier
+          </a>
+          . Each circle is one frequency component.
+        </>
+      }
+    >
+      <canvas
+        ref={canvasRef}
+        className="absolute inset-0 h-full w-full"
+        aria-label="Animated chain of rotating circles tracing a square wave shape using Fourier series."
+      />
+    </PlayShell>
   );
 }

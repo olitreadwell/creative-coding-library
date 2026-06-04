@@ -1,10 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useCallback } from "react";
-import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
 import { useTheme } from "next-themes";
 import type MatterType from "matter-js";
+import { PlayShell } from "@/components/play-shell";
 import { hsl, hslString } from "@/lib/creative/color";
 import { makeRng } from "@/lib/creative/random";
 import { makeSpecs } from "../bodies";
@@ -253,6 +252,9 @@ export default function PhysicsDropsPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [teardown]);
 
+  const btnClass =
+    "text-sm px-3 py-1.5 rounded border border-border hover:border-foreground/50 text-foreground/70 hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
+
   function handleDropMore(): void {
     const M = matterRef.current;
     const s = sceneRef.current;
@@ -276,24 +278,16 @@ export default function PhysicsDropsPage() {
   }
 
   return (
-    <main className="min-h-screen bg-background text-foreground flex flex-col">
-      <header className="px-4 py-3 flex flex-wrap items-center gap-x-4 gap-y-2 justify-between border-b border-border sm:px-6 sm:py-4">
-        <nav aria-label="Back navigation">
-          <Link
-            href="/physics-drops"
-            aria-label="Back to Physics Drops"
-            className="inline-flex items-center gap-1 text-sm text-foreground/70 hover:text-foreground underline underline-offset-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded"
-          >
-            <ArrowLeft aria-hidden="true" className="size-4" />
-            Back
-          </Link>
-        </nav>
-        <h1 className="text-sm font-medium tracking-wide text-foreground/80">Physics Drops</h1>
-        <div className="flex items-center gap-3">
+    <PlayShell
+      slug="physics-drops"
+      title="Physics Drops"
+      visualLabel="Physics simulation: colorful shapes falling and stacking under gravity"
+      controls={
+        <>
           <button
             type="button"
             onClick={handleDropMore}
-            className="text-sm px-3 py-1.5 rounded border border-border hover:border-foreground/50 text-foreground/70 hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className={btnClass}
             aria-label="Drop more bodies into the simulation"
           >
             Drop more
@@ -301,33 +295,34 @@ export default function PhysicsDropsPage() {
           <button
             type="button"
             onClick={handleReset}
-            className="text-sm px-3 py-1.5 rounded border border-border hover:border-foreground/50 text-foreground/70 hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className={btnClass}
             aria-label="Reset simulation with a new random seed"
           >
             Reset
           </button>
-        </div>
-      </header>
-
-      <section
+        </>
+      }
+      attribution={
+        <>
+          Technique: matter.js rigid-body simulation with built-in Render.{" "}
+          <a
+            href="https://brm.io/matter-js/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline underline-offset-2 hover:text-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded"
+          >
+            matter.js
+          </a>{" "}
+          by Liam Brummitt (MIT).
+        </>
+      }
+    >
+      <div
         ref={containerRef}
-        className="flex-1 relative overflow-hidden"
+        className="absolute inset-0 h-full w-full"
         aria-label="Physics simulation: colorful shapes falling and stacking under gravity"
         role="img"
       />
-
-      <footer className="px-4 py-3 text-xs text-foreground/60 border-t border-border sm:px-6 sm:py-4">
-        Technique: matter.js rigid-body simulation with built-in Render.{" "}
-        <a
-          href="https://brm.io/matter-js/"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="underline underline-offset-2 hover:text-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded"
-        >
-          matter.js
-        </a>{" "}
-        by Liam Brummitt (MIT).
-      </footer>
-    </main>
+    </PlayShell>
   );
 }

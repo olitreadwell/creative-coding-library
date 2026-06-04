@@ -1,9 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
 import { useTheme } from "next-themes";
+import { PlayShell } from "@/components/play-shell";
 import { hsl, hslToRgb } from "@/lib/creative/color";
 import { clamp } from "@/lib/creative/math";
 import { nextRow, firstRow } from "../elementary";
@@ -150,105 +149,78 @@ export default function WolframCaPlayPage() {
     setSeed((s) => s + 1);
   }, []);
 
-  const isDark = theme === "dark";
-  const pageBg = isDark ? "bg-[#0c0c12] text-white" : "bg-[#f5f5fa] text-foreground";
-  const borderColor = isDark ? "border-white/10" : "border-border";
-  const mutedText = isDark ? "text-white/60" : "text-foreground/60";
-  const headingText = isDark ? "text-white/80" : "text-foreground/80";
-  const btnBase =
-    "rounded border px-3 py-1 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2";
-  const btnStyle = isDark
-    ? `${btnBase} border-white/20 text-white/70 hover:border-white/50 hover:text-white focus-visible:ring-white/50`
-    : `${btnBase} border-border text-foreground/70 hover:border-foreground/40 hover:text-foreground focus-visible:ring-foreground/40`;
-  const btnActive = isDark
-    ? "border-white/60 text-white bg-white/10"
-    : "border-foreground/50 text-foreground bg-foreground/10";
-  const inputStyle = isDark
-    ? "w-16 rounded border border-white/20 bg-transparent px-2 py-1 text-sm text-white tabular-nums focus:outline-none focus:ring-2 focus:ring-white/50"
-    : "w-16 rounded border border-border bg-transparent px-2 py-1 text-sm tabular-nums focus:outline-none focus:ring-2 focus:ring-foreground/40";
+  const btnClass =
+    "text-sm px-3 py-1 rounded border border-border hover:border-foreground/50 text-foreground/70 hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
+  const btnActive = "border-foreground/50 text-foreground bg-foreground/10";
+  const inputClass =
+    "w-16 rounded border border-border bg-transparent px-2 py-1 text-sm tabular-nums focus:outline-none focus:ring-2 focus:ring-ring";
 
   return (
-    <main className={`flex min-h-screen flex-col ${pageBg}`}>
-      <header className={`shrink-0 border-b ${borderColor} px-4 py-3 sm:px-6`}>
-        <div className="flex flex-wrap items-center gap-3">
-          <nav aria-label="Page navigation">
-            <Link
-              href="/wolfram-ca"
-              className={`inline-flex items-center gap-1 rounded text-sm ${mutedText} underline underline-offset-2 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-foreground/40`}
-              aria-label="Back to Elementary CA detail page"
-            >
-              <ArrowLeft className="size-4" aria-hidden="true" />
-              Back
-            </Link>
-          </nav>
+    <PlayShell
+      slug="wolfram-ca"
+      title="Elementary CA"
+      visualLabel={`Rule ${rule} elementary cellular automaton, each row one generation growing downward from a single centered cell`}
+      controls={
+        <>
+          {/* Rule number input */}
+          <label className="flex items-center gap-1.5 text-sm text-foreground/70">
+            Rule
+            <input
+              type="number"
+              min={0}
+              max={255}
+              value={inputValue}
+              onChange={handleRuleInput}
+              className={inputClass}
+              aria-label="Rule number (0 to 255)"
+            />
+          </label>
 
-          <h1 className={`text-sm font-medium tracking-wide ${headingText}`}>Elementary CA</h1>
-
-          <div className="ml-auto flex flex-wrap items-center gap-2">
-            {/* Rule number input */}
-            <label className={`flex items-center gap-1.5 text-sm ${mutedText}`}>
-              Rule
-              <input
-                type="number"
-                min={0}
-                max={255}
-                value={inputValue}
-                onChange={handleRuleInput}
-                className={inputStyle}
-                aria-label="Rule number (0 to 255)"
-              />
-            </label>
-
-            {/* Preset buttons */}
-            {PRESET_RULES.map((r) => (
-              <button
-                key={r}
-                type="button"
-                onClick={() => handlePreset(r)}
-                className={`${btnStyle} ${rule === r ? btnActive : ""}`}
-                aria-pressed={rule === r}
-                aria-label={`Switch to rule ${r}`}
-              >
-                {r}
-              </button>
-            ))}
-
+          {/* Preset buttons */}
+          {PRESET_RULES.map((r) => (
             <button
+              key={r}
               type="button"
-              onClick={handleRestart}
-              className={btnStyle}
-              aria-label="Restart the simulation from a single centered cell"
+              onClick={() => handlePreset(r)}
+              className={`${btnClass} ${rule === r ? btnActive : ""}`}
+              aria-pressed={rule === r}
+              aria-label={`Switch to rule ${r}`}
             >
-              Restart
+              {r}
             </button>
-          </div>
-        </div>
-      </header>
+          ))}
 
-      <section
-        className="relative flex-1"
-        aria-label={`Elementary cellular automaton canvas using rule ${rule}`}
-      >
-        <canvas
-          ref={canvasRef}
-          className="absolute inset-0 h-full w-full"
-          aria-label={`Rule ${rule} elementary cellular automaton. Each row is one generation, growing downward from a single centered cell at the top.`}
-          style={{ imageRendering: "pixelated" }}
-        />
-      </section>
-
-      <footer className={`shrink-0 border-t ${borderColor} px-6 py-3 text-xs ${mutedText}`}>
-        Wolfram elementary 1D rules. Original framework by{" "}
-        <a
-          href="https://en.wikipedia.org/wiki/Elementary_cellular_automaton"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="underline underline-offset-2 hover:opacity-70"
-        >
-          Stephen Wolfram
-        </a>
-        . 256 possible rules, each a universe of its own.
-      </footer>
-    </main>
+          <button
+            type="button"
+            onClick={handleRestart}
+            className={btnClass}
+            aria-label="Restart the simulation from a single centered cell"
+          >
+            Restart
+          </button>
+        </>
+      }
+      attribution={
+        <>
+          Wolfram elementary 1D rules. Original framework by{" "}
+          <a
+            href="https://en.wikipedia.org/wiki/Elementary_cellular_automaton"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline underline-offset-2 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded"
+          >
+            Stephen Wolfram
+          </a>
+          . 256 possible rules, each a universe of its own.
+        </>
+      }
+    >
+      <canvas
+        ref={canvasRef}
+        className="absolute inset-0 h-full w-full"
+        aria-label={`Rule ${rule} elementary cellular automaton. Each row is one generation, growing downward from a single centered cell at the top.`}
+        style={{ imageRendering: "pixelated" }}
+      />
+    </PlayShell>
   );
 }

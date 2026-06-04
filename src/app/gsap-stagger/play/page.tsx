@@ -1,10 +1,9 @@
 "use client";
 
 import { useLayoutEffect, useRef, useCallback } from "react";
-import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
 import { useTheme } from "next-themes";
 import { gsap } from "gsap";
+import { PlayShell } from "@/components/play-shell";
 import { hsl, hslString } from "@/lib/creative/color";
 import { map } from "@/lib/creative/math";
 import { gridCells, centerDistance } from "../grid";
@@ -64,6 +63,12 @@ export default function StaggerGridPage() {
     const el = scopeRef.current;
     if (!el) return;
 
+    // Respect prefers-reduced-motion: skip the infinite animation and leave
+    // tiles in their static resting state so users who opt out of motion are
+    // not subjected to a continuous looping animation.
+    const reducedMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    if (reducedMotion) return;
+
     const ctx = gsap.context((self) => {
       buildTimeline(self);
     }, el);
@@ -80,35 +85,39 @@ export default function StaggerGridPage() {
   }
 
   return (
-    <main className="min-h-screen bg-background text-foreground flex flex-col">
-      <header className="px-4 sm:px-6 py-3 sm:py-4 flex flex-wrap items-center gap-y-2 justify-between border-b border-border shrink-0">
-        <nav aria-label="Back navigation">
-          <Link
-            href="/gsap-stagger"
-            className="inline-flex items-center gap-1 text-sm text-foreground/70 hover:text-foreground underline underline-offset-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded"
-            aria-label="Back to GSAP Stagger detail"
-          >
-            <ArrowLeft size={14} aria-hidden="true" />
-            Back
-          </Link>
-        </nav>
-        <h1 className="text-sm font-medium tracking-wide">Stagger Grid</h1>
+    <PlayShell
+      slug="gsap-stagger"
+      title="Stagger Grid"
+      visualLabel="Stagger grid animation: a ripple wave of colored tiles spreading from the center"
+      controls={
         <button
           type="button"
           onClick={handleReplay}
-          className="text-sm px-3 py-1 rounded border border-border hover:border-foreground/50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="text-sm px-3 py-1 rounded border border-border hover:border-foreground/50 text-foreground/70 hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           aria-label="Replay animation"
         >
           Replay
         </button>
-      </header>
-
-      <section
+      }
+      attribution={
+        <>
+          Technique: GSAP timeline + grid stagger,{" "}
+          <a
+            href="https://gsap.com/docs/v3/Staggers/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline underline-offset-2 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded"
+          >
+            GSAP Stagger docs
+          </a>{" "}
+          by GreenSock
+        </>
+      }
+    >
+      <div
         ref={scopeRef}
-        className="flex-1 flex items-center justify-center px-4 py-12"
-        aria-label="Stagger grid animation: a ripple wave of colored tiles spreading from the center"
-        aria-live="polite"
-        aria-atomic="false"
+        className="absolute inset-0 flex items-center justify-center px-4 py-12"
+        aria-hidden="true"
       >
         <div
           className="grid gap-1.5"
@@ -131,20 +140,7 @@ export default function StaggerGridPage() {
             );
           })}
         </div>
-      </section>
-
-      <footer className="px-4 sm:px-6 py-4 text-xs text-foreground/70 border-t border-border shrink-0">
-        Technique: GSAP timeline + grid stagger,{" "}
-        <a
-          href="https://gsap.com/docs/v3/Staggers/"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="underline underline-offset-2 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded"
-        >
-          GSAP Stagger docs
-        </a>{" "}
-        by GreenSock
-      </footer>
-    </main>
+      </div>
+    </PlayShell>
   );
 }

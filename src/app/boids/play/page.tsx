@@ -1,11 +1,9 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
 import { useTheme } from "next-themes";
-import { hsl, hslString } from "@/lib/creative/color";
-import { TAU } from "@/lib/creative/math";
+import { PlayShell } from "@/components/play-shell";
+import { cbColor } from "@/lib/creative";
 import { makeRng } from "@/lib/creative/random";
 import { useAnimationFrame } from "@/lib/creative/useAnimationFrame";
 import { makeBoids, stepBoids, DEFAULT_OPTS } from "../boids";
@@ -21,32 +19,6 @@ const BOID_HALF_WIDTH = 3;
 /** Generates a numeric seed from the current timestamp. */
 function freshSeed(): number {
   return Date.now() & 0xffffffff;
-}
-
-/**
- * Maps a boid's heading angle + speed to a theme-aware HSL color string.
- *
- * Dark theme: vivid, bright colors on a dark background.
- * Light theme: deep, saturated colors on a light background (AA contrast).
- */
-function boidColor(
-  vx: number,
-  vy: number,
-  minSpeed: number,
-  maxSpeed: number,
-  isDark: boolean,
-): string {
-  const angle = Math.atan2(vy, vx);
-  const hue = ((angle / TAU) * 360 + 360) % 360;
-  const speed = Math.sqrt(vx * vx + vy * vy);
-  const t = maxSpeed === minSpeed ? 0 : (speed - minSpeed) / (maxSpeed - minSpeed);
-
-  if (isDark) {
-    // Vivid, high-lightness on dark background.
-    return hslString(hsl(hue, 0.9, 0.55 + t * 0.2));
-  }
-  // Deep, saturated, lower-lightness on light background for AA contrast.
-  return hslString(hsl(hue, 1.0, 0.25 + t * 0.2));
 }
 
 /**
@@ -87,18 +59,8 @@ export default function BoidsPlayPage() {
 
   // next-themes: guard undefined during SSR/hydration, default to 'dark'.
   const { resolvedTheme } = useTheme();
-  const theme: "dark" | "light" = resolvedTheme === "light" ? "light" : "dark";
-  const isDark = theme === "dark";
-
-  // Theme-aware color tokens.
-  const pageBg = isDark ? "bg-black text-white" : "bg-background text-foreground";
-  const borderColor = isDark ? "border-white/10" : "border-border";
-  const mutedText = isDark ? "text-white/70" : "text-foreground/60";
-  const headingText = isDark ? "text-white/80" : "text-foreground/80";
-  const btnBorder = isDark
-    ? "border-white/25 text-white/80 hover:border-white/60 hover:text-white focus-visible:ring-white/70"
-    : "border-border text-foreground/70 hover:border-foreground/50 hover:text-foreground focus-visible:ring-foreground/40";
-  const canvasBg = isDark ? "#000000" : "#f8f8f8";
+  const theme = resolvedTheme === "light" ? "light" : "dark";
+  const canvasBg = theme === "dark" ? "#000000" : "#f8f8f8";
 
   // Initialize boids when seed or canvas size changes.
   useEffect(() => {
@@ -149,71 +111,58 @@ export default function BoidsPlayPage() {
     // Scale to DPR so boid coordinates (CSS pixels) map correctly.
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-    for (const b of boidsRef.current) {
-      const color = boidColor(b.vx, b.vy, DEFAULT_OPTS.minSpeed, DEFAULT_OPTS.maxSpeed, isDark);
+    // Use Okabe-Ito colorblind-safe palette, cycling by boid index.
+    boidsRef.current.forEach((b, i) => {
+      const color = cbColor(i, theme);
       drawBoid(ctx, b, color);
-    }
+    });
   });
 
   const handleReseed = useCallback(() => {
     setSeed(freshSeed());
   }, []);
 
+  const btnClass =
+    "text-sm px-3 py-1 rounded border border-border hover:border-foreground/50 text-foreground/70 hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
+
   return (
-    <main className={`min-h-screen flex flex-col ${pageBg}`}>
-      <header
-        className={`px-4 sm:px-6 py-4 flex flex-wrap items-center gap-3 border-b ${borderColor} shrink-0`}
-      >
-        <nav aria-label="Page navigation" className="flex-none">
-          <Link
-            href="/boids"
-            className={`inline-flex items-center gap-1 text-sm ${mutedText} hover:text-foreground underline underline-offset-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-foreground/40 rounded`}
-            aria-label="Back to Boids detail page"
-          >
-            <ArrowLeft className="size-4" aria-hidden="true" />
-            Back
-          </Link>
-        </nav>
-
-        <h1 className={`flex-1 text-sm font-medium tracking-wide text-center ${headingText}`}>
-          Boids
-        </h1>
-
-        <div className="flex-none">
+    <PlayShell
+      slug="boids"
+      title="Boids"
+      visualLabel="Animated flock of triangles steering together using separation, alignment, and cohesion"
+      controls={
+        <>
           <button
             type="button"
             onClick={handleReseed}
-            className={`text-sm px-3 py-1 rounded border ${btnBorder} transition-colors focus-visible:outline-none focus-visible:ring-2`}
+            className={btnClass}
             aria-label="Spawn a new flock with a random seed"
           >
             New flock
           </button>
-        </div>
-      </header>
-
-      <section
-        className="flex-1 relative"
-        aria-label="Boids flock simulation. Triangles flock together using three steering rules: separation, alignment, and cohesion."
-      >
-        <canvas
-          ref={canvasRef}
-          className="absolute inset-0 w-full h-full"
-          aria-label="Animated boids flock. Each triangle is a boid steered by separation, alignment, and cohesion."
-        />
-      </section>
-
-      <footer className={`px-6 py-4 text-xs ${mutedText} border-t ${borderColor} shrink-0`}>
-        Reynolds boids algorithm.{" "}
-        <a
-          href="https://www.red3d.com/cwr/boids/"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="underline underline-offset-2 hover:opacity-70"
-        >
-          Original 1987 paper by Craig Reynolds
-        </a>
-        . This implementation is MIT licensed.
-      </footer>
-    </main>
+        </>
+      }
+      attribution={
+        <>
+          Reynolds boids algorithm.{" "}
+          <a
+            href="https://www.red3d.com/cwr/boids/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline underline-offset-2 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded"
+          >
+            Original 1987 paper by Craig Reynolds
+          </a>
+          . This implementation is MIT licensed.
+        </>
+      }
+    >
+      <canvas
+        ref={canvasRef}
+        className="absolute inset-0 h-full w-full"
+        aria-label="Animated boids flock. Each triangle is a boid steered by separation, alignment, and cohesion."
+        style={{ background: canvasBg }}
+      />
+    </PlayShell>
   );
 }

@@ -19,6 +19,33 @@ type Filters = {
   concept: string | null;
 };
 
+type Sort = "oldest" | "newest" | "level" | "name";
+
+const SORT_LABELS: Record<Sort, string> = {
+  oldest: "Oldest first",
+  newest: "Newest first",
+  level: "Level",
+  name: "Name (A–Z)",
+};
+
+function compareApps(a: AppMeta, b: AppMeta, sort: Sort): number {
+  switch (sort) {
+    case "newest":
+      return (
+        b.builtAt.localeCompare(a.builtAt) || b.level - a.level || a.title.localeCompare(b.title)
+      );
+    case "level":
+      return a.level - b.level || a.title.localeCompare(b.title);
+    case "name":
+      return a.title.localeCompare(b.title);
+    case "oldest":
+    default:
+      return (
+        a.builtAt.localeCompare(b.builtAt) || a.level - b.level || a.title.localeCompare(b.title)
+      );
+  }
+}
+
 function FilterRow({
   label,
   options,
@@ -120,6 +147,7 @@ function AppCard({ app }: { app: AppMeta }) {
 
 export function Catalog({ apps }: { apps: readonly AppMeta[] }) {
   const [filters, setFilters] = useState<Filters>({ library: null, level: null, concept: null });
+  const [sort, setSort] = useState<Sort>("oldest");
 
   const libraries = useMemo(() => [...new Set(apps.map((a) => a.library))].sort(), [apps]);
   const levels = useMemo(() => [...new Set(apps.map((a) => String(a.level)))].sort(), [apps]);
@@ -135,8 +163,8 @@ export function Catalog({ apps }: { apps: readonly AppMeta[] }) {
           return true;
         })
         .slice()
-        .sort((a, b) => a.level - b.level || a.title.localeCompare(b.title)),
-    [apps, filters],
+        .sort((a, b) => compareApps(a, b, sort)),
+    [apps, filters, sort],
   );
 
   return (
@@ -160,6 +188,26 @@ export function Catalog({ apps }: { apps: readonly AppMeta[] }) {
           active={filters.concept}
           onPick={(v) => setFilters((f) => ({ ...f, concept: v }))}
         />
+        <div className="flex flex-wrap items-center gap-2">
+          <label
+            htmlFor="catalog-sort"
+            className="mr-1 text-xs font-medium tracking-wide text-foreground/70 uppercase"
+          >
+            sort
+          </label>
+          <select
+            id="catalog-sort"
+            value={sort}
+            onChange={(e) => setSort(e.target.value as Sort)}
+            className="rounded-md border border-border bg-background px-2 py-1 text-xs text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            {(Object.keys(SORT_LABELS) as Sort[]).map((key) => (
+              <option key={key} value={key}>
+                {SORT_LABELS[key]}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
 
       <p className="mb-4 text-sm text-foreground/70" aria-live="polite">

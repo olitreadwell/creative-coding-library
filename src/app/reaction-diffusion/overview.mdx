@@ -1,0 +1,24 @@
+## What this is
+
+Reaction diffusion is a simulation where two chemicals share the same space and do two things at once: they spread out (diffuse), and they react with each other. The result is a living, moving picture, full of spots, stripes, and spirals, all built from one simple rule repeated thousands of times.
+
+The specific version here is called the Gray-Scott model. It was described in 1984 by chemists studying reactions in a tank. It turns out the same math shows up in animal coat patterns, coral growth, and brain wave activity.
+
+## The big idea in plain words
+
+Imagine two chemicals called A and B spread across a flat grid of cells. Each cell has some amount of each chemical, from zero to one. Every tick of the clock, two things happen:
+
+- **Diffuse.** Each chemical leaks a little into its neighbours. A spreads faster than B.
+- **React.** Wherever A and B meet, some A is converted into more B. Meanwhile, a small supply of fresh A feeds in from outside, and some B is removed (killed off).
+
+Because A diffuses faster than B, a patch of B can outrun the A it needs to survive, starving itself at the edge. That tension, B trying to grow, A trying to replenish, creates the spots and stripes you see. Change the feed or kill rate slightly and the whole character of the pattern shifts: blobs instead of dots, or fingerprints instead of blobs.
+
+## Why it matters
+
+Reaction diffusion is a clean example of emergence: complex, life-like patterns arising from a rule so short you can fit it in three lines. It shows up in:
+
+- **Biology.** Turing (1952) proposed exactly this mechanism as the source of stripes on zebras and spots on leopards.
+- **Chemistry.** Real oscillating reactions in lab dishes produce visible waves with the same math.
+- **Generative art.** Adjust the parameters and you get textures that look organic, alien, or somewhere in between.
+
+You do not need to understand the equations to enjoy it. Hit Reset and watch a fresh pattern grow from scratch. The Tutorial tab walks through the code, step by step.

@@ -1,0 +1,67 @@
+## How it works, step by step
+
+This app draws the epicycle chain with plain Canvas 2D. No special library. Here is the entire idea, broken into small pieces.
+
+## Step 1: define a term
+
+Each rotating arm is one `Term`:
+
+```ts
+type Term = {
+  freq: number; // how many rotations per cycle
+  amp: number; // radius of this circle
+  phase: number; // starting angle in radians
+};
+```
+
+A square wave uses only odd harmonics (frequencies 1, 3, 5, 7, ...). The amplitude of each harmonic is `4 / (pi * freq)`. That formula comes straight from the Fourier series for a square wave.
+
+## Step 2: sum the rotating vectors
+
+At any moment in time `t` (normalized to [0, 1] for one full cycle), each term contributes a 2D vector:
+
+```ts
+x += amp * Math.cos(freq * TAU * t + phase);
+y += amp * Math.sin(freq * TAU * t + phase);
+```
+
+`TAU` is `2 * Math.PI`. Multiplying by `freq` makes higher-frequency terms spin faster. The full position is the sum of all these vectors. That is `epicyclePoint`.
+
+A variant, `epicycleArms`, returns the cumulative tip position after each arm, not just the final result. The draw code needs each intermediate pivot so it can draw the circles and connecting lines.
+
+## Step 3: draw the chain
+
+For each arm, the code:
+
+1. Draws a circle centered at the previous tip, with radius equal to that term's amplitude.
+2. Draws a line from the previous tip to this arm's new tip.
+3. Draws a small dot at the pivot.
+
+This gives the visual of nested spinning circles. The arms update every animation frame.
+
+## Step 4: accumulate the trace
+
+Each frame, the final tip position is pushed onto a `path` array. The canvas draws a polyline through all stored points. After enough frames the path closes into the full shape.
+
+The path is capped at 1200 points so memory stays bounded. A Reset button clears the path and starts fresh.
+
+## Step 5: DPR-aware canvas
+
+The canvas is sized using the device pixel ratio so it stays sharp on high-density screens:
+
+```ts
+canvas.width = Math.round(cssW * window.devicePixelRatio);
+canvas.height = Math.round(cssH * window.devicePixelRatio);
+```
+
+A `ResizeObserver` re-runs this whenever the element changes size. The draw code scales everything by `dpr` so CSS coordinates map correctly.
+
+## Try this yourself
+
+- Watch the first few seconds. The large slow circle alone draws a rough circle. As the smaller, faster circles join in the shape starts to look square.
+- The corners sharpen each time a new harmonic completes its first rotation. Count the sharp bumps as the trace builds up.
+- Reset and notice how the path restarts from the tip of the chain, not from the center.
+
+## What to remember
+
+Adding rotating circles of different speeds and sizes can draw any closed shape. Each circle is one frequency. The math that tells you which circles to use is the Fourier series. The animation you are watching is that formula made visible, one frame at a time.

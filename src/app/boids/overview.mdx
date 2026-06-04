@@ -1,0 +1,28 @@
+## What this is
+
+Boids is a flocking simulation. On screen you see a group of small triangles moving together. They look like birds or fish. No one is in charge. Each triangle follows its own three rules, and the group behaviour emerges on its own.
+
+The word "boid" is Brooklyn slang for "bird". Craig Reynolds coined it when he published the algorithm in 1987.
+
+## The big idea in plain words
+
+Each boid (triangle) can only see the other boids nearby. With that limited view, it asks three questions every frame:
+
+- **Am I too close to a neighbour?** If yes, move away. This is **separation**.
+- **Which way are my neighbours heading?** Steer toward that direction. This is **alignment**.
+- **Where are my neighbours, on average?** Steer toward that center. This is **cohesion**.
+
+Add those three small nudges together, limit the speed, and repeat. That is the whole algorithm. Nothing more.
+
+The surprising part: you never write "flock together". You write three tiny local rules, and the flock appears. This is called **emergent behaviour**. The group is more complex than the rules.
+
+## Why it matters
+
+Boids shows up in:
+
+- **Film and games**: the wildebeest stampede in The Lion King (1994) used boids. So do the crowd systems in many modern games.
+- **Robotics**: real drone swarms use similar local rules. No central computer tells each drone what to do.
+- **Biology research**: scientists use boids-style models to study how real starlings, fish, and ants coordinate.
+- **Generative art**: the organic, life-like motion is beautiful and endlessly surprising even though the code is short.
+
+You do not need to know vector math to enjoy watching it. The Tutorial tab walks through exactly how the code works.

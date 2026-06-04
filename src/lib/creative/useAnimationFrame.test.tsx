@@ -51,7 +51,8 @@ describe("useAnimationFrame", () => {
     } as MediaQueryList);
     const onFrame = vi.fn();
     render(<ReducedMotionHarness onFrame={onFrame} />);
+    // Reduced motion: no animation loop, but one static frame is painted.
     expect(rafCallbacks.length).toBe(0);
-    expect(onFrame).not.toHaveBeenCalled();
+    expect(onFrame).toHaveBeenCalledTimes(1);
   });
 });

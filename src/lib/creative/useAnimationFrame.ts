@@ -28,6 +28,8 @@ export function useAnimationFrame(
   useEffect(() => {
     if (typeof window === "undefined") return;
     if (respectReducedMotion && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) {
+      // Honor reduced motion: paint a single static frame, never animate.
+      cbRef.current({ t: 0, dt: 0, frame: 0 });
       return;
     }
 

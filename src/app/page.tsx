@@ -17,7 +17,7 @@ function AppCard({ app }: { app: AppMeta }) {
     <Link href={`/${app.slug}`} className="group block">
       <Card className="gap-0 overflow-hidden pt-0 ring-1 ring-foreground/10 transition group-hover:ring-foreground/30">
         <div
-          className="relative aspect-[16/10] overflow-hidden"
+          className="relative aspect-16/10 overflow-hidden"
           style={{
             background: `linear-gradient(135deg, hsl(${hue} 60% 22%), hsl(${(hue + 60) % 360} 55% 14%))`,
           }}

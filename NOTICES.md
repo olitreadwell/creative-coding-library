@@ -66,6 +66,9 @@ Runtime + dev dependencies vetted against the [`CONVENTIONS.md`](./docs/creative
 - tailwind-merge @ ^3 — MIT — Tailwind class merge
 - lucide-react @ ^1 — ISC — icon set
 - tw-animate-css @ ^1 — MIT — Tailwind animation utilities
+- three @ ^0.184 — MIT — 3D / WebGL engine
+- @react-three/fiber @ ^9 — MIT — React renderer for three.js
+- matter-js @ ^0.20 — MIT — 2D rigid-body physics
 
 ## Adaptations
 

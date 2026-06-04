@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
+import { useTheme } from "next-themes";
 import { useAnimationFrame } from "@/lib/creative/useAnimationFrame";
 import type { Renderer as OGLRenderer, Program as OGLProgram, Mesh as OGLMesh } from "ogl";
 import { vertex, fragment, paletteSpeed, type PaletteLabel } from "../shader";
@@ -12,6 +14,7 @@ const SPEED_BASE = 0.4;
 
 export default function ShaderGradientPage() {
   const containerRef = useRef<HTMLDivElement>(null);
+  const { resolvedTheme } = useTheme();
 
   // Tracks the active palette so the button can cycle through presets.
   const [palette, setPalette] = useState<PaletteLabel>("calm");
@@ -31,6 +34,14 @@ export default function ShaderGradientPage() {
     prog.uniforms["uSpeed"] = { value: SPEED_BASE + paletteSpeed(palette) * 0.06 };
   }, [palette]);
 
+  // Push theme as a float uniform: 1.0 = light, 0.0 = dark.
+  useEffect(() => {
+    const prog = programRef.current;
+    if (!prog) return;
+    const themeValue = (resolvedTheme ?? "dark") === "light" ? 1.0 : 0.0;
+    prog.uniforms["uTheme"] = { value: themeValue };
+  }, [resolvedTheme]);
+
   // Bootstrap ogl inside an effect so WebGL only runs client-side.
   useEffect(() => {
     const container = containerRef.current;
@@ -38,6 +49,9 @@ export default function ShaderGradientPage() {
 
     let renderer: OGLRenderer;
     let resizeObserver: ResizeObserver;
+
+    // Capture resolvedTheme at init time; the effect above keeps it current after mount.
+    const initThemeValue = (resolvedTheme ?? "dark") === "light" ? 1.0 : 0.0;
 
     const init = async () => {
       const { Renderer, Program, Mesh, Triangle } = await import("ogl");
@@ -63,6 +77,7 @@ export default function ShaderGradientPage() {
           uResolution: { value: [w * dpr, h * dpr] },
           uSpeed: { value: SPEED_BASE },
           uSeed: { value: paletteSpeed(paletteRef.current) },
+          uTheme: { value: initThemeValue },
         },
       });
 
@@ -122,12 +137,14 @@ export default function ShaderGradientPage() {
   return (
     <main className="min-h-screen bg-black text-white flex flex-col">
       <header className="px-4 sm:px-6 py-3 sm:py-4 flex flex-wrap items-center gap-y-2 justify-between border-b border-white/10 z-10 relative">
-        <nav aria-label="Breadcrumb">
+        <nav aria-label="Site navigation">
           <Link
             href="/shader-gradient"
-            className="text-sm text-white/70 hover:text-white underline underline-offset-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70 rounded"
+            aria-label="Back to shader gradient detail page"
+            className="inline-flex items-center gap-1 text-sm text-white/70 hover:text-white underline underline-offset-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70 rounded"
           >
-            &larr; about
+            <ArrowLeft size={14} aria-hidden="true" />
+            Back
           </Link>
         </nav>
         <h1 className="text-sm font-medium tracking-wide text-white/90">Shader Gradient</h1>

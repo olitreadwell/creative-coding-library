@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
 import { useTheme } from "next-themes";
 import { hsl, hslString } from "@/lib/creative/color";
 import { map, TAU } from "@/lib/creative/math";
@@ -46,6 +47,15 @@ export default function TwoGridPlayPage() {
         svgEl.style.background = stageBg;
       }
 
+      // Theme-aware shape color bounds.
+      // Dark: bright shapes on near-black — lightness 0.50–0.75, saturation 0.75.
+      // Light: deep/saturated shapes on gray-200 — lightness 0.30–0.50, saturation 0.85.
+      const isLight = stageBg !== STAGE_BG_DEFAULT;
+      const shapeSaturation = isLight ? 0.85 : 0.75;
+      const shapeLightnessMin = isLight ? 0.3 : 0.5;
+      const shapeLightnessMax = isLight ? 0.5 : 0.75;
+      const shapeBaseL = isLight ? 0.4 : 0.55;
+
       const cells = gridPositions(COLS, ROWS, CELL_SIZE, CELL_SIZE);
       const totalW = COLS * CELL_SIZE;
       const totalH = ROWS * CELL_SIZE;
@@ -64,7 +74,7 @@ export default function TwoGridPlayPage() {
         const distance = centerDistance(row, col, COLS, ROWS);
         // Hue spreads from blue-purple (center) to teal (edge).
         const baseHue = map(distance, 0, 1, 260, 180);
-        const color = hslString(hsl(baseHue, 0.7, 0.55));
+        const color = hslString(hsl(baseHue, shapeSaturation, shapeBaseL));
 
         const rect = two.makeRectangle(offsetX + x, offsetY + y, SHAPE_SIZE, SHAPE_SIZE);
         rect.fill = color;
@@ -89,8 +99,8 @@ export default function TwoGridPlayPage() {
 
           // Hue shifts slightly over time for a colour-wave effect.
           const hueShift = Math.sin(t - distance * TAU * 0.5) * 20;
-          const lightness = map(s, 0.5, 1.2, 0.4, 0.7);
-          rect.fill = hslString(hsl(baseHue + hueShift, 0.75, lightness));
+          const lightness = map(s, 0.5, 1.2, shapeLightnessMin, shapeLightnessMax);
+          rect.fill = hslString(hsl(baseHue + hueShift, shapeSaturation, lightness));
         }
       });
 
@@ -115,9 +125,11 @@ export default function TwoGridPlayPage() {
         <nav aria-label="Breadcrumb">
           <Link
             href="/two-grid"
-            className="text-sm text-foreground/70 hover:text-foreground underline underline-offset-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded"
+            aria-label="Back to Vector Grid"
+            className="inline-flex items-center gap-1 text-sm text-foreground/70 hover:text-foreground underline underline-offset-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded"
           >
-            &larr; Vector Grid
+            <ArrowLeft aria-hidden="true" className="w-4 h-4" />
+            Back
           </Link>
         </nav>
         <h1 className="text-sm font-medium tracking-wide text-foreground/80">

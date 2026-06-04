@@ -2,7 +2,8 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { Minus, Plus } from "lucide-react";
+import { ArrowLeft, Minus, Plus } from "lucide-react";
+import { useTheme } from "next-themes";
 import { hsl, hslToRgb } from "@/lib/creative/color";
 import { clamp, map } from "@/lib/creative/math";
 import { mandelEscape, pixelToComplex } from "../fractal";
@@ -17,18 +18,39 @@ const MAX_RENDER_PX = 1200;
 
 /**
  * Maps a smooth escape count to an RGBA pixel color.
- * Points in the set are black. Escaping points get a rich cyclic hue.
+ *
+ * Dark theme: points in the set are black, escaping points use vivid cyclic hues
+ * with mid-range lightness so colors pop on a dark background.
+ *
+ * Light theme: points in the set are near-black (so the set reads clearly on
+ * white), escaping points use deeper, more saturated hues at lower lightness so
+ * the escape bands stay legible against a light background rather than washing out.
  */
-function escapeToRgba(t: number, maxIter: number): [number, number, number, number] {
-  if (t >= maxIter) return [0, 0, 0, 255];
+function escapeToRgba(
+  t: number,
+  maxIter: number,
+  theme: "dark" | "light",
+): [number, number, number, number] {
+  if (t >= maxIter) {
+    // Dark: classic black set. Light: very dark navy so the set reads clearly.
+    return theme === "light" ? [15, 15, 30, 255] : [0, 0, 0, 255];
+  }
 
-  // Normalize to [0, 1] and cycle the hue multiple times for a rich palette.
   const normalized = t / maxIter;
+  // Cycle the hue multiple times for a rich, banded palette.
   const hue = (normalized * 360 * 6) % 360;
-  const saturation = 0.9;
-  // Make deep points (high iteration near the set boundary) brighter.
-  const lightness = clamp(0.08 + normalized * 0.65, 0.08, 0.72);
 
+  if (theme === "light") {
+    // Deeper saturation, lower lightness ceiling so bands stay vivid on white.
+    const saturation = 1.0;
+    const lightness = clamp(0.12 + normalized * 0.45, 0.12, 0.58);
+    const { r, g, b } = hslToRgb(hsl(hue, saturation, lightness));
+    return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255), 255];
+  }
+
+  // Dark theme: keep the original vivid coloring.
+  const saturation = 0.9;
+  const lightness = clamp(0.08 + normalized * 0.65, 0.08, 0.72);
   const { r, g, b } = hslToRgb(hsl(hue, saturation, lightness));
   return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255), 255];
 }
@@ -37,14 +59,14 @@ function escapeToRgba(t: number, maxIter: number): [number, number, number, numb
  * Renders the Mandelbrot set into `imageData` for the given view.
  * Operates purely on the buffer — no canvas API calls.
  */
-function renderMandelbrot(imageData: ImageData, view: View): void {
+function renderMandelbrot(imageData: ImageData, view: View, theme: "dark" | "light"): void {
   const { width, height, data } = imageData;
 
   for (let py = 0; py < height; py++) {
     for (let px = 0; px < width; px++) {
       const { x: cx, y: cy } = pixelToComplex(px, py, width, height, view);
       const t = mandelEscape(cx, cy, MAX_ITER);
-      const [r, g, b, a] = escapeToRgba(t, MAX_ITER);
+      const [r, g, b, a] = escapeToRgba(t, MAX_ITER, theme);
       const idx = (py * width + px) * 4;
       data[idx] = r;
       data[idx + 1] = g;
@@ -77,6 +99,10 @@ export default function MandelbrotPage() {
   const [size, setSize] = useState<{ w: number; h: number } | null>(null);
   // Holding Alt flips a click from zoom-in to zoom-out; we mirror that in the cursor.
   const [zoomOutMode, setZoomOutMode] = useState(false);
+
+  // next-themes: guard undefined during SSR/hydration, default to "dark".
+  const { resolvedTheme } = useTheme();
+  const theme: "dark" | "light" = resolvedTheme === "light" ? "light" : "dark";
 
   const zoomIn = useCallback(() => {
     setView((v) => zoomAt(v, v.centerX, v.centerY, 0.5));
@@ -135,7 +161,7 @@ export default function MandelbrotPage() {
     return () => ro.disconnect();
   }, []);
 
-  // Re-render whenever view or canvas size changes.
+  // Re-render whenever view, canvas size, or theme changes.
   useEffect(() => {
     if (!size) return;
     const canvas = canvasRef.current;
@@ -144,9 +170,9 @@ export default function MandelbrotPage() {
     if (!ctx) return;
 
     const imageData = ctx.createImageData(size.w, size.h);
-    renderMandelbrot(imageData, view);
+    renderMandelbrot(imageData, view, theme);
     ctx.putImageData(imageData, 0, 0);
-  }, [view, size]);
+  }, [view, size, theme]);
 
   const handleCanvasClick = useCallback(
     (e: React.MouseEvent<HTMLCanvasElement>) => {
@@ -173,21 +199,38 @@ export default function MandelbrotPage() {
 
   const zoom = size ? zoomLevel(view) : 1;
 
+  // Tailwind classes vary by theme. Using a data-attribute-driven approach via
+  // conditional strings keeps the markup readable without a separate CSS file.
+  const isDark = theme === "dark";
+
+  // Chrome color tokens: dark uses white-on-black, light uses foreground-on-background.
+  const pageBg = isDark ? "bg-black text-white" : "bg-background text-foreground";
+  const borderColor = isDark ? "border-white/10" : "border-border";
+  const mutedText = isDark ? "text-white/70" : "text-foreground/60";
+  const headingText = isDark ? "text-white/80" : "text-foreground/80";
+  const btnBorder = isDark
+    ? "border-white/25 text-white/80 hover:border-white/60 hover:text-white focus-visible:ring-white/70"
+    : "border-border text-foreground/70 hover:border-foreground/50 hover:text-foreground focus-visible:ring-foreground/40";
+
   return (
-    <main className="min-h-screen bg-black text-white flex flex-col">
-      <header className="px-6 py-4 flex items-center justify-between border-b border-white/10 shrink-0">
-        <nav aria-label="Breadcrumb">
+    <main className={`min-h-screen flex flex-col ${pageBg}`}>
+      <header
+        className={`px-6 py-4 flex items-center justify-between border-b ${borderColor} shrink-0`}
+      >
+        <nav aria-label="Page navigation">
           <Link
-            href="/"
-            className="text-sm text-white/70 hover:text-white underline underline-offset-2"
+            href="/mandelbrot"
+            className={`inline-flex items-center gap-1 text-sm ${mutedText} hover:text-foreground underline underline-offset-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-foreground/40 rounded`}
+            aria-label="Back to Mandelbrot detail page"
           >
-            &larr; home
+            <ArrowLeft className="size-4" aria-hidden="true" />
+            Back
           </Link>
         </nav>
-        <h1 className="text-sm font-medium tracking-wide text-white/80">Mandelbrot</h1>
+        <h1 className={`text-sm font-medium tracking-wide ${headingText}`}>Mandelbrot</h1>
         <div className="flex items-center gap-2">
           <span
-            className="mr-1 text-xs tabular-nums text-white/70"
+            className={`mr-1 text-xs tabular-nums ${mutedText}`}
             aria-live="polite"
             aria-label={`Zoom level ${zoom.toFixed(2)}x`}
           >
@@ -196,7 +239,7 @@ export default function MandelbrotPage() {
           <button
             type="button"
             onClick={zoomOut}
-            className="inline-flex size-8 items-center justify-center rounded border border-white/25 text-white/80 hover:border-white/60 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70 transition-colors"
+            className={`inline-flex size-8 items-center justify-center rounded border ${btnBorder} focus-visible:outline-none focus-visible:ring-2 transition-colors`}
             aria-label="Zoom out"
           >
             <Minus className="size-4" aria-hidden="true" />
@@ -204,7 +247,7 @@ export default function MandelbrotPage() {
           <button
             type="button"
             onClick={zoomIn}
-            className="inline-flex size-8 items-center justify-center rounded border border-white/25 text-white/80 hover:border-white/60 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70 transition-colors"
+            className={`inline-flex size-8 items-center justify-center rounded border ${btnBorder} focus-visible:outline-none focus-visible:ring-2 transition-colors`}
             aria-label="Zoom in"
           >
             <Plus className="size-4" aria-hidden="true" />
@@ -212,7 +255,7 @@ export default function MandelbrotPage() {
           <button
             type="button"
             onClick={handleReset}
-            className="text-sm px-3 py-1 rounded border border-white/25 hover:border-white/60 text-white/80 hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
+            className={`text-sm px-3 py-1 rounded border ${btnBorder} transition-colors focus-visible:outline-none focus-visible:ring-2`}
             aria-label="Reset to default view"
           >
             Reset
@@ -233,13 +276,13 @@ export default function MandelbrotPage() {
         />
       </section>
 
-      <footer className="px-6 py-4 text-xs text-white/70 border-t border-white/10 shrink-0">
+      <footer className={`px-6 py-4 text-xs ${mutedText} border-t ${borderColor} shrink-0`}>
         Escape-time algorithm. Original mathematics by{" "}
         <a
           href="https://en.wikipedia.org/wiki/Mandelbrot_set"
           target="_blank"
           rel="noopener noreferrer"
-          className="underline underline-offset-2 hover:text-white/60"
+          className="underline underline-offset-2 hover:opacity-70"
         >
           Benoit Mandelbrot
         </a>

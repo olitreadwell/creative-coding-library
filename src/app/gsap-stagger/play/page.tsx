@@ -2,6 +2,8 @@
 
 import { useLayoutEffect, useRef, useCallback } from "react";
 import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
+import { useTheme } from "next-themes";
 import { gsap } from "gsap";
 import { hsl, hslString } from "@/lib/creative/color";
 import { map } from "@/lib/creative/math";
@@ -18,9 +20,22 @@ function cellHue(row: number, col: number): number {
   return map(d, 0, maxDist, 200, 310);
 }
 
+// Tile lightness and saturation vary by theme so tiles stay distinct against
+// the page background in both light and dark modes.
+function tileColor(hue: number, resolvedTheme: string): string {
+  const isDark = resolvedTheme !== "light";
+  // Dark background: brighter, more vivid tiles (high lightness, high sat).
+  // Light background: deeper, more saturated tiles so they don't wash out.
+  const saturation = isDark ? 0.72 : 0.8;
+  const lightness = isDark ? 0.58 : 0.42;
+  return hslString(hsl(hue, saturation, lightness));
+}
+
 export default function StaggerGridPage() {
   const scopeRef = useRef<HTMLDivElement>(null);
   const timelineRef = useRef<gsap.core.Timeline | null>(null);
+  const { resolvedTheme } = useTheme();
+  const theme = resolvedTheme ?? "dark";
 
   const buildTimeline = useCallback((ctx: gsap.Context) => {
     ctx.add(() => {
@@ -67,12 +82,14 @@ export default function StaggerGridPage() {
   return (
     <main className="min-h-screen bg-background text-foreground flex flex-col">
       <header className="px-4 sm:px-6 py-3 sm:py-4 flex flex-wrap items-center gap-y-2 justify-between border-b border-border shrink-0">
-        <nav aria-label="Breadcrumb">
+        <nav aria-label="Back navigation">
           <Link
             href="/gsap-stagger"
-            className="text-sm text-foreground/70 hover:text-foreground underline underline-offset-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded"
+            className="inline-flex items-center gap-1 text-sm text-foreground/70 hover:text-foreground underline underline-offset-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded"
+            aria-label="Back to GSAP Stagger detail"
           >
-            &larr; about
+            <ArrowLeft size={14} aria-hidden="true" />
+            Back
           </Link>
         </nav>
         <h1 className="text-sm font-medium tracking-wide">Stagger Grid</h1>
@@ -103,7 +120,7 @@ export default function StaggerGridPage() {
         >
           {CELLS.map(({ index, row, col }) => {
             const h = cellHue(row, col);
-            const color = hslString(hsl(h, 0.7, 0.55));
+            const color = tileColor(h, theme);
             return (
               <div
                 key={index}

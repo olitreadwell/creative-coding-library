@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
 import { useTheme } from "next-themes";
 import { hsl, hslString } from "@/lib/creative/color";
 import { makeRng } from "@/lib/creative/random";
@@ -21,12 +22,16 @@ function randomSeedString(): string {
   return Math.random().toString(36).slice(2, 10);
 }
 
-function buildPalette(seed: string): [string, string] {
+function buildPalette(seed: string, isLight: boolean): [string, string] {
   const rng = makeRng(seed + "-palette");
   const baseHue = rng() * 360;
   const complementHue = (baseHue + 150 + rng() * 60) % 360;
-  const colorA = hslString(hsl(baseHue, 0.75, 0.62));
-  const colorB = hslString(hsl(complementHue, 0.7, 0.58));
+  // Dark theme: bright arcs at higher lightness pop on the dark canvas.
+  // Light theme: deeper, more saturated arcs at lower lightness for clear
+  // contrast against the near-white canvas (targets >= 3:1 on #f5f5f0).
+  const [satA, litA, satB, litB] = isLight ? [0.85, 0.35, 0.8, 0.32] : [0.75, 0.62, 0.7, 0.58];
+  const colorA = hslString(hsl(baseHue, satA, litA));
+  const colorB = hslString(hsl(complementHue, satB, litB));
   return [colorA, colorB];
 }
 
@@ -37,6 +42,7 @@ function drawTiling(
   tileSize: number,
   seed: string,
   canvasBg: string,
+  isLight: boolean,
 ): void {
   ctx.fillStyle = canvasBg;
   ctx.fillRect(0, 0, width, height);
@@ -44,7 +50,7 @@ function drawTiling(
   const { cols, rows } = gridDimensions(width, height, tileSize);
   const rng = makeRng(seed);
   const grid = tileGrid(rng, cols, rows);
-  const [colorA, colorB] = buildPalette(seed);
+  const [colorA, colorB] = buildPalette(seed, isLight);
   const lineWidth = Math.max(2, tileSize * LINE_WIDTH_RATIO);
 
   for (let r = 0; r < rows; r++) {
@@ -66,8 +72,16 @@ export default function SeededTilingsPage() {
 
   const canvasBg = resolvedTheme === "light" ? LIGHT_CANVAS_BG : DARK_CANVAS_BG;
 
+  const isLight = resolvedTheme === "light";
+
   const redraw = useCallback(
-    (canvas: HTMLCanvasElement, currentSeed: string, currentTileSize: number, bg: string) => {
+    (
+      canvas: HTMLCanvasElement,
+      currentSeed: string,
+      currentTileSize: number,
+      bg: string,
+      light: boolean,
+    ) => {
       const dpr = window.devicePixelRatio || 1;
       const w = canvas.clientWidth;
       const h = canvas.clientHeight;
@@ -79,7 +93,7 @@ export default function SeededTilingsPage() {
       if (!ctx) return;
 
       ctx.scale(dpr, dpr);
-      drawTiling(ctx, w, h, currentTileSize, currentSeed, bg);
+      drawTiling(ctx, w, h, currentTileSize, currentSeed, bg, light);
     },
     [],
   );
@@ -88,17 +102,17 @@ export default function SeededTilingsPage() {
     const cv = canvasRef.current;
     if (!cv) return;
 
-    redraw(cv, seed, tileSize, canvasBg);
+    redraw(cv, seed, tileSize, canvasBg, isLight);
 
     const ro = new ResizeObserver(() => {
       const canvas = canvasRef.current;
       if (!canvas) return;
-      redraw(canvas, seed, tileSize, canvasBg);
+      redraw(canvas, seed, tileSize, canvasBg, isLight);
     });
 
     ro.observe(cv);
     return () => ro.disconnect();
-  }, [seed, tileSize, canvasBg, redraw]);
+  }, [seed, tileSize, canvasBg, isLight, redraw]);
 
   function handleReroll() {
     setSeed(randomSeedString());
@@ -113,12 +127,14 @@ export default function SeededTilingsPage() {
   return (
     <main className="min-h-screen bg-background text-foreground flex flex-col">
       <header className="px-4 sm:px-6 py-3 sm:py-4 flex flex-wrap items-center gap-y-2 justify-between border-b border-border shrink-0">
-        <nav aria-label="Breadcrumb">
+        <nav aria-label="Page navigation">
           <Link
-            href="/"
-            className="text-sm text-foreground/70 hover:text-foreground underline underline-offset-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            href="/seeded-tilings"
+            aria-label="Back to Seeded Tilings"
+            className="inline-flex items-center gap-1 text-sm text-foreground/70 hover:text-foreground underline underline-offset-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
-            &larr; home
+            <ArrowLeft size={14} aria-hidden="true" />
+            Back
           </Link>
         </nav>
         <h1 className="text-sm font-medium tracking-wide text-foreground/80 order-first sm:order-none w-full sm:w-auto text-center">

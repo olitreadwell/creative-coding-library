@@ -2,6 +2,8 @@
 
 import { useRef } from "react";
 import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
+import { useTheme } from "next-themes";
 import { Canvas, useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { map } from "@/lib/creative/math";
@@ -25,7 +27,11 @@ const GROUP_SPIN_SPEED = 0.06;
 const tempObject = new THREE.Object3D();
 const tempColor = new THREE.Color();
 
-function SphereField(): React.ReactElement {
+interface SphereFieldProps {
+  isLight: boolean;
+}
+
+function SphereField({ isLight }: SphereFieldProps): React.ReactElement {
   const meshRef = useRef<THREE.InstancedMesh>(null);
   const groupRef = useRef<THREE.Group>(null);
 
@@ -51,7 +57,9 @@ function SphereField(): React.ReactElement {
       mesh.setMatrixAt(i, tempObject.matrix);
 
       const hue = map(y, -WAVE_AMPLITUDE, WAVE_AMPLITUDE, HUE_RANGE[0], HUE_RANGE[1]);
-      tempColor.setHSL(hue / 360, 0.85, 0.58);
+      // Dark theme: lightness 0.58 (bright/glowing); light theme: lightness 0.38 (deeper, readable against pale bg)
+      const lightness = isLight ? 0.38 : 0.58;
+      tempColor.setHSL(hue / 360, 0.85, lightness);
       mesh.setColorAt(i, tempColor);
     }
 
@@ -70,18 +78,32 @@ function SphereField(): React.ReactElement {
 }
 
 export default function R3FSpheresPage(): React.ReactElement {
+  const { resolvedTheme } = useTheme();
+  const isLight = (resolvedTheme ?? "dark") === "light";
+
+  const bgColor = isLight ? "#eef0f4" : "#07080d";
+  const borderColor = isLight ? "border-black/10" : "border-white/10";
+  const textMuted = isLight ? "text-black/60" : "text-white/70";
+  const textHeading = isLight ? "text-black/80" : "text-white/80";
+  const linkHover = isLight
+    ? "hover:text-black focus-visible:ring-black/50"
+    : "hover:text-white focus-visible:ring-white/70";
+
   return (
-    <main className="min-h-screen bg-[#07080d] text-foreground flex flex-col">
-      <header className="px-4 py-3 flex flex-wrap items-center gap-3 border-b border-white/10 sm:px-6">
-        <nav aria-label="Breadcrumb">
+    <main className="min-h-screen text-foreground flex flex-col" style={{ background: bgColor }}>
+      <header
+        className={`px-4 py-3 flex flex-wrap items-center gap-3 border-b ${borderColor} sm:px-6`}
+      >
+        <nav aria-label="Back to detail page">
           <Link
-            href="/"
-            className="text-sm text-white/70 hover:text-white underline underline-offset-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70 rounded"
+            href="/r3f-spheres"
+            className={`inline-flex items-center gap-1 text-sm ${textMuted} ${linkHover} underline underline-offset-2 focus-visible:outline-none focus-visible:ring-2 rounded`}
           >
-            &larr; home
+            <ArrowLeft size={14} aria-hidden="true" />
+            Back
           </Link>
         </nav>
-        <h1 className="text-sm font-medium tracking-wide text-white/80">Sphere Field</h1>
+        <h1 className={`text-sm font-medium tracking-wide ${textHeading}`}>Sphere Field</h1>
       </header>
 
       <section
@@ -90,23 +112,32 @@ export default function R3FSpheresPage(): React.ReactElement {
       >
         <Canvas
           camera={{ position: [14, 10, 18], fov: 45 }}
-          style={{ position: "absolute", inset: 0, background: "#07080d" }}
+          style={{ position: "absolute", inset: 0, background: bgColor }}
         >
-          <ambientLight intensity={0.7} />
-          <directionalLight position={[6, 12, 8]} intensity={2.4} color="#ffffff" />
-          <directionalLight position={[-8, 4, -6]} intensity={0.9} color="#9aa6ff" />
-          <pointLight position={[0, 8, 10]} intensity={60} color="#ff9f7a" decay={2} />
-          <SphereField />
+          <ambientLight intensity={isLight ? 1.2 : 0.7} />
+          <directionalLight position={[6, 12, 8]} intensity={isLight ? 3.0 : 2.4} color="#ffffff" />
+          <directionalLight
+            position={[-8, 4, -6]}
+            intensity={isLight ? 1.2 : 0.9}
+            color={isLight ? "#7a8aff" : "#9aa6ff"}
+          />
+          <pointLight
+            position={[0, 8, 10]}
+            intensity={isLight ? 80 : 60}
+            color={isLight ? "#ff7a50" : "#ff9f7a"}
+            decay={2}
+          />
+          <SphereField isLight={isLight} />
         </Canvas>
       </section>
 
-      <footer className="px-4 py-4 text-xs text-white/70 border-t border-white/10 sm:px-6">
+      <footer className={`px-4 py-4 text-xs ${textMuted} border-t ${borderColor} sm:px-6`}>
         Built with{" "}
         <a
           href="https://threejs.org/"
           target="_blank"
           rel="noopener noreferrer"
-          className="underline underline-offset-2 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70 rounded"
+          className={`underline underline-offset-2 ${linkHover} focus-visible:outline-none focus-visible:ring-2 rounded`}
         >
           three.js
         </a>{" "}
@@ -115,7 +146,7 @@ export default function R3FSpheresPage(): React.ReactElement {
           href="https://r3f.docs.pmnd.rs/"
           target="_blank"
           rel="noopener noreferrer"
-          className="underline underline-offset-2 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70 rounded"
+          className={`underline underline-offset-2 ${linkHover} focus-visible:outline-none focus-visible:ring-2 rounded`}
         >
           React Three Fiber
         </a>{" "}

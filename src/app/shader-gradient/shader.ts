@@ -13,6 +13,8 @@ export const fragment = /* glsl */ `
   uniform vec2  uResolution;
   uniform float uSpeed;
   uniform float uSeed;
+  // 1.0 = light theme, 0.0 = dark theme.
+  uniform float uTheme;
 
   // Classic cosine palette by Inigo Quilez:
   // color = a + b * cos(TAU * (c * t + d))
@@ -44,13 +46,28 @@ export const fragment = /* glsl */ `
     // Palette coefficients — three presets baked as offset seeds.
     // uSeed selects which hue region to bias toward.
     float seedFrac = fract(uSeed * 0.1);
-    vec3 col = palette(
+
+    // Dark palette: rich, saturated, low base lightness.
+    vec3 darkCol = palette(
       t,
       vec3(0.5, 0.5, 0.5),
       vec3(0.5, 0.5, 0.5),
       vec3(1.0, 1.0, 0.5),
       vec3(0.80 + seedFrac, 0.53 + seedFrac * 0.4, 0.22)
     );
+
+    // Light palette: high base lightness, pastel-tinted, airy feel.
+    // Offset phase by 0.15 so hues shift pleasantly rather than washing out.
+    vec3 lightCol = palette(
+      t,
+      vec3(0.82, 0.80, 0.78),
+      vec3(0.18, 0.16, 0.20),
+      vec3(1.0, 1.0, 0.5),
+      vec3(0.80 + seedFrac, 0.53 + seedFrac * 0.4, 0.37)
+    );
+
+    // Mix between dark and light palettes based on the theme uniform.
+    vec3 col = mix(darkCol, lightCol, uTheme);
 
     // Subtle vignette keeps edges from blowing out.
     float vignette = 1.0 - dot(uv * 0.35, uv * 0.35);

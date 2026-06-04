@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
 import { useTheme } from "next-themes";
 import { hsl, hslString } from "@/lib/creative/color";
 import { map } from "@/lib/creative/math";
@@ -149,12 +150,14 @@ export default function ConwayLifePlayPage() {
   return (
     <main className="min-h-screen bg-background text-foreground flex flex-col">
       <header className="px-4 sm:px-6 py-3 sm:py-4 flex flex-wrap items-center gap-2 justify-between border-b border-border shrink-0">
-        <nav aria-label="Breadcrumb">
+        <nav aria-label="Back navigation">
           <Link
             href="/conway-life"
-            className="text-sm text-foreground/70 hover:text-foreground underline underline-offset-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded"
+            aria-label="Back to Game of Life detail page"
+            className="inline-flex items-center gap-1 text-sm text-foreground/70 hover:text-foreground underline underline-offset-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded"
           >
-            &larr; Game of Life
+            <ArrowLeft aria-hidden="true" className="w-4 h-4" />
+            Back
           </Link>
         </nav>
         <h1 className="text-sm font-medium tracking-wide text-foreground/80">
@@ -223,9 +226,12 @@ function drawGrid(
   const offsetY = (h - rows * CELL_PX) / 2;
   const r = CELL_PX * CORNER_RADIUS_RATIO;
 
-  // On light backgrounds, reduce lightness so cells contrast with the bg.
-  const lightnessBase = theme === "light" ? 0.35 : 0.55;
+  // On light backgrounds, use darker + more saturated cells so they read
+  // clearly against #e8eaf0. Target AA contrast: hsl(200-320, 85%, 28-38%)
+  // gives relative luminance well below 0.18, contrast > 4.5:1 on that bg.
+  const lightnessBase = theme === "light" ? 0.28 : 0.55;
   const lightnessRange = theme === "light" ? 0.1 : 0.15;
+  const saturation = theme === "light" ? 0.85 : 0.75;
 
   for (let row = 0; row < rows; row++) {
     for (let col = 0; col < cols; col++) {
@@ -235,7 +241,7 @@ function drawGrid(
       // Tint hue slightly by column position for a gradient across the grid.
       const hue = map(col, 0, cols - 1, BASE_HUE, BASE_HUE + HUE_SPREAD);
       const lightness = lightnessBase + map(row, 0, rows - 1, 0, lightnessRange);
-      ctx.fillStyle = hslString(hsl(hue, 0.75, lightness));
+      ctx.fillStyle = hslString(hsl(hue, saturation, lightness));
 
       const x = offsetX + col * CELL_PX + 1;
       const y = offsetY + row * CELL_PX + 1;

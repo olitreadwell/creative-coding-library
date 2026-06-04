@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from "react";
 import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
 import { hsl, hslToRgb, rgbToHex, hslString } from "@/lib/creative/color";
 import type { Hsl } from "@/lib/creative/color";
 import { generatePalette } from "../palette";
@@ -115,12 +116,14 @@ export default function HslPalettePage() {
   return (
     <main className="min-h-screen bg-background text-foreground flex flex-col">
       <header className="px-6 py-4 flex items-center justify-between border-b border-border shrink-0">
-        <nav aria-label="Breadcrumb">
+        <nav aria-label="Site navigation">
           <Link
             href="/hsl-palette"
-            className="text-sm text-foreground/70 hover:text-foreground underline underline-offset-2"
+            aria-label="Back to HSL Palette detail page"
+            className="inline-flex items-center gap-1 text-sm text-foreground/70 hover:text-foreground underline underline-offset-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded"
           >
-            &larr; about
+            <ArrowLeft className="size-4" aria-hidden="true" />
+            Back
           </Link>
         </nav>
         <h1 className="text-sm font-medium tracking-wide">HSL Palette</h1>

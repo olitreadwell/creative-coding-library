@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
 import { useTheme } from "next-themes";
 import { hsl, hslString } from "@/lib/creative/color";
 import { clamp, map } from "@/lib/creative/math";
@@ -16,12 +17,20 @@ const RULES: Record<string, string> = {
 const TURN_DEG = 25;
 const JITTER_DEG = 4;
 const MAX_DEPTH = 12;
-const TRUNK_HUE = 30;
-const TRUNK_SAT = 0.55;
-const TRUNK_LIT = 0.28;
-const TIP_HUE = 115;
-const TIP_SAT = 0.6;
-const TIP_LIT = 0.42;
+// Dark theme: rich trunk brown -> vivid green tip on near-black canvas
+const TRUNK_HUE_DARK = 30;
+const TRUNK_SAT_DARK = 0.55;
+const TRUNK_LIT_DARK = 0.28;
+const TIP_HUE_DARK = 115;
+const TIP_SAT_DARK = 0.6;
+const TIP_LIT_DARK = 0.42;
+// Light theme: deep bark brown -> deep forest green, both AA against #f8f6f0
+const TRUNK_HUE_LIGHT = 28;
+const TRUNK_SAT_LIGHT = 0.6;
+const TRUNK_LIT_LIGHT = 0.22;
+const TIP_HUE_LIGHT = 118;
+const TIP_SAT_LIGHT = 0.65;
+const TIP_LIT_LIGHT = 0.28;
 const BG_DARK = "#0d1117";
 const BG_LIGHT = "#f8f6f0";
 
@@ -38,11 +47,17 @@ function stepLenForIterations(iterations: number, height: number): number {
   return base / Math.pow(2, iterations - 1);
 }
 
-function segmentColor(seg: Segment, maxDepth: number): string {
+function segmentColor(seg: Segment, maxDepth: number, isLight: boolean): string {
   const t = maxDepth > 0 ? clamp(seg.depth / maxDepth, 0, 1) : 0;
-  const h = map(t, 0, 1, TRUNK_HUE, TIP_HUE);
-  const s = map(t, 0, 1, TRUNK_SAT, TIP_SAT);
-  const l = map(t, 0, 1, TRUNK_LIT, TIP_LIT);
+  const trunkH = isLight ? TRUNK_HUE_LIGHT : TRUNK_HUE_DARK;
+  const trunkS = isLight ? TRUNK_SAT_LIGHT : TRUNK_SAT_DARK;
+  const trunkL = isLight ? TRUNK_LIT_LIGHT : TRUNK_LIT_DARK;
+  const tipH = isLight ? TIP_HUE_LIGHT : TIP_HUE_DARK;
+  const tipS = isLight ? TIP_SAT_LIGHT : TIP_SAT_DARK;
+  const tipL = isLight ? TIP_LIT_LIGHT : TIP_LIT_DARK;
+  const h = map(t, 0, 1, trunkH, tipH);
+  const s = map(t, 0, 1, trunkS, tipS);
+  const l = map(t, 0, 1, trunkL, tipL);
   return hslString(hsl(h, s, l));
 }
 
@@ -57,6 +72,7 @@ function drawTree(
   seed: number,
   iterations: number,
   bgColor: string,
+  isLight: boolean,
 ): void {
   ctx.clearRect(0, 0, size.width, size.height);
   ctx.fillStyle = bgColor;
@@ -88,7 +104,7 @@ function drawTree(
 
   for (const seg of segments) {
     ctx.beginPath();
-    ctx.strokeStyle = segmentColor(seg, cappedMax);
+    ctx.strokeStyle = segmentColor(seg, cappedMax, isLight);
     ctx.lineWidth = segmentWidth(seg, cappedMax);
     ctx.moveTo(seg.x1, seg.y1);
     ctx.lineTo(seg.x2, seg.y2);
@@ -104,9 +120,9 @@ export default function LSystemTreePage(): React.ReactElement {
   const { resolvedTheme } = useTheme();
 
   // Determine background color from the resolved theme.
-  // Guard undefined (SSR / theme not yet resolved) with a safe default.
-  const bgColor =
-    resolvedTheme === undefined ? BG_DARK : resolvedTheme === "light" ? BG_LIGHT : BG_DARK;
+  // Guard undefined (SSR / theme not yet resolved) with a safe default ("dark").
+  const isLight = resolvedTheme === "light";
+  const bgColor = isLight ? BG_LIGHT : BG_DARK;
 
   // ResizeObserver: update size state when the canvas element resizes
   useEffect(() => {
@@ -137,9 +153,9 @@ export default function LSystemTreePage(): React.ReactElement {
     const dpr = window.devicePixelRatio || 1;
     ctx.save();
     ctx.scale(dpr, dpr);
-    drawTree(ctx, size, seed, iterations, bgColor);
+    drawTree(ctx, size, seed, iterations, bgColor, isLight);
     ctx.restore();
-  }, [seed, iterations, size, bgColor]);
+  }, [seed, iterations, size, bgColor, isLight]);
 
   const handleReroll = useCallback(() => {
     setSeed(randomSeed());
@@ -152,12 +168,14 @@ export default function LSystemTreePage(): React.ReactElement {
   return (
     <main className="min-h-screen bg-background text-foreground flex flex-col">
       <header className="px-4 py-3 sm:px-6 sm:py-4 flex items-center gap-3 border-b border-border flex-wrap">
-        <nav aria-label="Breadcrumb">
+        <nav aria-label="Back navigation">
           <Link
             href="/lsystem-tree"
-            className="text-sm text-foreground/70 hover:text-foreground underline underline-offset-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded"
+            aria-label="Back to L-System Tree"
+            className="inline-flex items-center gap-1 text-sm text-foreground/70 hover:text-foreground underline underline-offset-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded"
           >
-            &larr; L-System Tree
+            <ArrowLeft size={14} aria-hidden="true" />
+            Back
           </Link>
         </nav>
 

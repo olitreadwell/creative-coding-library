@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
 import { useTheme } from "next-themes";
 import type MatterType from "matter-js";
 import { hsl, hslString } from "@/lib/creative/color";
@@ -16,10 +17,14 @@ const WALL_THICKNESS = 60;
 const GRAVITY_Y = 1.5;
 const DROP_INTERVAL_MS = 35;
 
-/** Dark stage background used regardless of chrome theme. */
+/** Dark stage background for dark-mode chrome. */
 const STAGE_DARK = "#0d0d14";
-/** Slightly lighter stage for light-mode chrome so the border reads. */
-const STAGE_LIGHT = "#1a1a2e";
+/** Light stage background for light-mode chrome. */
+const STAGE_LIGHT = "#eef0f2";
+
+/** Wall fill color per theme. */
+const WALL_DARK = "#1a1a2e";
+const WALL_LIGHT = "#d4d8dd";
 
 type SceneRefs = {
   engine: MatterType.Engine;
@@ -33,12 +38,19 @@ function randomSeed(): string {
   return Math.random().toString(36).slice(2, 10);
 }
 
-function specFillStyle(spec: BodySpec): string {
-  return hslString(hsl(spec.hue, 0.75, 0.6));
+function specFillStyle(spec: BodySpec, isLight: boolean): string {
+  // Use lower lightness on light theme so bodies contrast against the pale stage.
+  const lightness = isLight ? 0.38 : 0.6;
+  return hslString(hsl(spec.hue, 0.75, lightness));
 }
 
-function buildWalls(M: MatterNS, width: number, height: number): MatterType.Body[] {
-  const opts = { isStatic: true, render: { fillStyle: "#1a1a2e" } };
+function buildWalls(
+  M: MatterNS,
+  width: number,
+  height: number,
+  wallColor: string,
+): MatterType.Body[] {
+  const opts = { isStatic: true, render: { fillStyle: wallColor } };
   return [
     M.Bodies.rectangle(
       width / 2,
@@ -52,9 +64,11 @@ function buildWalls(M: MatterNS, width: number, height: number): MatterType.Body
   ];
 }
 
-function buildBody(M: MatterNS, spec: BodySpec, yStart: number): MatterType.Body {
-  const fillStyle = specFillStyle(spec);
-  const strokeStyle = hslString(hsl(spec.hue, 0.4, 0.88));
+function buildBody(M: MatterNS, spec: BodySpec, yStart: number, isLight: boolean): MatterType.Body {
+  const fillStyle = specFillStyle(spec, isLight);
+  const strokeStyle = isLight
+    ? hslString(hsl(spec.hue, 0.5, 0.22))
+    : hslString(hsl(spec.hue, 0.4, 0.88));
   const commonOpts = {
     restitution: 0.3,
     friction: 0.45,
@@ -72,6 +86,7 @@ function dropBurst(
   M: MatterNS,
   scene: SceneRefs,
   specs: BodySpec[],
+  isLight: boolean,
 ): ReturnType<typeof setInterval> {
   let i = 0;
   const timer = setInterval(() => {
@@ -82,7 +97,7 @@ function dropBurst(
     }
     const spec = specs[i];
     if (spec) {
-      M.Composite.add(scene.engine.world, buildBody(M, spec, -spec.size * 2));
+      M.Composite.add(scene.engine.world, buildBody(M, spec, -spec.size * 2, isLight));
     }
     i++;
   }, DROP_INTERVAL_MS);
@@ -97,7 +112,9 @@ export default function PhysicsDropsPage() {
   const { resolvedTheme } = useTheme();
 
   /** Returns the correct stage background for the active theme. */
-  const stageBackground = resolvedTheme === "light" ? STAGE_LIGHT : STAGE_DARK;
+  const isLight = resolvedTheme === "light";
+  const stageBackground = isLight ? STAGE_LIGHT : STAGE_DARK;
+  const wallColor = isLight ? WALL_LIGHT : WALL_DARK;
 
   const teardown = useCallback((): void => {
     const s = sceneRef.current;
@@ -132,7 +149,14 @@ export default function PhysicsDropsPage() {
   }, []);
 
   const initScene = useCallback(
-    (M: MatterNS, container: HTMLDivElement, seed: string, background: string): void => {
+    (
+      M: MatterNS,
+      container: HTMLDivElement,
+      seed: string,
+      background: string,
+      light: boolean,
+      wColor: string,
+    ): void => {
       teardown();
 
       const width = container.clientWidth || 800;
@@ -155,7 +179,7 @@ export default function PhysicsDropsPage() {
 
       const runner = M.Runner.create();
 
-      M.Composite.add(engine.world, buildWalls(M, width, height));
+      M.Composite.add(engine.world, buildWalls(M, width, height, wColor));
 
       const rng = makeRng(seed);
       const specs = makeSpecs(rng, BODY_COUNT, width);
@@ -169,7 +193,7 @@ export default function PhysicsDropsPage() {
       };
       sceneRef.current = scene;
 
-      scene.dropTimer = dropBurst(M, scene, specs);
+      scene.dropTimer = dropBurst(M, scene, specs, light);
 
       M.Render.run(render);
       M.Runner.run(runner, engine);
@@ -197,7 +221,7 @@ export default function PhysicsDropsPage() {
       // to a module whose `default` export is the Matter namespace.
       const M: MatterNS = mod.default as MatterNS;
       matterRef.current = M;
-      initScene(M, container, seedRef.current, stageBackground);
+      initScene(M, container, seedRef.current, stageBackground, isLight, wallColor);
     });
 
     const ro = new ResizeObserver(() => {
@@ -223,9 +247,9 @@ export default function PhysicsDropsPage() {
       ro.disconnect();
       teardown();
     };
-    // initScene and stageBackground intentionally omitted: we only want this
-    // effect to run once on mount. Theme changes are handled by the separate
-    // effect above.
+    // initScene, stageBackground, isLight, and wallColor intentionally omitted:
+    // we only want this effect to run once on mount. Theme changes are handled
+    // by the separate effect above.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [teardown]);
 
@@ -240,7 +264,7 @@ export default function PhysicsDropsPage() {
     const specs = makeSpecs(rng, 10, width);
 
     if (s.dropTimer !== null) clearInterval(s.dropTimer);
-    s.dropTimer = dropBurst(M, s, specs);
+    s.dropTimer = dropBurst(M, s, specs, isLight);
   }
 
   function handleReset(): void {
@@ -248,18 +272,20 @@ export default function PhysicsDropsPage() {
     const container = containerRef.current;
     if (!M || !container) return;
     seedRef.current = randomSeed();
-    initScene(M, container, seedRef.current, stageBackground);
+    initScene(M, container, seedRef.current, stageBackground, isLight, wallColor);
   }
 
   return (
     <main className="min-h-screen bg-background text-foreground flex flex-col">
       <header className="px-4 py-3 flex flex-wrap items-center gap-x-4 gap-y-2 justify-between border-b border-border sm:px-6 sm:py-4">
-        <nav aria-label="Breadcrumb">
+        <nav aria-label="Back navigation">
           <Link
-            href="/"
-            className="text-sm text-foreground/70 hover:text-foreground underline underline-offset-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded"
+            href="/physics-drops"
+            aria-label="Back to Physics Drops"
+            className="inline-flex items-center gap-1 text-sm text-foreground/70 hover:text-foreground underline underline-offset-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded"
           >
-            &larr; home
+            <ArrowLeft aria-hidden="true" className="size-4" />
+            Back
           </Link>
         </nav>
         <h1 className="text-sm font-medium tracking-wide text-foreground/80">Physics Drops</h1>

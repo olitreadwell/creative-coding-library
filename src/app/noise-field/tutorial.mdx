@@ -1,0 +1,57 @@
+## How it works, step by step
+
+This sketch has four moving parts: a noise function, a flow field, a particle system, and a draw loop. Here is each one, in order.
+
+### Step 1: build a noise function
+
+Perlin noise takes a 2D position `(x, y)` and returns a number, always between the same range, always smooth. Two nearby positions always return similar numbers. That smoothness is what creates flowing, organic patterns.
+
+We create one noise function at startup using a **seed** — a number that fixes the shape of the noise. The same seed always produces the same pattern. Hitting "New seed" picks a different number, which produces a completely different pattern.
+
+### Step 2: turn noise into a flow angle
+
+For each particle, we sample the noise at the particle's current position and convert that noise value to an angle in radians. Radians are just a way to measure direction: 0 means "right", π/2 means "up", π means "left", and so on.
+
+```ts
+// Sample Perlin noise at position (x, y), scaled down so the field changes
+// gradually across the canvas. Multiply by TAU * 2 so angles span more than
+// one full rotation, creating tighter spirals and more variety.
+function flowAngle(perlin: PerlinNoise2D, x: number, y: number, scale: number): number {
+  return perlin(x * scale, y * scale) * TAU * 2;
+}
+
+// Move a particle one step in the direction given by `angle`.
+// `wrap` keeps the particle on canvas — it teleports to the other side
+// when it reaches an edge.
+function stepParticle(p, angle, speed, width, height): Particle {
+  const nx = wrap(p.x + Math.cos(angle) * speed, 0, width);
+  const ny = wrap(p.y + Math.sin(angle) * speed, 0, height);
+  return { x: nx, y: ny };
+}
+```
+
+`FIELD_SCALE` controls how zoomed-in the noise is. A smaller value means the field changes slowly, so particles take long, sweeping paths. A larger value makes the field noisy and particles spiral in tight loops.
+
+### Step 3: spawn particles
+
+We create 2,000 particles at random positions. Each particle is just an `{ x, y }` pair. No velocity, no mass — the field provides all the direction.
+
+### Step 4: the draw loop
+
+Every frame, three things happen:
+
+1. **Fade the canvas.** We paint the whole canvas with a nearly-transparent dark rectangle. This does not erase old lines; it just dims them a little. Over many frames, old lines fade out slowly, creating the trail effect.
+2. **Move and draw particles.** For each particle, we get the flow angle at its position, step it forward, and draw a short line from the old position to the new one.
+3. **Additive blending.** We switch the canvas blend mode to `"lighter"` before drawing. This makes overlapping strokes add their colors together. A few lines look dim; many lines in the same spot glow bright.
+
+The loop runs at up to 60 frames per second. The sketch pauses when the browser tab is hidden and respects the system "reduce motion" setting.
+
+## Try this
+
+- Hit **New seed** to generate a completely different field. The same code, a different pattern.
+- Imagine what happens with more particles: brighter glow, more coverage. With fewer: sparse, thread-like streams.
+- Try changing `FIELD_SCALE` in the source: smaller values create slower, more open spirals; larger values create tight, turbulent swirls.
+
+## What to remember
+
+Perlin noise gives each location a smooth, predictable angle. Particles follow those angles step by step. Additive blending makes the paths glow where they overlap. Those three ideas, combined, turn 2,000 moving dots into a luminous flowing field.

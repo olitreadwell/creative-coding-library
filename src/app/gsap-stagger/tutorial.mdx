@@ -1,0 +1,58 @@
+## How it works, step by step
+
+This app animates a grid of plain `div` elements using GSAP. No canvas. No WebGL. Just HTML, CSS, and a timeline.
+
+### Step 1: build the grid
+
+We define `COLS = 12` and `ROWS = 8`. A helper called `gridCells` returns an array of cell objects. Each object holds the cell's row number, column number, and a flat index.
+
+We loop over that array in JSX and render one `div` per cell. Each div gets the CSS class `stagger-tile`. GSAP will use that class name as a selector later.
+
+### Step 2: color by distance
+
+Each tile gets a hue based on how far it sits from the center of the grid. Center tiles are blue-purple (hue around 200). Outer tiles shift toward pink (hue around 310). This is done with a helper called `cellHue`. The gradient is subtle, but it makes the ripple visible.
+
+### Step 3: create the GSAP timeline
+
+A **timeline** is a container for animations. Think of it like a playlist: you add animations to it in order, and it plays them in sequence. Here we use it differently: we add one animation and let stagger handle the sequencing.
+
+```ts
+const tl = gsap.timeline({ repeat: -1, yoyo: true });
+tl.to(".stagger-tile", {
+  scale: 0.45,
+  rotation: 180,
+  duration: 1.2,
+  ease: "sine.inOut",
+  stagger: {
+    each: 0.045, // seconds between each tile starting
+    from: "center",
+    grid: [ROWS, COLS],
+  },
+});
+```
+
+`repeat: -1` means it loops forever. `yoyo: true` means it plays forward then backward, so the tiles always return to their starting state.
+
+### Step 4: stagger does the heavy lifting
+
+The `stagger` object tells GSAP:
+
+- `from: "center"`: start from the middle of the grid, not the top-left corner.
+- `grid: [ROWS, COLS]`: treat the targets as a 2D grid, not a flat list.
+- `each: 0.045`: wait 45 milliseconds between each tile starting.
+
+With 96 tiles total, the last tile starts roughly 4 seconds after the first. That long sweep is what creates the ripple feeling.
+
+### Step 5: scope the animation
+
+We wrap everything in `gsap.context()`. The context is scoped to the `ref` of the outer `div`. This means GSAP only selects `.stagger-tile` elements inside that div, not anywhere else on the page. When the component unmounts, `ctx.revert()` cleans up all animations automatically.
+
+## Try this
+
+- Change `each: 0.045` to `each: 0.01` for a fast burst, or `each: 0.1` for a slow wave.
+- Change `from: "center"` to `from: "start"` to see the wave begin in the top-left corner instead.
+- Change `ease: "sine.inOut"` to `ease: "bounce.out"` for a bouncier motion.
+
+## What to remember
+
+Stagger is just a delay applied to each item in a group. The animation itself is simple: scale and rotate. The ripple effect comes entirely from spreading those start times across a 2D grid. Change the delay, change the pattern.

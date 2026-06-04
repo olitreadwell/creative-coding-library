@@ -1,0 +1,101 @@
+## How it works, step by step
+
+This sketch has two parts: the **field math** (pure functions, no React) and the **R3F component** (React + three.js). Here is how each part works.
+
+## Step 1: generate grid positions
+
+Before anything renders, we compute where every sphere sits in 3D space.
+
+```ts
+export function spherePositions(cols, rows, spacing) {
+  const halfW = ((cols - 1) * spacing) / 2;
+  const halfD = ((rows - 1) * spacing) / 2;
+  const positions = [];
+
+  for (let row = 0; row < rows; row++) {
+    for (let col = 0; col < cols; col++) {
+      positions.push({
+        x: col * spacing - halfW, // left-right
+        z: row * spacing - halfD, // front-back (3D uses Z, not Y, for depth)
+        col,
+        row,
+      });
+    }
+  }
+  return positions;
+}
+```
+
+`halfW` and `halfD` shift the grid so the center of the field lands at the origin (0, 0, 0). The camera aims at the origin, so this keeps the field centered in view.
+
+Note that we do not set `y` here. `y` is up/down, and that changes every frame. Only the fixed `x` and `z` positions belong in this pre-computed list.
+
+## Step 2: compute the wave height
+
+`bob` returns the up/down position for one sphere at one point in time.
+
+```ts
+export function bob(col, row, t) {
+  const phase = (col + row) * WAVE_SPATIAL_FREQ;
+  return Math.sin(phase - t * WAVE_TEMPORAL_FREQ) * WAVE_AMPLITUDE;
+}
+```
+
+- `phase` offsets spheres diagonally across the grid. Spheres at different positions on the diagonal peak at different times, which creates a travelling wave instead of every sphere moving together.
+- Subtracting `t * WAVE_TEMPORAL_FREQ` makes the wave travel forward in time.
+- Multiplying by `WAVE_AMPLITUDE` sets the maximum height.
+
+## Step 3: update all spheres in the render loop
+
+The `SphereField` component uses `useFrame` to run code every frame. Inside it, we iterate over every sphere position and push three things into the instanced mesh: position + scale, rotation, and color.
+
+```tsx
+useFrame((state) => {
+  const t = state.clock.getElapsedTime(); // seconds since start
+
+  for (let i = 0; i < SPHERE_COUNT; i++) {
+    const pos = POSITIONS[i];
+    const y = bob(pos.col, pos.row, t);
+
+    tempObject.position.set(pos.x, y, pos.z);
+    tempObject.scale.setScalar(map(y, -AMPLITUDE, AMPLITUDE, 0.82, 1.15));
+    tempObject.rotation.y = t * ROTATION_SPEED + pos.col * 0.3;
+    tempObject.updateMatrix(); // bake into a 4x4 matrix
+
+    mesh.setMatrixAt(i, tempObject.matrix); // write to GPU buffer
+
+    const hue = map(y, -AMPLITUDE, AMPLITUDE, HUE_RANGE[0], HUE_RANGE[1]);
+    tempColor.setHSL(hue / 360, 0.85, 0.58);
+    mesh.setColorAt(i, tempColor); // write color to GPU buffer
+  }
+
+  mesh.instanceMatrix.needsUpdate = true; // tell the GPU to re-read the buffers
+  if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
+});
+```
+
+`tempObject` and `tempColor` are created once outside the component and reused. Allocating new objects every frame would stress the garbage collector and cause hitches.
+
+## Step 4: lights make the spheres visible
+
+Without light, a `meshStandardMaterial` is completely black. Three light sources give the spheres their look:
+
+- **Ambient light** (intensity 0.7): a soft base fill so no part of any sphere is fully dark.
+- **Two directional lights**: one white from above-right, one blue-tinted from below-left. This creates the bright highlight and subtle color on the shadow side.
+- **One point light** (warm orange, above center): adds a warm glow that shifts across each sphere as it bobs.
+
+The material has slight roughness (0.35) and low metalness (0.15), so it diffuses light softly without being a mirror.
+
+## Try this
+
+- Change `GRID_COLS` or `GRID_ROWS` in `field.ts` to a larger number (e.g. 20). Watch what happens to the wave shape.
+- Change `HUE_RANGE` from `[180, 320]` to `[0, 60]` for a red/yellow palette.
+- Change `WAVE_AMPLITUDE` from `0.6` to `2.0` and notice how scale also changes because `map` is tied to amplitude.
+- Try setting `GROUP_SPIN_SPEED` to `0` in `play/page.tsx` to stop the slow rotation.
+
+## What to remember
+
+- three.js organizes a 3D scene as a tree of objects, lights, and a camera. React Three Fiber lets you write that tree with JSX.
+- `useFrame` is the animation loop. Everything time-based lives there.
+- Instancing (`instancedMesh`) draws many copies of one mesh in a single GPU call. You update each copy by writing a matrix (transform) and a color into the instance buffers, then flagging them as dirty.
+- Lights are not decoration. `meshStandardMaterial` needs at least one light source to show any surface detail.

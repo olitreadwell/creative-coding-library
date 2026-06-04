@@ -1,0 +1,28 @@
+## What this is
+
+Physics Drops is a live simulation. Colorful shapes fall from the top of the screen, bounce off each other, and pile up at the bottom. You can drop more shapes at any time or reset the whole thing with a fresh random seed.
+
+The shapes are circles and polygons. Each one has a random color, size, and number of sides. The physics engine handles the rest.
+
+## The big idea in plain words
+
+A **physics engine** is a piece of software that pretends to be gravity. You describe objects, their size, and their position. The engine figures out what happens when they fall, collide, or stack on top of each other. You do not write collision math yourself. You just set up the scene.
+
+This app uses [matter.js](https://brm.io/matter-js/), a 2D physics library. The key concepts are:
+
+- **Engine.** The engine holds all the rules: how strong gravity is, how bouncy objects are, and so on.
+- **World.** The world is the container. You add bodies to the world and the engine simulates them.
+- **Bodies.** A body is one object in the simulation. It has a shape (circle or polygon), a position, and physical properties like friction and bounciness.
+- **Runner.** The runner advances time. Every frame it tells the engine to calculate what happened in the last millisecond.
+
+The colorful shapes you see are bodies. The invisible walls at the bottom and sides are also bodies, but they are marked **static**: they never move, no matter how hard other bodies hit them.
+
+## Why it matters
+
+This demo gives you a concrete feel for three ideas that appear in games, simulations, and creative tools:
+
+- **Rigid-body simulation.** Real objects do not pass through each other. The engine enforces this by solving "constraints" every frame. Rigid-body simulation is the same technique used in game engines like Unity and Godot.
+- **Separation of data and rendering.** The engine works in pure numbers. The renderer reads those numbers and draws to a canvas. Keeping them separate means you can swap out the renderer without changing the physics.
+- **Seeded randomness.** Every reset generates a new seed. The same seed always produces the same set of shapes. That makes the simulation reproducible and shareable.
+
+You do not need any math background to experiment here. Hit **Reset** a few times and watch how different seeds produce different pile-ups.

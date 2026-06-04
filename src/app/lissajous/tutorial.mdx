@@ -1,0 +1,54 @@
+## How it works, step by step
+
+This sketch uses plain Canvas 2D. No library. Here is the full idea split into small pieces.
+
+### Step 1: sample points along the curve
+
+A parametric curve needs a shared variable. Call it `t`. For each value of `t`, we compute one `(x, y)` point using two sine formulas.
+
+```ts
+function lissajousPoint(t: number, params: LissajousParams): Point {
+  const { a, b, A, B, phase, decay = 0 } = params;
+  // Envelope fades the curve toward the center as t grows.
+  const envelope = decay > 0 ? Math.exp(-decay * t) : 1;
+  return {
+    x: A * Math.sin(a * t + phase) * envelope,
+    y: B * Math.sin(b * t) * envelope,
+  };
+}
+```
+
+- `a` and `b` are the frequencies. Try 3 and 2: `sin(3t)` completes three cycles while `sin(2t)` completes two.
+- `A` and `B` are the amplitudes (how far each sine wave swings). Here both equal the canvas radius.
+- `phase` shifts the x wave forward or backward in time. Changing it frame by frame makes the shape morph.
+- `envelope` is a gentle decay. Without it the curve would draw the same shape forever. With it, the outer loops fade and the curve looks hand-drawn.
+
+We call this function 2000 times, stepping `t` from 0 to `10 * 2π`. That gives 2000 points spread along the full curve.
+
+### Step 2: draw the points as a glowing line
+
+We do not draw one big path. Instead we draw each segment separately so we can color each one differently. The color shifts along the curve from blue-cyan toward violet. Each segment is drawn with `globalCompositeOperation = "lighter"`, which adds colors together rather than covering them. Overlapping segments bloom into bright white, making the crossings glow.
+
+### Step 3: advance the phase each frame
+
+Each animation frame, we add a small amount to the phase:
+
+```
+phase += PHASE_SPEED * dt
+```
+
+`dt` is the time since the last frame in seconds. Multiplying by `dt` keeps the speed the same on fast and slow screens. As the phase grows, the x wave shifts. The curve rotates and stretches. Some ratios trace a simple ellipse. Others draw stars or figure-eights.
+
+### Step 4: let the user change the ratio
+
+Four buttons in the header each hold a different frequency ratio (3:2, 5:4, 3:4, 5:6). Pressing one replaces `a` and `b` in the params. The animation continues from the current phase, so the shape morphs smoothly rather than jumping.
+
+## Try this
+
+- Watch one shape until it feels familiar, then switch ratios and notice which parts of the path changed.
+- Open the live sketch on an oscilloscope simulator online and compare. The shapes match.
+- Try ratios that are very close, like 5:4. The curve takes longer to close, so it fills the space more densely.
+
+## What to remember
+
+Two sine waves, each controlling one axis, trace a Lissajous curve. The frequency ratio sets the shape. The phase controls the rotation. Advancing the phase each frame is all it takes to make the drawing come alive.

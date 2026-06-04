@@ -1,0 +1,25 @@
+## What this is
+
+Seeded Tilings fills a canvas with Truchet tiles. Each tile is a square with two quarter-circle arcs. The arcs from neighboring tiles join together to form flowing, organic curves across the whole grid. No two runs look quite the same, but you can reproduce any pattern by using its seed value.
+
+## The big idea in plain words
+
+Each tile can sit in one of two positions. Think of it like a square that you can place in position A or position B, nothing else. That one small choice, made randomly for every tile in the grid, is what creates the patterns.
+
+Here is how the randomness works:
+
+- **Seed**: a short text string, like `"truchet"`.
+- **Pseudo-random number generator (PRNG)**: an algorithm that turns a seed into a stream of numbers. The numbers look random, but they come from a formula, so the same seed always gives the same sequence.
+- Because the same seed always produces the same stream of numbers, the same seed always produces the same grid of tiles.
+
+You can share a seed with someone else. They will see the exact same pattern you see. That is reproducibility: controlled randomness.
+
+## Why it matters
+
+This demo is a small window into several ideas that appear often in creative coding, games, and data tools:
+
+- **Seeded randomness**: games use seeds so two players can generate the same world. Simulations use seeds so an experiment can be repeated.
+- **Modular tiling**: complex-looking pictures can come from a tiny set of reusable pieces. Truchet tiles use only two pieces.
+- **Visual emergence**: simple local rules (flip a tile or not) create global patterns that look designed even though no one designed them.
+
+You do not need to know any math to explore this. Hit Re-roll to get a new seed, or type your own. The Tutorial tab shows how the code works, step by step.

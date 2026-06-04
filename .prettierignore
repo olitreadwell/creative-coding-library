@@ -1,0 +1,6 @@
+.next
+node_modules
+dist
+pnpm-lock.yaml
+src/lib/creative/registry.generated.ts
+next-env.d.ts

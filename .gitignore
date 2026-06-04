@@ -1,0 +1,36 @@
+# deps
+node_modules
+.pnpm-store
+
+# next
+.next
+out
+next-env.d.ts
+
+# build
+dist
+build
+
+# env
+.env
+.env.local
+.env.*.local
+
+# logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# editor
+.vscode
+.idea
+.DS_Store
+
+# tests
+coverage
+.vitest
+
+# generated
+src/lib/creative/registry.generated.ts
+tsconfig.tsbuildinfo

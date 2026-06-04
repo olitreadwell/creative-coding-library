@@ -57,6 +57,9 @@ Runtime + dev dependencies vetted against the [`CONVENTIONS.md`](./docs/creative
 - jsdom @ ^25 — MIT — DOM in Node
 - fast-check @ ^3 — MIT — property-based testing
 - husky @ ^9 — MIT — git hooks
+- gsap @ ^3 — Standard "No Charge" GreenSock License (paid-gig-safe) — animation/easing/timeline
+- two.js @ ^0.8 — MIT — SVG/Canvas vector renderer
+- ogl @ ^1 — MIT — minimal WebGL helper
 
 ## Adaptations
 

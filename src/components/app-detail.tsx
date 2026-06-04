@@ -65,7 +65,7 @@ export function AppDetail({ meta, synopsis, tutorial }: AppDetailProps) {
               <Maximize2 className="size-3.5" aria-hidden="true" />
               Open the full app
             </a>
-            <dl className="mt-4 flex flex-wrap gap-1.5">
+            <div className="mt-4 flex flex-wrap gap-1.5">
               <Badge variant="secondary">{meta.library}</Badge>
               <Badge variant="outline">Level {meta.level}</Badge>
               {meta.concepts.map((c) => (
@@ -73,7 +73,7 @@ export function AppDetail({ meta, synopsis, tutorial }: AppDetailProps) {
                   {c}
                 </Badge>
               ))}
-            </dl>
+            </div>
           </aside>
 
           {/* Synopsis + Tutorial tabs. */}

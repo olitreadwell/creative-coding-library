@@ -89,7 +89,6 @@ export default function R3FSpheresPage(): React.ReactElement {
         aria-label="Interactive 3D animation: a grid of spheres rippling in a travelling sine wave, lit with warm and cool directional lights"
       >
         <Canvas
-          aria-label="3D sphere field scene"
           camera={{ position: [14, 10, 18], fov: 45 }}
           style={{ position: "absolute", inset: 0, background: "#07080d" }}
         >

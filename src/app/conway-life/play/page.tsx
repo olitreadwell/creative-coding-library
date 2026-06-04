@@ -189,7 +189,7 @@ export default function ConwayLifePlayPage() {
         />
       </section>
 
-      <footer className="px-4 sm:px-6 py-3 sm:py-4 text-xs text-foreground/40 border-t border-border shrink-0">
+      <footer className="px-4 sm:px-6 py-3 sm:py-4 text-xs text-foreground/70 border-t border-border shrink-0">
         Technique: toroidal Conway step + Canvas 2D. Original concept by{" "}
         <a
           href="https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life"

@@ -4,7 +4,7 @@ import { useState, useCallback } from "react";
 import Link from "next/link";
 import { hsl, hslToRgb, rgbToHex, hslString } from "@/lib/creative/color";
 import type { Hsl } from "@/lib/creative/color";
-import { generatePalette, readableText } from "../palette";
+import { generatePalette } from "../palette";
 import type { Scheme } from "../palette";
 
 const SCHEMES: Scheme[] = ["complementary", "analogous", "triadic", "tetradic", "monochromatic"];
@@ -65,7 +65,6 @@ function Swatch({ color }: SwatchProps) {
   const [copied, setCopied] = useState(false);
 
   const hex = rgbToHex(hslToRgb(color));
-  const textColor = readableText(color);
   const hslLabel = `hsl(${Math.round(color.h)} ${Math.round(color.s * 100)}% ${Math.round(color.l * 100)}%)`;
 
   const handleClick = useCallback(async () => {
@@ -85,19 +84,21 @@ function Swatch({ color }: SwatchProps) {
       className="relative flex flex-col items-center justify-center gap-2 rounded-xl p-6 transition-transform hover:scale-105 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
       style={{
         backgroundColor: hslString(color),
-        color: textColor,
         minHeight: "160px",
       }}
       aria-label={`Copy ${hex} to clipboard`}
     >
-      {copied ? (
-        <span className="text-sm font-semibold tracking-wide">Copied</span>
-      ) : (
-        <>
-          <span className="text-lg font-bold tracking-widest">{hex}</span>
-          <span className="text-xs opacity-80">{hslLabel}</span>
-        </>
-      )}
+      {/* Labels sit on a dark pill so they stay AA-readable on any swatch color. */}
+      <span className="flex flex-col items-center gap-1 rounded-lg bg-black/65 px-3 py-2 text-center">
+        {copied ? (
+          <span className="text-sm font-semibold tracking-wide text-white">Copied</span>
+        ) : (
+          <>
+            <span className="text-lg font-bold tracking-widest text-white">{hex}</span>
+            <span className="text-xs text-white/85">{hslLabel}</span>
+          </>
+        )}
+      </span>
     </button>
   );
 }

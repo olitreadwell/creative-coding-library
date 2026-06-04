@@ -91,7 +91,7 @@ export function AppDetail({ meta, synopsis, tutorial }: AppDetailProps) {
             </Tabs>
           </div>
 
-          <div className="order-1 h-[55vh] min-h-0 border-b border-border lg:order-2 lg:h-auto lg:flex-1 lg:border-b-0 lg:border-l">
+          <div className="order-1 h-[67svh] min-h-0 border-b border-border lg:order-2 lg:h-auto lg:flex-1 lg:border-b-0 lg:border-l">
             <iframe
               src={`${playHref}?embed=controls`}
               title={`Live preview of ${meta.title}`}

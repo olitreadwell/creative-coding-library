@@ -39,5 +39,9 @@ tsconfig.tsbuildinfo
 # claude transient
 .claude/scheduled_tasks.lock
 
-# playwright mcp artifacts
+# playwright
 .playwright-mcp/
+test-results/
+playwright-report/
+blob-report/
+.playwright/

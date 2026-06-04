@@ -2,7 +2,7 @@
 
 import { useState, type ReactNode } from "react";
 import Link from "next/link";
-import { ArrowLeft, ExternalLink, Info, Maximize2 } from "lucide-react";
+import { ArrowLeft, ExternalLink, Maximize2 } from "lucide-react";
 import type { AppMeta } from "@/lib/creative/registry";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
@@ -24,29 +24,33 @@ export function AppDetail({ meta, synopsis, tutorial }: AppDetailProps) {
   return (
     <div className="flex h-dvh flex-col">
       <header className="flex shrink-0 items-center gap-2 border-b border-border bg-background px-4 py-3 sm:gap-3 sm:px-6">
-        <Link
-          href="/"
-          className="inline-flex items-center gap-1.5 rounded-md px-1.5 py-1 text-sm text-foreground/70 transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-        >
-          <ArrowLeft className="size-4" aria-hidden="true" />
-          <span className="hidden sm:inline">Catalog</span>
-        </Link>
+        {fullScreen ? (
+          <button
+            type="button"
+            onClick={() => setFullScreen(false)}
+            className="inline-flex items-center gap-1.5 rounded-md px-1.5 py-1 text-sm text-foreground/70 transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            <ArrowLeft className="size-4" aria-hidden="true" />
+            <span className="hidden sm:inline">Back</span>
+          </button>
+        ) : (
+          <Link
+            href="/"
+            className="inline-flex items-center gap-1.5 rounded-md px-1.5 py-1 text-sm text-foreground/70 transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            <ArrowLeft className="size-4" aria-hidden="true" />
+            <span className="hidden sm:inline">Catalog</span>
+          </Link>
+        )}
         <h1 className="min-w-0 flex-1 truncate px-2 text-center text-sm font-medium tracking-wide sm:text-base">
           {meta.title}
         </h1>
-        <button
-          type="button"
-          onClick={() => setFullScreen((v) => !v)}
-          className={headerBtn}
-          aria-pressed={fullScreen}
-        >
-          {fullScreen ? (
-            <Info className="size-4" aria-hidden="true" />
-          ) : (
+        {!fullScreen && (
+          <button type="button" onClick={() => setFullScreen(true)} className={headerBtn}>
             <Maximize2 className="size-4" aria-hidden="true" />
-          )}
-          <span className="hidden sm:inline">{fullScreen ? "Info" : "Full screen"}</span>
-        </button>
+            <span className="hidden sm:inline">Full screen</span>
+          </button>
+        )}
         <a href={playHref} target="_blank" rel="noopener noreferrer" className={headerBtn}>
           <ExternalLink className="size-4" aria-hidden="true" />
           <span className="hidden sm:inline">New tab</span>

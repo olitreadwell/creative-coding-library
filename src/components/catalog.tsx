@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { Search, SlidersHorizontal } from "lucide-react";
 import type { AppMeta } from "@/lib/creative/registry";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -148,58 +149,74 @@ function AppCard({ app }: { app: AppMeta }) {
 export function Catalog({ apps }: { apps: readonly AppMeta[] }) {
   const [filters, setFilters] = useState<Filters>({ library: null, level: null, concept: null });
   const [sort, setSort] = useState<Sort>("oldest");
+  const [query, setQuery] = useState("");
+  const [showFilters, setShowFilters] = useState(false);
 
   const libraries = useMemo(() => [...new Set(apps.map((a) => a.library))].sort(), [apps]);
   const levels = useMemo(() => [...new Set(apps.map((a) => String(a.level)))].sort(), [apps]);
   const concepts = useMemo(() => [...new Set(apps.flatMap((a) => a.concepts))].sort(), [apps]);
 
-  const filtered = useMemo(
-    () =>
-      apps
-        .filter((a) => {
-          if (filters.library && a.library !== filters.library) return false;
-          if (filters.level && String(a.level) !== filters.level) return false;
-          if (filters.concept && !a.concepts.includes(filters.concept)) return false;
-          return true;
-        })
-        .slice()
-        .sort((a, b) => compareApps(a, b, sort)),
-    [apps, filters, sort],
-  );
+  const activeCount =
+    (filters.library ? 1 : 0) + (filters.level ? 1 : 0) + (filters.concept ? 1 : 0);
+
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    return apps
+      .filter((a) => {
+        if (filters.library && a.library !== filters.library) return false;
+        if (filters.level && String(a.level) !== filters.level) return false;
+        if (filters.concept && !a.concepts.includes(filters.concept)) return false;
+        if (q) {
+          const hay =
+            `${a.title} ${a.description} ${a.library} ${a.concepts.join(" ")}`.toLowerCase();
+          if (!hay.includes(q)) return false;
+        }
+        return true;
+      })
+      .slice()
+      .sort((a, b) => compareApps(a, b, sort));
+  }, [apps, filters, sort, query]);
 
   return (
     <section aria-label="App catalog">
-      <div className="mb-6 space-y-2.5">
-        <FilterRow
-          label="library"
-          options={libraries}
-          active={filters.library}
-          onPick={(v) => setFilters((f) => ({ ...f, library: v }))}
-        />
-        <FilterRow
-          label="level"
-          options={levels}
-          active={filters.level}
-          onPick={(v) => setFilters((f) => ({ ...f, level: v }))}
-        />
-        <FilterRow
-          label="concept"
-          options={concepts}
-          active={filters.concept}
-          onPick={(v) => setFilters((f) => ({ ...f, concept: v }))}
-        />
+      <div className="mb-6">
         <div className="flex flex-wrap items-center gap-2">
-          <label
-            htmlFor="catalog-sort"
-            className="mr-1 text-xs font-medium tracking-wide text-foreground/70 uppercase"
+          <div className="relative min-w-[12rem] flex-1">
+            <Search
+              className="pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-foreground/50"
+              aria-hidden="true"
+            />
+            <input
+              type="search"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search apps..."
+              aria-label="Search apps"
+              className="w-full rounded-md border border-border bg-background py-1.5 pr-3 pl-8 text-sm text-foreground placeholder:text-foreground/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            />
+          </div>
+          <button
+            type="button"
+            onClick={() => setShowFilters((v) => !v)}
+            aria-expanded={showFilters}
+            className="inline-flex items-center gap-1.5 rounded-md border border-border px-2.5 py-1.5 text-sm text-foreground/80 transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
-            sort
+            <SlidersHorizontal className="size-4" aria-hidden="true" />
+            Filters
+            {activeCount > 0 && (
+              <span className="ml-0.5 rounded-full bg-foreground px-1.5 text-xs text-background">
+                {activeCount}
+              </span>
+            )}
+          </button>
+          <label htmlFor="catalog-sort" className="sr-only">
+            Sort
           </label>
           <select
             id="catalog-sort"
             value={sort}
             onChange={(e) => setSort(e.target.value as Sort)}
-            className="rounded-md border border-border bg-background px-2 py-1 text-xs text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="rounded-md border border-border bg-background px-2 py-1.5 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             {(Object.keys(SORT_LABELS) as Sort[]).map((key) => (
               <option key={key} value={key}>
@@ -208,6 +225,29 @@ export function Catalog({ apps }: { apps: readonly AppMeta[] }) {
             ))}
           </select>
         </div>
+
+        {showFilters && (
+          <div className="mt-3 space-y-2.5 rounded-lg border border-border p-3">
+            <FilterRow
+              label="library"
+              options={libraries}
+              active={filters.library}
+              onPick={(v) => setFilters((f) => ({ ...f, library: v }))}
+            />
+            <FilterRow
+              label="level"
+              options={levels}
+              active={filters.level}
+              onPick={(v) => setFilters((f) => ({ ...f, level: v }))}
+            />
+            <FilterRow
+              label="concept"
+              options={concepts}
+              active={filters.concept}
+              onPick={(v) => setFilters((f) => ({ ...f, concept: v }))}
+            />
+          </div>
+        )}
       </div>
 
       <p className="mb-4 text-sm text-foreground/70" aria-live="polite">

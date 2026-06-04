@@ -9,9 +9,8 @@ type Mode = "standalone" | "preview" | "controls";
 
 // Detects how this /play page is being shown:
 // - standalone: opened directly (full chrome).
-// - preview: embedded in the detail "Info" view (visual only, no chrome).
-// - controls: embedded in the detail "Full screen" view (visual + a bottom
-//   bar holding the configurable options).
+// - preview: embedded with no bottom bar (visual only).
+// - controls: embedded with the bottom bar (attribution + configurable options).
 // useSyncExternalStore reads these client-only values without a hydration
 // mismatch (server snapshot = "standalone").
 function useMode(): Mode {
@@ -29,8 +28,9 @@ function useMode(): Mode {
 type PlayShellProps = {
   slug: string;
   title: string;
+  /** Attribution shown at the bottom-left of the bottom bar. */
   attribution: ReactNode;
-  /** Configurable options (buttons, sliders). Shown in the bottom bar. */
+  /** Configurable options (buttons, sliders) shown at the bottom-right. */
   controls?: ReactNode;
   /** Accessible description of the visual for screen readers. */
   visualLabel: string;
@@ -53,14 +53,17 @@ export function PlayShell({
     </div>
   );
 
-  const controlsBar =
-    controls != null ? (
-      <div className="flex shrink-0 flex-wrap items-center gap-2 border-t border-border bg-background px-4 py-2 sm:px-6">
-        {controls}
-      </div>
-    ) : null;
+  // Single bottom bar: attribution on the left, configurable options on the right.
+  const bottomBar = (
+    <div className="flex shrink-0 flex-wrap items-center gap-x-4 gap-y-2 border-t border-border bg-background px-4 py-2 sm:px-6">
+      <div className="min-w-0 flex-1 text-xs text-foreground/70">{attribution}</div>
+      {controls != null ? (
+        <div className="flex shrink-0 flex-wrap items-center gap-2">{controls}</div>
+      ) : null}
+    </div>
+  );
 
-  // Embedded in the Info view: just the visual, no chrome.
+  // Embedded with no bottom bar: just the visual.
   if (mode === "preview") {
     return (
       <main className="relative h-dvh w-full bg-background" aria-label={visualLabel}>
@@ -69,17 +72,17 @@ export function PlayShell({
     );
   }
 
-  // Embedded in the Full screen view: visual + bottom controls bar only.
+  // Embedded with the bottom bar (attribution + controls).
   if (mode === "controls") {
     return (
-      <main className="flex h-dvh w-full flex-col bg-background">
+      <main className="flex h-dvh w-full flex-col bg-background text-foreground">
         {visual}
-        {controlsBar}
+        {bottomBar}
       </main>
     );
   }
 
-  // Standalone: full chrome.
+  // Standalone: header (Back to detail, title, theme) + visual + bottom bar.
   return (
     <main className="flex h-dvh flex-col bg-background text-foreground">
       <header className="flex shrink-0 items-center gap-2 border-b border-border px-4 py-3 sm:gap-3 sm:px-6">
@@ -96,10 +99,7 @@ export function PlayShell({
         <ThemeToggle />
       </header>
       {visual}
-      {controlsBar}
-      <footer className="shrink-0 border-t border-border px-4 py-3 text-xs text-foreground/70 sm:px-6">
-        {attribution}
-      </footer>
+      {bottomBar}
     </main>
   );
 }

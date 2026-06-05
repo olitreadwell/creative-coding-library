@@ -23,6 +23,7 @@ const ANIMATED = new Set([
   "shader-gradient",
   "two-grid",
   "wireframe",
+  "strange-attractor",
 ]);
 
 // Console noise that is not an app defect.

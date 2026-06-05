@@ -1,0 +1,38 @@
+## What this is
+
+A strange attractor is the shape that appears when you follow one simple rule
+over and over. Start at a point, apply the rule to get the next point, plot it,
+and repeat millions of times. The dots never settle on one spot and never fully
+repeat, yet together they trace a sharp, detailed figure.
+
+Click the canvas to focus it, then press the arrow keys to morph the shape in
+real time. The sliders change the same four numbers that define the rule.
+
+## The big idea in plain words
+
+This sketch uses the de Jong map. Given a point (x, y) it computes the next
+point with two lines of sine and cosine:
+
+```
+nextX = sin(a * y) - cos(b * x)
+nextY = sin(c * x) - cos(d * y)
+```
+
+Four numbers (a, b, c, d) fully decide the figure. Nudge one a little and the
+whole shape reorganizes. This is the heart of chaos: a tiny change in the rule,
+or in where you start, leads somewhere completely different, yet the result is
+not random noise. It has structure.
+
+We draw each point very faintly. Where the path visits often, faint dots stack
+up into bright regions, so the image is really a map of how much time the system
+spends in each place.
+
+## Why it matters
+
+Attractors are a friendly door into chaos theory, the maths behind weather,
+fluid flow, and population swings. For creative coding they are a gift: a few
+lines of arithmetic produce endless, detailed, organic art. They also show a
+useful pattern, density rendering, where overlapping faint marks build tone
+without any shading code.
+
+The How it works tab walks through the code, including the keyboard handling.

@@ -201,7 +201,9 @@ export default function NoiseFieldPlayPage() {
 
       ctx.globalCompositeOperation = "source-over";
     }, []),
-    { pauseWhenHidden: true, respectReducedMotion: true },
+    // Reduced motion: flow fields need accumulation, so compose a settled still
+    // from a few hundred synchronous frames instead of one near-empty frame.
+    { pauseWhenHidden: true, respectReducedMotion: true, reducedMotionFrames: 280 },
   );
 
   function handleNewSeed() {

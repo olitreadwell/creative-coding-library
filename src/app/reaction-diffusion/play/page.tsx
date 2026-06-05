@@ -190,7 +190,9 @@ export default function ReactionDiffusionPlayPage() {
       ctx.drawImage(oc, 0, 0, cssW, cssH);
       ctx.restore();
     },
-    { pauseWhenHidden: true, respectReducedMotion: true },
+    // Reduced motion: the pattern only emerges after many steps, so compose a
+    // settled still synchronously rather than showing the blank seed frame.
+    { pauseWhenHidden: true, respectReducedMotion: true, reducedMotionFrames: 400 },
   );
 
   const handleReset = useCallback(() => {

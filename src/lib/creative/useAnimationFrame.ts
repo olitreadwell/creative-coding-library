@@ -13,13 +13,19 @@ export type AnimationFrameOptions = {
   pauseWhenHidden?: boolean;
   // Honor prefers-reduced-motion and never start (default: true).
   respectReducedMotion?: boolean;
+  // Under reduced motion, how many frames to run synchronously to compose the
+  // static still (default: 1). Accumulation sketches (flow fields, reaction
+  // diffusion) need many frames before a single frame looks meaningful, so they
+  // pass a higher count. The browser only paints once, after the loop finishes,
+  // so this stays motion-free.
+  reducedMotionFrames?: number;
 };
 
 export function useAnimationFrame(
   callback: (info: FrameInfo) => void,
   options: AnimationFrameOptions = {},
 ): void {
-  const { pauseWhenHidden = true, respectReducedMotion = true } = options;
+  const { pauseWhenHidden = true, respectReducedMotion = true, reducedMotionFrames = 1 } = options;
   const cbRef = useRef(callback);
   useLayoutEffect(() => {
     cbRef.current = callback;
@@ -28,8 +34,13 @@ export function useAnimationFrame(
   useEffect(() => {
     if (typeof window === "undefined") return;
     if (respectReducedMotion && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) {
-      // Honor reduced motion: paint a single static frame, never animate.
-      cbRef.current({ t: 0, dt: 0, frame: 0 });
+      // Honor reduced motion: compose a static still by advancing a fixed number
+      // of frames synchronously, then stop. No animation is ever shown.
+      const steps = Math.max(1, Math.floor(reducedMotionFrames));
+      const dt = 1 / 60;
+      for (let i = 0; i < steps; i++) {
+        cbRef.current({ t: i * dt, dt, frame: i });
+      }
       return;
     }
 

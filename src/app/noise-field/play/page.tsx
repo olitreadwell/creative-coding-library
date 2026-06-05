@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTheme } from "next-themes";
 import { PlayShell } from "@/components/play-shell";
+import { KnobsPanel } from "@/components/learning/KnobsPanel";
 import { cbColor } from "@/lib/creative";
 import { map } from "@/lib/creative/math";
 import { makePerlinNoise2D, type PerlinNoise2D } from "@/lib/creative/noise";
@@ -26,20 +27,14 @@ const MIN_SPEED = 0.3;
 const MAX_SPEED = 4;
 const STEP_SPEED = 0.1;
 
-// Dark theme: additive glow on a near-black background.
 const DARK_BG = "#050a12";
 const DARK_TRAIL_ALPHA = 0.018;
 const DARK_STROKE_ALPHA = 0.55;
 
-// Light theme: ink-on-paper. Source-over blend, deep strokes on
-// a near-white canvas with a low-alpha light fade each frame.
 const LIGHT_BG = "#f5f4f0";
 const LIGHT_TRAIL_ALPHA = 0.04;
 const LIGHT_STROKE_ALPHA = 0.45;
 
-// Number of colorblind-safe palette entries (CB_ON_DARK and CB_ON_LIGHT each
-// have 6). Particles cycle through them; position within the field blends
-// between two adjacent entries so the flow still shifts across the canvas.
 const CB_PALETTE_SIZE = 6;
 
 type FieldState = {
@@ -62,12 +57,6 @@ function randomSeedString(): string {
   return Math.random().toString(36).slice(2, 10);
 }
 
-/**
- * Resolve a colorblind-safe stroke color for the i-th particle at position x.
- * x / width maps position to a blend between palette entry i and i+1, so the
- * flow field still exhibits a gradient across the canvas while remaining
- * protanopia-safe. Alpha is applied via rgba() wrapping the hex color.
- */
 function particleColor(
   i: number,
   x: number,
@@ -75,9 +64,6 @@ function particleColor(
   theme: "light" | "dark",
   alpha: number,
 ): string {
-  // Cycle the palette index by particle index, then blend toward the next
-  // entry based on horizontal position — preserves the left-to-right hue shift
-  // without using red/green hue arithmetic.
   const idxA = i % CB_PALETTE_SIZE;
   const idxB = (i + 1) % CB_PALETTE_SIZE;
   const t = map(x, 0, width, 0, 1);
@@ -85,7 +71,6 @@ function particleColor(
   const colorA = cbColor(idxA, theme);
   const colorB = cbColor(idxB, theme);
 
-  // Lerp the two hex colors in RGB space.
   const rA = parseInt(colorA.slice(1, 3), 16);
   const gA = parseInt(colorA.slice(3, 5), 16);
   const bA = parseInt(colorA.slice(5, 7), 16);
@@ -108,13 +93,9 @@ export default function NoiseFieldPlayPage() {
   const [fieldScale, setFieldScale] = useState<number>(DEFAULT_FIELD_SCALE);
   const [speed, setSpeed] = useState<number>(DEFAULT_SPEED);
   const { resolvedTheme } = useTheme();
-  // Guard undefined (SSR / hydrating). Default to "dark" so the canvas
-  // renders correctly before next-themes resolves on the client.
   const theme = (resolvedTheme ?? "dark") as "light" | "dark";
   const isLight = theme === "light";
 
-  // Keep fieldScale and speed in refs so the animation loop always sees the
-  // latest value without needing to be recreated on every slider change.
   const fieldScaleRef = useRef(fieldScale);
   const speedRef = useRef(speed);
   useEffect(() => {
@@ -166,8 +147,6 @@ export default function NoiseFieldPlayPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [seed, initField, resolvedTheme, particleCount]);
 
-  // Capture isLight in a ref so the animation loop always sees the latest
-  // value without needing to be recreated on every theme change.
   const isLightRef = useRef(isLight);
   useEffect(() => {
     isLightRef.current = isLight;
@@ -188,19 +167,14 @@ export default function NoiseFieldPlayPage() {
       const currentFieldScale = fieldScaleRef.current;
       const currentSpeed = speedRef.current;
 
-      // Fade the canvas each frame to build trailing ink lines.
       ctx.globalCompositeOperation = "source-over";
       if (light) {
-        // Light: fade toward near-white so dark strokes leave ink trails.
         ctx.fillStyle = `rgba(245, 244, 240, ${LIGHT_TRAIL_ALPHA})`;
       } else {
-        // Dark: fade toward near-black so glowing strokes build up.
         ctx.fillStyle = `rgba(5, 10, 18, ${DARK_TRAIL_ALPHA})`;
       }
       ctx.fillRect(0, 0, width, height);
 
-      // Light theme: normal blend. Dark theme: additive so overlapping
-      // strokes build up a glow without blowing out on a light canvas.
       ctx.globalCompositeOperation = light ? "source-over" : "lighter";
       ctx.lineWidth = 1;
 
@@ -214,8 +188,6 @@ export default function NoiseFieldPlayPage() {
         const strokeAlpha = light ? LIGHT_STROKE_ALPHA : DARK_STROKE_ALPHA;
         const color = particleColor(i, p.x, width, activeTheme, strokeAlpha);
 
-        // A wrapped step jumps a full canvas dimension; drawing that segment
-        // would streak a line across the screen, so skip it and just relocate.
         const wrapped =
           Math.abs(next.x - p.x) > currentSpeed * 2 || Math.abs(next.y - p.y) > currentSpeed * 2;
         if (!wrapped) {
@@ -231,40 +203,21 @@ export default function NoiseFieldPlayPage() {
 
       ctx.globalCompositeOperation = "source-over";
     }, []),
-    // Reduced motion: flow fields need accumulation, so compose a settled still
-    // from a few hundred synchronous frames instead of one near-empty frame.
     { pauseWhenHidden: true, reducedMotionFrames: 280 },
   );
 
-  function handleNewSeed() {
-    setSeed(randomSeedString());
-  }
-
-  function handleParticleCount(e: React.ChangeEvent<HTMLInputElement>) {
-    setParticleCount(Number(e.target.value));
-  }
-
-  function handleFieldScale(e: React.ChangeEvent<HTMLInputElement>) {
-    setFieldScale(Number(e.target.value));
-  }
-
-  function handleSpeed(e: React.ChangeEvent<HTMLInputElement>) {
-    setSpeed(Number(e.target.value));
+  function handleKnobChange(key: string, value: number | string | boolean) {
+    if (key === "particles" && typeof value === "number") {
+      setParticleCount(value);
+    } else if (key === "scale" && typeof value === "number") {
+      setFieldScale(value);
+    } else if (key === "speed" && typeof value === "number") {
+      setSpeed(value);
+    }
   }
 
   const btnClass =
     "text-sm px-3 py-1 rounded border border-border hover:border-foreground/50 text-foreground/70 hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
-
-  const sliderClass =
-    "w-24 accent-foreground/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
-
-  const labelClass = "text-xs text-foreground/70";
-
-  const valueLabelClass = "w-10 text-right text-xs text-foreground/70 tabular-nums";
-
-  const particleCountLabelId = "particle-count-label";
-  const fieldScaleLabelId = "field-scale-label";
-  const speedLabelId = "speed-label";
 
   return (
     <PlayShell
@@ -272,73 +225,14 @@ export default function NoiseFieldPlayPage() {
       title="Noise Field"
       visualLabel="Animated canvas showing thousands of particles streaming through a Perlin noise flow field"
       controls={
-        <>
-          <div className="flex items-center gap-2">
-            <span id={particleCountLabelId} className={labelClass}>
-              particles
-            </span>
-            <input
-              type="range"
-              min={MIN_PARTICLE_COUNT}
-              max={MAX_PARTICLE_COUNT}
-              step={STEP_PARTICLE_COUNT}
-              value={particleCount}
-              onChange={handleParticleCount}
-              className={sliderClass}
-              aria-labelledby={particleCountLabelId}
-              aria-valuemin={MIN_PARTICLE_COUNT}
-              aria-valuemax={MAX_PARTICLE_COUNT}
-              aria-valuenow={particleCount}
-            />
-            <span className={valueLabelClass}>{particleCount}</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span id={fieldScaleLabelId} className={labelClass}>
-              scale
-            </span>
-            <input
-              type="range"
-              min={MIN_FIELD_SCALE}
-              max={MAX_FIELD_SCALE}
-              step={STEP_FIELD_SCALE}
-              value={fieldScale}
-              onChange={handleFieldScale}
-              className={sliderClass}
-              aria-labelledby={fieldScaleLabelId}
-              aria-valuemin={MIN_FIELD_SCALE}
-              aria-valuemax={MAX_FIELD_SCALE}
-              aria-valuenow={fieldScale}
-            />
-            <span className={valueLabelClass}>{fieldScale.toFixed(4)}</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span id={speedLabelId} className={labelClass}>
-              speed
-            </span>
-            <input
-              type="range"
-              min={MIN_SPEED}
-              max={MAX_SPEED}
-              step={STEP_SPEED}
-              value={speed}
-              onChange={handleSpeed}
-              className={sliderClass}
-              aria-labelledby={speedLabelId}
-              aria-valuemin={MIN_SPEED}
-              aria-valuemax={MAX_SPEED}
-              aria-valuenow={speed}
-            />
-            <span className={valueLabelClass}>{speed.toFixed(1)}</span>
-          </div>
-          <button
-            type="button"
-            onClick={handleNewSeed}
-            className={btnClass}
-            aria-label="Regenerate the flow field with a new random seed"
-          >
-            New seed
-          </button>
-        </>
+        <button
+          type="button"
+          onClick={() => setSeed(randomSeedString())}
+          className={btnClass}
+          aria-label="Regenerate the flow field with a new random seed"
+        >
+          New seed
+        </button>
       }
       attribution={
         <>
@@ -355,13 +249,52 @@ export default function NoiseFieldPlayPage() {
         </>
       }
     >
-      <canvas
-        ref={canvasRef}
-        className="absolute inset-0 h-full w-full"
-        aria-label="Animated canvas showing thousands of particles streaming through a Perlin noise flow field. Use the sliders to adjust particle count, field scale, and speed."
-        suppressHydrationWarning
-        style={{ background: isLight ? LIGHT_BG : DARK_BG }}
-      />
+      <div className="flex h-full flex-col sm:flex-row">
+        <div className="relative min-h-0 flex-1">
+          <canvas
+            ref={canvasRef}
+            className="absolute inset-0 h-full w-full"
+            aria-label="Animated canvas showing thousands of particles streaming through a Perlin noise flow field. Use the controls panel to adjust particle count, field scale, and speed."
+            suppressHydrationWarning
+            style={{ background: isLight ? LIGHT_BG : DARK_BG }}
+          />
+        </div>
+        <div className="shrink-0 overflow-y-auto border-t border-border p-3 sm:border-t-0 sm:border-l">
+          <KnobsPanel
+            title="Field controls"
+            knobs={[
+              {
+                kind: "number",
+                key: "particles",
+                label: "Particles",
+                min: MIN_PARTICLE_COUNT,
+                max: MAX_PARTICLE_COUNT,
+                step: STEP_PARTICLE_COUNT,
+                value: particleCount,
+              },
+              {
+                kind: "number",
+                key: "scale",
+                label: "Field scale",
+                min: MIN_FIELD_SCALE,
+                max: MAX_FIELD_SCALE,
+                step: STEP_FIELD_SCALE,
+                value: fieldScale,
+              },
+              {
+                kind: "number",
+                key: "speed",
+                label: "Speed",
+                min: MIN_SPEED,
+                max: MAX_SPEED,
+                step: STEP_SPEED,
+                value: speed,
+              },
+            ]}
+            onChange={handleKnobChange}
+          />
+        </div>
+      </div>
     </PlayShell>
   );
 }

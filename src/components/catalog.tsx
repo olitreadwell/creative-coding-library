@@ -108,6 +108,7 @@ function Chip({
 
 function AppCard({ app }: { app: AppMeta }) {
   const hue = hueFromSlug(app.slug);
+  const [thumbOk, setThumbOk] = useState(true);
   return (
     <Link
       href={`/${app.slug}`}
@@ -120,13 +121,16 @@ function AppCard({ app }: { app: AppMeta }) {
             background: `linear-gradient(135deg, hsl(${hue} 60% 22%), hsl(${(hue + 60) % 360} 55% 14%))`,
           }}
         >
-          <Image
-            src={`/thumbnails/${app.slug}.png`}
-            alt={`Preview of ${app.title}`}
-            fill
-            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-            className="object-cover transition duration-300 group-hover:scale-[1.03]"
-          />
+          {thumbOk ? (
+            <Image
+              src={`/thumbnails/${app.slug}.png`}
+              alt={`Preview of ${app.title}`}
+              fill
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+              className="object-cover transition duration-300 group-hover:scale-[1.03]"
+              onError={() => setThumbOk(false)}
+            />
+          ) : null}
         </div>
         <CardHeader className="pt-4">
           <CardTitle>{app.title}</CardTitle>

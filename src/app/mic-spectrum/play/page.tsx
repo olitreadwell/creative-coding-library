@@ -94,6 +94,15 @@ export default function MicSpectrumPlayPage() {
       return;
     }
     const ctx = new AudioContext();
+    // Chrome's autoplay policy can start the context suspended; resume it within
+    // this click gesture or the analyser only ever reads silence.
+    if (ctx.state === "suspended") {
+      try {
+        await ctx.resume();
+      } catch {
+        // ignore; some browsers resume lazily on first read
+      }
+    }
     const source = ctx.createMediaStreamSource(stream);
     const analyser = ctx.createAnalyser();
     analyser.fftSize = FFT_SIZE;
@@ -142,8 +151,12 @@ export default function MicSpectrumPlayPage() {
 
       const bars = barCountRef.current;
       const g = gainRef.current;
-      const step = Math.max(1, Math.floor(data.length / bars));
+      // Map bars across the audible lower range only; the top FFT bins are almost
+      // always silent and would leave the right side of the spectrum flat.
+      const usableBins = Math.max(bars, Math.floor(data.length * 0.6));
+      const step = Math.max(1, Math.floor(usableBins / bars));
       const gap = Math.max(1, Math.round(cssW * 0.003));
+      // Bars span the full container width: total = gap*(bars+1) + barW*bars = cssW.
       const barW = (cssW - gap * (bars + 1)) / bars;
       if (barW < 1) return;
 

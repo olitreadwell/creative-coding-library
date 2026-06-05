@@ -1,33 +1,50 @@
 ## What this is
 
-A grid of 144 spheres bobs up and down in a slow wave. Each sphere shifts color as it rises and falls. The whole field rotates gently on its axis. There are no interactions. You just watch it move.
+An endless ocean of spheres seen from above at a shallow angle. A wave travels
+across them so they rise and fall like swell, and each one shifts color as it
+moves. The field runs to a hazy horizon in every direction and fades into fog,
+so you never see an edge. The sliders change the swell height, the wave speed,
+and how shiny the spheres are.
 
-It runs in real time in the browser, built on [three.js](https://threejs.org/) via [React Three Fiber](https://r3f.docs.pmnd.rs/).
+It runs in real time in the browser, built on [three.js](https://threejs.org/)
+via [React Three Fiber](https://r3f.docs.pmnd.rs/).
 
 ## The big idea in plain words
 
-three.js builds a **3D scene** the same way you build a stage set. The scene contains:
+three.js builds a **3D scene** the same way you build a stage set. The scene
+contains:
 
-- **Objects** (the spheres). Each one has a shape and a material (how it reacts to light).
-- **Lights** (ambient fill, two directional beams, one warm point light). Without lights, everything looks flat and gray.
-- **A camera** sitting off to the side, pointing at the field. The camera decides what you see and from what angle.
+- **Objects** (the spheres). Each one has a shape and a material (how it reacts
+  to light).
+- **Lights** (ambient fill, two directional beams, one warm point light).
+  Without lights, everything looks flat and gray.
+- **A camera** sitting above the field and tilted down about forty degrees, the
+  framing that makes a flat plane feel vast.
 
-React Three Fiber (R3F) lets you write that stage set with React components. `<Canvas>` is the stage. `<ambientLight>` and `<directionalLight>` are lights. `<instancedMesh>` is all 144 spheres packed into one efficient draw call.
+React Three Fiber (R3F) lets you write that stage set with React components.
+`<Canvas>` is the stage, `<ambientLight>` and `<directionalLight>` are lights,
+and one `<instancedMesh>` packs thousands of spheres into a single efficient draw
+call.
 
-Once the scene is set up, `useFrame` runs a callback every time the browser draws a new frame (about 60 times per second). That callback advances the wave math and updates every sphere's position and color. That loop is the animation.
-
-The wave is a simple sine function. For each sphere, its height at any moment is:
+Once the scene is set up, `useFrame` runs a callback every time the browser draws
+a frame (about 60 times per second). That callback advances the wave math and
+updates every sphere's position and color. The wave is a simple sine function:
 
 ```
 y = sin( (col + row) × spatialFreq − time × temporalFreq ) × amplitude
 ```
 
-The color follows the height: low spheres lean cool (teal/blue), high spheres lean warm (purple/pink).
+The color follows the height: low spheres lean cool (teal/blue), high spheres
+lean warm (purple/pink).
 
 ## Why it matters
 
-This sketch demonstrates three ideas you will find in almost every 3D web project:
+This sketch shows ideas you will find in almost every 3D web project:
 
-- **The scene graph.** 3D engines organize objects in a tree. You can group objects and transform the group. Here the whole field sits inside a `<group>` that rotates, so every sphere rotates with it without any per-sphere rotation code.
-- **The render loop.** Real-time 3D is not "draw once." A callback runs every frame, updates state, and the renderer redraws the scene. All animation lives in that loop.
-- **Instancing.** Drawing 144 separate meshes would be 144 draw calls to the GPU. An `instancedMesh` sends all 144 in one call, with a separate transform matrix and color for each. This is how 3D apps handle large counts of repeated objects without hurting performance.
+- **The scene graph and render loop.** Real-time 3D is not "draw once." A
+  callback runs every frame, updates state, and the renderer redraws.
+- **Instancing.** Drawing each sphere separately would be thousands of GPU draw
+  calls. An `instancedMesh` sends them all in one call, with a separate transform
+  and color per sphere. This is how 3D apps handle large counts cheaply.
+- **Fog for depth.** Distant spheres blend into the background color, which reads
+  as a horizon rather than a hard edge, and is what makes the field feel endless.

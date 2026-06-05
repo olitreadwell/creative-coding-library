@@ -23,7 +23,7 @@ const CORNER_RADIUS_RATIO = 0.3;
 
 // Control bounds and defaults (defaults match the original constants).
 const DEFAULT_CELL_PX = 8;
-const MIN_CELL_PX = 4;
+const MIN_CELL_PX = 6;
 const MAX_CELL_PX = 16;
 
 const DEFAULT_DENSITY = 0.28;

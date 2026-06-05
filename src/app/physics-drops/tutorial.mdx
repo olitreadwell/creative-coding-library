@@ -21,7 +21,7 @@ function makeSpecs(rng: Rng, count: number, width: number): BodySpec[] {
   const specs: BodySpec[] = [];
   for (let i = 0; i < count; i++) {
     const kind = rng() < 0.5 ? "circle" : "poly";
-    const size = randRange(rng, 12, 36);
+    const size = randRange(rng, 40, 80) * sizeScale; // sizeScale comes from the slider
     const sides = kind === "poly" ? randInt(rng, 3, 8) : 0;
     const x = randRange(rng, size, Math.max(size + 1, width - size));
     const hue = randRange(rng, 0, 360);
@@ -61,9 +61,9 @@ function buildWalls(M, width, height) {
 
 `isStatic: true` means the engine will never move these bodies, no matter how hard others collide with them.
 
-### Step 4: drop bodies one at a time
+### Step 4: drop bodies until the container fills
 
-We do not add all 120 bodies at once. That would make them all appear in the same moment, which looks wrong. Instead, a `setInterval` fires every 35 milliseconds and adds one body. The body starts just above the top edge (a negative y position) so it enters the scene from off-screen.
+We do not add every body at once. A timer fires a few times a second and adds one body, which drops in from just above the top edge. After each drop we add up the area of all the bodies so far; once that total reaches roughly 60% of the canvas area, we stop the timer. That gives a full, settled pile instead of an endless stream. Reset clears everything and starts the count again.
 
 The engine then takes over. On each runner tick it applies gravity, detects collisions, and updates positions. The renderer reads the updated positions and draws.
 
@@ -75,9 +75,9 @@ Skipping teardown causes memory leaks and duplicate canvases.
 
 ## Try this
 
-- Click **Drop more** several times quickly. Watch the pile grow taller than the screen.
-- Click **Reset**. A new seed picks new colors and positions.
-- Try resizing the browser window. The simulation resizes with it and bodies stay in view.
+- Drag the **size** slider up, then Reset. Bigger items fill the container with fewer shapes.
+- Raise **gravity** for a hard, fast pile, or lower **bounciness** so shapes settle without jiggling.
+- Click **Reset**. A new seed picks new colors and positions, and dropping starts again.
 
 ## What to remember
 

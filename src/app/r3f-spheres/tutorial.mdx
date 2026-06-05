@@ -26,7 +26,7 @@ export function spherePositions(cols, rows, spacing) {
 }
 ```
 
-`halfW` and `halfD` shift the grid so the center of the field lands at the origin (0, 0, 0). The camera aims at the origin, so this keeps the field centered in view.
+`halfW` and `halfD` shift the grid so its center lands at the origin (0, 0, 0). The field is built much larger than the screen so it spills past every edge, and the camera sits above it tilted down about forty degrees, so the field reads as an ocean running to the horizon.
 
 Note that we do not set `y` here. `y` is up/down, and that changes every frame. Only the fixed `x` and `z` positions belong in this pre-computed list.
 
@@ -53,18 +53,19 @@ The `SphereField` component uses `useFrame` to run code every frame. Inside it, 
 useFrame((state) => {
   const t = state.clock.getElapsedTime(); // seconds since start
 
-  for (let i = 0; i < SPHERE_COUNT; i++) {
-    const pos = POSITIONS[i];
-    const y = bob(pos.col, pos.row, t);
+  for (let i = 0; i < COUNT; i++) {
+    const cell = CELLS[i];
+    const range = WAVE_AMPLITUDE * amplitude; // amplitude comes from the slider
+    const y = bob(cell.col, cell.row, t) * amplitude;
 
-    tempObject.position.set(pos.x, y, pos.z);
-    tempObject.scale.setScalar(map(y, -AMPLITUDE, AMPLITUDE, 0.82, 1.15));
-    tempObject.rotation.y = t * ROTATION_SPEED + pos.col * 0.3;
+    tempObject.position.set(cell.x, y, cell.z);
+    tempObject.scale.setScalar(map(y, -range, range, 0.82, 1.15));
+    tempObject.rotation.y = t * 0.15 + cell.col * 0.3;
     tempObject.updateMatrix(); // bake into a 4x4 matrix
 
     mesh.setMatrixAt(i, tempObject.matrix); // write to GPU buffer
 
-    const hue = map(y, -AMPLITUDE, AMPLITUDE, HUE_RANGE[0], HUE_RANGE[1]);
+    const hue = map(y, -range, range, HUE_RANGE[0], HUE_RANGE[1]);
     tempColor.setHSL(hue / 360, 0.85, 0.58);
     mesh.setColorAt(i, tempColor); // write color to GPU buffer
   }
@@ -84,14 +85,26 @@ Without light, a `meshStandardMaterial` is completely black. Three light sources
 - **Two directional lights**: one white from above-right, one blue-tinted from below-left. This creates the bright highlight and subtle color on the shadow side.
 - **One point light** (warm orange, above center): adds a warm glow that shifts across each sphere as it bobs.
 
-The material has slight roughness (0.35) and low metalness (0.15), so it diffuses light softly without being a mirror.
+The material's metalness and roughness come from sliders, so you can take the spheres from soft matte to wet and reflective.
+
+## The endless horizon
+
+One line does most of the "ocean" work:
+
+```tsx
+<fog attach="fog" args={[backgroundColor, 18, 66]} />
+```
+
+Fog blends anything past the far distance into the background color. Because the
+grid extends well beyond that distance, its real edge is always hidden inside the
+fog, so the field looks like it carries on forever.
 
 ## Try this
 
-- Change `GRID_COLS` or `GRID_ROWS` in `field.ts` to a larger number (e.g. 20). Watch what happens to the wave shape.
+- Change `COLS` or `ROWS` at the top of `play/page.tsx` to grow or shrink the field.
 - Change `HUE_RANGE` from `[180, 320]` to `[0, 60]` for a red/yellow palette.
-- Change `WAVE_AMPLITUDE` from `0.6` to `2.0` and notice how scale also changes because `map` is tied to amplitude.
-- Try setting `GROUP_SPIN_SPEED` to `0` in `play/page.tsx` to stop the slow rotation.
+- Drag the amplitude slider to 0 to flatten the ocean, or up for heavy swell.
+- Lower the fog `far` value to pull the horizon closer; raise it to push it back.
 
 ## What to remember
 

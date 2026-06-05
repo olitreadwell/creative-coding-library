@@ -1,5 +1,6 @@
 "use client";
 
+import { useSyncExternalStore } from "react";
 import { useTheme } from "next-themes";
 import { Monitor, Moon, Sun } from "lucide-react";
 
@@ -10,12 +11,24 @@ function isThemeChoice(value: string | undefined): value is ThemeChoice {
   return value === "system" || value === "light" || value === "dark";
 }
 
+// False on the server and during the first client render, true afterwards. This
+// avoids reading next-themes' theme (which can differ from the server when a
+// choice is saved in localStorage) until after hydration, so the button's icon
+// and label never cause a hydration mismatch. No setState-in-effect needed.
+const emptySubscribe = () => () => {};
+function useHydrated(): boolean {
+  return useSyncExternalStore(
+    emptySubscribe,
+    () => true,
+    () => false,
+  );
+}
+
 export function ThemeToggle() {
   const { theme, setTheme } = useTheme();
+  const hydrated = useHydrated();
 
-  // next-themes returns undefined until mounted, so server and first client
-  // render both show the system icon; no setState-in-effect needed.
-  const current: ThemeChoice = isThemeChoice(theme) ? theme : "system";
+  const current: ThemeChoice = hydrated && isThemeChoice(theme) ? theme : "system";
   const next = ORDER[(ORDER.indexOf(current) + 1) % ORDER.length] ?? "system";
   const Icon = current === "light" ? Sun : current === "dark" ? Moon : Monitor;
 

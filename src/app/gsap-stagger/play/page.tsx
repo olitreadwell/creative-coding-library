@@ -1,6 +1,6 @@
 "use client";
 
-import { useLayoutEffect, useRef, useCallback, useState } from "react";
+import { useLayoutEffect, useEffect, useRef, useCallback, useState } from "react";
 import { useTheme } from "next-themes";
 import { gsap } from "gsap";
 import { PlayShell } from "@/components/play-shell";
@@ -67,9 +67,35 @@ export default function StaggerGridPage() {
   const [ease, setEase] = useState<EaseOption>(DEFAULT_EASE);
   const [from, setFrom] = useState<StaggerFrom>(DEFAULT_FROM);
 
-  // rows is proportional to cols so tiles stay roughly square in the viewport
-  const rows = Math.round((cols * DEFAULT_ROWS) / DEFAULT_COLS);
+  // Actual container dimensions tracked via ResizeObserver.
+  const [containerSize, setContainerSize] = useState<{ width: number; height: number }>({
+    width: 0,
+    height: 0,
+  });
+
+  // Rows derived from the real container aspect ratio so tiles fill edge-to-edge.
+  const rows =
+    containerSize.width > 0 && containerSize.height > 0
+      ? Math.max(1, Math.round((cols * containerSize.height) / containerSize.width))
+      : Math.max(1, Math.round((cols * DEFAULT_ROWS) / DEFAULT_COLS));
+
   const cells = gridCells(cols, rows);
+
+  // Observe the scope element so rows updates whenever the play area resizes.
+  useEffect(() => {
+    const el = scopeRef.current;
+    if (!el) return;
+
+    const observer = new ResizeObserver((entries) => {
+      const entry = entries[0];
+      if (!entry) return;
+      const { width, height } = entry.contentRect;
+      setContainerSize({ width, height });
+    });
+
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
 
   const buildTimeline = useCallback(
     (
@@ -313,16 +339,13 @@ export default function StaggerGridPage() {
         </>
       }
     >
-      <div
-        ref={scopeRef}
-        className="absolute inset-0 flex items-center justify-center px-4 py-12"
-        aria-hidden="true"
-      >
+      <div ref={scopeRef} className="absolute inset-0" aria-hidden="true">
         <div
-          className="grid gap-1.5"
+          className="w-full h-full grid"
           style={{
-            gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`,
-            width: "min(90vw, 720px)",
+            gridTemplateColumns: `repeat(${cols}, 1fr)`,
+            gridTemplateRows: `repeat(${rows}, 1fr)`,
+            gap: "3px",
           }}
           role="presentation"
         >
@@ -332,7 +355,7 @@ export default function StaggerGridPage() {
             return (
               <div
                 key={index}
-                className="stagger-tile aspect-square rounded-sm"
+                className="stagger-tile rounded-sm"
                 suppressHydrationWarning
                 style={{ backgroundColor: color }}
                 aria-hidden="true"

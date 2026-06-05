@@ -153,6 +153,10 @@ type Theme = "dark" | "light";
  * Draws the iso-contour and a flood-filled interior using Canvas 2D path ops.
  * `threshold` controls where the iso-surface sits; `contourColor` is a
  * colorblind-safe hex string (from cbColor) used for the blob stroke.
+ *
+ * `cssW` and `cssH` are the canvas dimensions in CSS pixels. The caller must
+ * have set `ctx.setTransform(dpr, 0, 0, dpr, 0, 0)` before calling this so
+ * that CSS-pixel coordinates map to device pixels correctly.
  */
 function drawFrame(
   ctx: CanvasRenderingContext2D,
@@ -164,9 +168,11 @@ function drawFrame(
   theme: Theme,
   contourColor: string,
   threshold: number,
+  cssW: number,
+  cssH: number,
 ): void {
-  const w = ctx.canvas.width;
-  const h = ctx.canvas.height;
+  const w = cssW;
+  const h = cssH;
 
   // Background clear.
   if (theme === "dark") {
@@ -265,7 +271,7 @@ function drawFrame(
 export default function MetaballsPage() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [seed, setSeed] = useState<number>(() => Date.now());
-  const [size, setSize] = useState<{ w: number; h: number; dpr: number } | null>(null);
+  const [size, setSize] = useState<{ cssW: number; cssH: number; dpr: number } | null>(null);
 
   // --- Configurable parameters (React state, drive controls) ---
   const [ballCount, setBallCount] = useState<number>(DEFAULT_BALL_COUNT);
@@ -310,12 +316,9 @@ export default function MetaballsPage() {
       const cssH = canvas.clientHeight;
       if (cssW === 0 || cssH === 0) return;
 
-      const w = Math.round(cssW * dpr);
-      const h = Math.round(cssH * dpr);
-
-      canvas.width = w;
-      canvas.height = h;
-      setSize({ w, h, dpr });
+      canvas.width = Math.round(cssW * dpr);
+      canvas.height = Math.round(cssH * dpr);
+      setSize({ cssW, cssH, dpr });
     };
 
     fit();
@@ -331,15 +334,15 @@ export default function MetaballsPage() {
 
   useEffect(() => {
     if (!size) return;
-    const { w, h } = size;
+    const { cssW, cssH } = size;
 
-    ballsRef.current = spawnBalls(seed, w, h, ballCount, radiusFraction, DEFAULT_SPEED);
+    ballsRef.current = spawnBalls(seed, cssW, cssH, ballCount, radiusFraction, DEFAULT_SPEED);
 
     // Compute grid dimensions. The shorter axis gets GRID_CELLS cells;
-    // the longer axis is proportional.
-    const cellSize = Math.min(w, h) / GRID_CELLS;
-    const cols = Math.ceil(w / cellSize) + 1;
-    const rows = Math.ceil(h / cellSize) + 1;
+    // the longer axis is proportional. Grid runs in CSS-pixel space.
+    const cellSize = Math.min(cssW, cssH) / GRID_CELLS;
+    const cols = Math.ceil(cssW / cellSize) + 1;
+    const rows = Math.ceil(cssH / cellSize) + 1;
     const clampedCellSize = clamp(cellSize, 1, 9999);
 
     cellSizeRef.current = clampedCellSize;
@@ -364,13 +367,16 @@ export default function MetaballsPage() {
         if (!ctx) return;
 
         const balls = ballsRef.current;
-        const { w, h } = size;
+        const { cssW, cssH, dpr } = size;
         const currentSpeedMult = speedRef.current / DEFAULT_SPEED;
 
-        // Step physics with live speed multiplier.
+        // Step physics with live speed multiplier in CSS-pixel space.
         for (const ball of balls) {
-          stepBall(ball, dt, w, h, currentSpeedMult);
+          stepBall(ball, dt, cssW, cssH, currentSpeedMult);
         }
+
+        // Map CSS-pixel coordinates to device pixels each frame.
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
         drawFrame(
           ctx,
@@ -382,6 +388,8 @@ export default function MetaballsPage() {
           theme,
           contourColor,
           thresholdRef.current,
+          cssW,
+          cssH,
         );
       },
       [size, theme, contourColor],

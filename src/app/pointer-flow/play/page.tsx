@@ -1,270 +1,248 @@
 "use client";
 
-import { useRef, useEffect, useState, useCallback, useId } from "react";
-import Link from "next/link";
-import { useAnimationFrame } from "@/lib/creative/useAnimationFrame";
-import { hslString, hsl } from "@/lib/creative/color";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useTheme } from "next-themes";
+import { PlayShell } from "@/components/play-shell";
+import { cbColor, cbColors } from "@/lib/creative";
 import { clamp } from "@/lib/creative/math";
+import { useAnimationFrame, type FrameInfo } from "@/lib/creative/useAnimationFrame";
 import { makeParticles, stepParticle, ageImpulses } from "../field";
 import type { Particle, Impulse } from "../field";
 
-const OKABE_HUES = [56, 27, 202, 301, 186, 14, 246] as const;
+const DARK_BG = "#0a0a0f";
+const LIGHT_BG = "#f4f5f8";
 
 type Mode = "attract" | "repel";
+type Ring = { x: number; y: number; age: number };
+type Theme = "light" | "dark";
 
-type Ring = {
-  x: number;
-  y: number;
-  age: number;
-};
-
-function getIsDark(): boolean {
-  if (typeof window === "undefined") return true;
-  return window.matchMedia("(prefers-color-scheme: dark)").matches;
-}
-
-function particleColor(hue: number, isDark: boolean, alpha: number): string {
-  const lightness = isDark ? 0.72 : 0.38;
-  const saturation = isDark ? 0.85 : 0.75;
-  return hslString(hsl(hue, saturation, lightness), alpha);
-}
-
-export default function PointerFlowPlay() {
+export default function PointerFlowPlayPage() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const particlesRef = useRef<Particle[]>([]);
   const impulsesRef = useRef<Impulse[]>([]);
   const ringsRef = useRef<Ring[]>([]);
   const pointerRef = useRef<{ x: number; y: number } | null>(null);
-  const isDarkRef = useRef<boolean>(true);
 
-  const [count, setCount] = useState(200);
+  const [count, setCount] = useState(220);
   const [mode, setMode] = useState<Mode>("attract");
   const [strength, setStrength] = useState(3);
+  const { resolvedTheme } = useTheme();
+  const theme: Theme = resolvedTheme === "light" ? "light" : "dark";
+  const bg = theme === "light" ? LIGHT_BG : DARK_BG;
 
   const countRef = useRef(count);
   const modeRef = useRef<Mode>(mode);
   const strengthRef = useRef(strength);
-
-  useEffect(() => { countRef.current = count; }, [count]);
-  useEffect(() => { modeRef.current = mode; }, [mode]);
-  useEffect(() => { strengthRef.current = strength; }, [strength]);
-
-  const countLabelId = useId();
-  const strengthLabelId = useId();
-
+  const themeRef = useRef<Theme>(theme);
   useEffect(() => {
-    isDarkRef.current = getIsDark();
-    const mq = window.matchMedia("(prefers-color-scheme: dark)");
-    const handler = (e: MediaQueryListEvent) => {
-      isDarkRef.current = e.matches;
-    };
-    mq.addEventListener("change", handler);
-    return () => mq.removeEventListener("change", handler);
-  }, []);
+    countRef.current = count;
+  }, [count]);
+  useEffect(() => {
+    modeRef.current = mode;
+  }, [mode]);
+  useEffect(() => {
+    strengthRef.current = strength;
+  }, [strength]);
+  useEffect(() => {
+    themeRef.current = theme;
+  }, [theme]);
 
+  // Re-seed particles when the count changes.
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const W = canvas.clientWidth;
-    const H = canvas.clientHeight;
     particlesRef.current = makeParticles({
       count,
-      width: W,
-      height: H,
+      width: canvas.clientWidth,
+      height: canvas.clientHeight,
       seed: "pointer-flow",
     });
   }, [count]);
 
+  // DPR-aware fit; fill the container at any size.
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-
-    const dpr = window.devicePixelRatio || 1;
-
-    const resize = () => {
-      const W = canvas.clientWidth;
-      const H = canvas.clientHeight;
-      canvas.width = W * dpr;
-      canvas.height = H * dpr;
+    const fit = () => {
+      const dpr = window.devicePixelRatio || 1;
+      const w = canvas.clientWidth;
+      const h = canvas.clientHeight;
+      if (w === 0 || h === 0) return;
+      canvas.width = Math.round(w * dpr);
+      canvas.height = Math.round(h * dpr);
       particlesRef.current = makeParticles({
         count: countRef.current,
-        width: W,
-        height: H,
+        width: w,
+        height: h,
         seed: "pointer-flow",
       });
     };
-
-    resize();
-    const ro = new ResizeObserver(resize);
+    fit();
+    const ro = new ResizeObserver(fit);
     ro.observe(canvas);
     return () => ro.disconnect();
   }, []);
 
+  const pointerAt = (e: React.PointerEvent<HTMLCanvasElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+  };
   const onPointerMove = useCallback((e: React.PointerEvent<HTMLCanvasElement>) => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const rect = canvas.getBoundingClientRect();
-    pointerRef.current = {
-      x: e.clientX - rect.left,
-      y: e.clientY - rect.top,
-    };
+    pointerRef.current = pointerAt(e);
   }, []);
-
   const onPointerLeave = useCallback(() => {
     pointerRef.current = null;
   }, []);
-
   const onPointerDown = useCallback((e: React.PointerEvent<HTMLCanvasElement>) => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const rect = canvas.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
+    const p = pointerAt(e);
     impulsesRef.current = [
       ...impulsesRef.current,
-      { x, y, strength: strengthRef.current, age: 0 },
+      { x: p.x, y: p.y, strength: strengthRef.current, age: 0 },
     ];
-    ringsRef.current = [...ringsRef.current, { x, y, age: 0 }];
+    ringsRef.current = [...ringsRef.current, { x: p.x, y: p.y, age: 0 }];
   }, []);
 
-  useAnimationFrame(({ dt }) => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
+  useAnimationFrame(
+    useCallback(({ dt }: FrameInfo) => {
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return;
 
-    const dpr = window.devicePixelRatio || 1;
-    const cssW = canvas.clientWidth;
-    const cssH = canvas.clientHeight;
-    const isDark = isDarkRef.current;
-    const bg = isDark ? "#0a0a0a" : "#f5f4f0";
-    const safeDt = clamp(dt, 0, 0.05);
+      const dpr = window.devicePixelRatio || 1;
+      const cssW = canvas.clientWidth;
+      const cssH = canvas.clientHeight;
+      const t = themeRef.current;
+      const palette = cbColors(t);
+      const safeDt = clamp(dt, 0, 0.05);
 
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.fillStyle = t === "light" ? LIGHT_BG : DARK_BG;
+      ctx.fillRect(0, 0, cssW, cssH);
 
-    ctx.fillStyle = bg;
-    ctx.fillRect(0, 0, cssW, cssH);
+      impulsesRef.current = ageImpulses(impulsesRef.current, safeDt);
+      ringsRef.current = ringsRef.current
+        .map((r) => ({ ...r, age: r.age + safeDt }))
+        .filter((r) => r.age < 0.6);
 
-    impulsesRef.current = ageImpulses(impulsesRef.current, safeDt);
+      for (const ring of ringsRef.current) {
+        const progress = ring.age / 0.6;
+        const radius = progress * Math.max(cssW, cssH) * 0.35;
+        ctx.globalAlpha = (1 - progress) * 0.6;
+        ctx.beginPath();
+        ctx.arc(ring.x, ring.y, radius, 0, Math.PI * 2);
+        ctx.strokeStyle = cbColor(2, t);
+        ctx.lineWidth = 2;
+        ctx.stroke();
+      }
 
-    ringsRef.current = ringsRef.current
-      .map((r) => ({ ...r, age: r.age + safeDt }))
-      .filter((r) => r.age < 0.6);
+      ctx.globalAlpha = 0.85;
+      for (const p of particlesRef.current) {
+        stepParticle(
+          p,
+          pointerRef.current,
+          impulsesRef.current,
+          modeRef.current,
+          strengthRef.current,
+          safeDt,
+          cssW,
+          cssH,
+        );
+        const idx = Math.floor((p.hue / 360) * palette.length) % palette.length;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+        ctx.fillStyle = cbColor(idx, t);
+        ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+    }, []),
+    { pauseWhenHidden: true },
+  );
 
-    for (const ring of ringsRef.current) {
-      const progress = ring.age / 0.6;
-      const radius = progress * 200;
-      const alpha = (1 - progress) * 0.6;
-      const hue = OKABE_HUES[Math.floor(ring.x + ring.y) % OKABE_HUES.length] ?? 202;
-      ctx.beginPath();
-      ctx.arc(ring.x, ring.y, radius, 0, Math.PI * 2);
-      ctx.strokeStyle = hslString(hsl(hue, 0.8, isDark ? 0.7 : 0.4), alpha);
-      ctx.lineWidth = 2;
-      ctx.stroke();
-    }
-
-    for (const p of particlesRef.current) {
-      stepParticle(
-        p,
-        pointerRef.current,
-        impulsesRef.current,
-        modeRef.current,
-        strengthRef.current,
-        safeDt,
-        cssW,
-        cssH,
-      );
-
-      const hue = OKABE_HUES[Math.floor(p.hue / (360 / OKABE_HUES.length)) % OKABE_HUES.length] ?? 202;
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-      ctx.fillStyle = particleColor(hue, isDark, 0.85);
-      ctx.fill();
-    }
-  }, { pauseWhenHidden: true });
-
-  const bg = isDarkRef.current ? "#0a0a0a" : "#f5f4f0";
+  const labelClass = "text-xs text-foreground/70";
+  const sliderClass =
+    "w-24 accent-foreground/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
+  const selectClass =
+    "text-sm rounded border border-border bg-background text-foreground/80 hover:text-foreground px-2 py-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
+  const countId = "pf-count-label";
+  const strengthId = "pf-strength-label";
+  const modeId = "pf-mode-label";
 
   return (
-    <div className="flex h-screen flex-col bg-background text-foreground">
-      <header className="flex items-center gap-4 border-b border-foreground/10 px-4 py-3">
-        <Link href="/pointer-flow" className="text-sm text-foreground/70 underline">
-          ← Pointer Flow
-        </Link>
-        <span className="text-sm font-medium">Play</span>
-      </header>
-
-      <div className="relative flex-1 overflow-hidden">
-        <canvas
-          ref={canvasRef}
-          className="absolute inset-0 h-full w-full touch-none"
-          suppressHydrationWarning
-          style={{ background: bg }}
-          aria-label="Interactive particle field: particles chase or flee the cursor; click to emit a shockwave."
-          onPointerMove={onPointerMove}
-          onPointerLeave={onPointerLeave}
-          onPointerDown={onPointerDown}
-        />
-      </div>
-
-      <footer className="flex flex-wrap items-center gap-6 border-t border-foreground/10 px-4 py-3 text-sm">
-        <div className="flex items-center gap-2">
-          <span id={countLabelId} className="text-foreground/70">
-            Particles
-          </span>
-          <input
-            type="range"
-            min={20}
-            max={600}
-            step={10}
-            value={count}
-            aria-labelledby={countLabelId}
-            aria-valuemin={20}
-            aria-valuemax={600}
-            aria-valuenow={count}
-            className="w-28 accent-foreground/80"
-            onChange={(e) => setCount(Number(e.target.value))}
-          />
-          <span className="w-8 text-right tabular-nums text-foreground/60">{count}</span>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <label htmlFor="mode-select" className="text-foreground/70">
-            Mode
-          </label>
-          <select
-            id="mode-select"
-            value={mode}
-            onChange={(e) => setMode(e.target.value as Mode)}
-            className="rounded border border-foreground/20 bg-background px-2 py-0.5 text-foreground/90"
-          >
-            <option value="attract">Attract</option>
-            <option value="repel">Repel</option>
-          </select>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <span id={strengthLabelId} className="text-foreground/70">
-            Strength
-          </span>
-          <input
-            type="range"
-            min={1}
-            max={10}
-            step={1}
-            value={strength}
-            aria-labelledby={strengthLabelId}
-            aria-valuemin={1}
-            aria-valuemax={10}
-            aria-valuenow={strength}
-            className="w-24 accent-foreground/80"
-            onChange={(e) => setStrength(Number(e.target.value))}
-          />
-          <span className="w-4 text-right tabular-nums text-foreground/60">{strength}</span>
-        </div>
-
-        <span className="ml-auto text-foreground/40">MIT license</span>
-      </footer>
-    </div>
+    <PlayShell
+      slug="pointer-flow"
+      title="Pointer Flow"
+      visualLabel="A field of particles that chases the cursor and scatters on click. Move and click to interact."
+      controls={
+        <>
+          <div className="flex items-center gap-2">
+            <span id={countId} className={labelClass}>
+              particles
+            </span>
+            <input
+              type="range"
+              min={40}
+              max={600}
+              step={10}
+              value={count}
+              onChange={(e) => setCount(Number(e.target.value))}
+              className={sliderClass}
+              aria-labelledby={countId}
+              aria-valuemin={40}
+              aria-valuemax={600}
+              aria-valuenow={count}
+            />
+            <span className="w-9 text-right text-xs text-foreground/70 tabular-nums">{count}</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <label id={modeId} htmlFor="pf-mode" className={labelClass}>
+              mode
+            </label>
+            <select
+              id="pf-mode"
+              value={mode}
+              onChange={(e) => setMode(e.target.value as Mode)}
+              className={selectClass}
+              aria-labelledby={modeId}
+            >
+              <option value="attract">attract</option>
+              <option value="repel">repel</option>
+            </select>
+          </div>
+          <div className="flex items-center gap-2">
+            <span id={strengthId} className={labelClass}>
+              strength
+            </span>
+            <input
+              type="range"
+              min={1}
+              max={10}
+              step={1}
+              value={strength}
+              onChange={(e) => setStrength(Number(e.target.value))}
+              className={sliderClass}
+              aria-labelledby={strengthId}
+              aria-valuemin={1}
+              aria-valuemax={10}
+              aria-valuenow={strength}
+            />
+          </div>
+        </>
+      }
+      attribution={
+        <>Move and click the canvas: particles steer to your cursor and scatter on click.</>
+      }
+    >
+      <canvas
+        ref={canvasRef}
+        className="absolute inset-0 h-full w-full touch-none"
+        aria-label="A field of particles that chases the cursor and scatters when you click. Move and click to interact."
+        suppressHydrationWarning
+        style={{ background: bg }}
+        onPointerMove={onPointerMove}
+        onPointerLeave={onPointerLeave}
+        onPointerDown={onPointerDown}
+      />
+    </PlayShell>
   );
 }

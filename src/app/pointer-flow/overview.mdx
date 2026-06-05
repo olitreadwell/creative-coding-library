@@ -1,0 +1,32 @@
+## What this is
+
+Pointer Flow scatters a field of small dots across the canvas. Each dot watches
+where your cursor is and either drifts toward it or pushes away, depending on the
+mode you pick. When you click, a pulse spreads outward and scatters every dot
+near it.
+
+It looks alive and organic, but it is built from a few simple rules applied to
+every dot on every frame.
+
+## The big idea in plain words
+
+A particle system is just a list of objects, each with a position and a speed.
+On every frame you do three things to each object:
+
+1. Add up the forces acting on it (here: the pull or push toward your cursor,
+   plus any shockwave from a recent click).
+2. Change its speed by those forces, then trim the speed a little so nothing runs
+   away forever. That trim is friction.
+3. Move it by its speed times the time since the last frame.
+
+Mouse, touch, and stylus all arrive through the same browser pointer events, so
+the sketch works on a phone or tablet with no extra code.
+
+## Why it matters
+
+Interaction makes a sketch feel alive in a way that pure animation cannot. The
+attract and repel pattern here is the same idea behind flocking birds, magnetic
+field lines, and the way network graphs settle into a shape. Learn it once and
+you can reuse it everywhere.
+
+The How it works tab walks through the code.

@@ -3,8 +3,7 @@ import { defineApp } from "@/lib/creative/registry";
 export const meta = defineApp({
   slug: "pointer-flow",
   title: "Pointer Flow",
-  description:
-    "A field of particles that chases your cursor and scatters when you click.",
+  description: "A field of particles that chases your cursor and scatters when you click.",
   library: "Canvas 2D",
   concepts: ["interaction", "particle-system", "generative"],
   level: 1,

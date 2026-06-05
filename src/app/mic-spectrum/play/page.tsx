@@ -1,8 +1,11 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import Link from "next/link";
-import { clamp, hslString, hsl, useAnimationFrame } from "@/lib/creative";
+import { useTheme } from "next-themes";
+import { PlayShell } from "@/components/play-shell";
+import { cbRamp } from "@/lib/creative";
+import { clamp } from "@/lib/creative/math";
+import { useAnimationFrame } from "@/lib/creative/useAnimationFrame";
 
 type AudioState =
   | { status: "idle" }
@@ -12,6 +15,10 @@ type AudioState =
 const FFT_SIZE = 2048;
 const BAR_COUNT_OPTIONS = [32, 64, 128, 256] as const;
 type BarCount = (typeof BAR_COUNT_OPTIONS)[number];
+type Theme = "light" | "dark";
+
+const DARK_BG = "#0a0a0f";
+const LIGHT_BG = "#f4f5f8";
 
 function stopAudio(state: AudioState): void {
   if (state.status !== "active") return;
@@ -20,120 +27,64 @@ function stopAudio(state: AudioState): void {
   void state.ctx.close();
 }
 
-function barColor(index: number, total: number, amplitude: number): string {
-  const t = total > 1 ? index / (total - 1) : 0;
-  const amp = clamp(amplitude / 255, 0, 1);
-  // Protanopia-safe ramp: blue (220) -> cyan (180) -> yellow-green (80)
-  const hue = 220 - t * 140;
-  const sat = 0.7 + amp * 0.3;
-  const light = 0.25 + amp * 0.45;
-  return hslString(hsl(hue, sat, light));
-}
-
-function drawPrompt(
-  ctx: CanvasRenderingContext2D,
-  w: number,
-  h: number,
-  bg: string,
-  fg: string,
-): void {
-  ctx.fillStyle = bg;
-  ctx.fillRect(0, 0, w, h);
-
-  ctx.fillStyle = fg;
-  ctx.font = `${Math.max(12, Math.round(w * 0.022))}px ui-sans-serif, system-ui, sans-serif`;
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
-  ctx.fillText("Enable microphone to see your spectrum", w / 2, h / 2);
-}
-
-function drawSpectrum(
-  ctx: CanvasRenderingContext2D,
-  data: Uint8Array,
-  barCount: number,
-  gain: number,
-  w: number,
-  h: number,
-  bg: string,
-): void {
-  ctx.fillStyle = bg;
-  ctx.fillRect(0, 0, w, h);
-
-  const step = Math.floor(data.length / barCount);
-  const gap = Math.max(1, Math.round(w * 0.003));
-  const barW = (w - gap * (barCount + 1)) / barCount;
-  if (barW < 1) return;
-
-  for (let i = 0; i < barCount; i++) {
-    const binIndex = i * step;
-    const rawVal = data[binIndex] ?? 0;
-    const val = clamp(rawVal * gain, 0, 255);
-    const barH = (val / 255) * (h - gap * 2);
-    const x = gap + i * (barW + gap);
-    const y = h - gap - barH;
-
-    ctx.fillStyle = barColor(i, barCount, val);
-    ctx.fillRect(x, y, barW, barH);
-  }
-}
-
-export default function MicSpectrumPlay() {
+export default function MicSpectrumPlayPage() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const audioRef = useRef<AudioState>({ status: "idle" });
+  const dataRef = useRef<Uint8Array<ArrayBuffer> | null>(null);
   const [audioStatus, setAudioStatus] = useState<"idle" | "active" | "error">("idle");
   const [errorMsg, setErrorMsg] = useState<string>("");
 
-  // Controls
   const [gain, setGain] = useState<number>(1.5);
   const [smoothing, setSmoothing] = useState<number>(0.8);
   const [barCount, setBarCount] = useState<BarCount>(64);
+  const { resolvedTheme } = useTheme();
+  const theme: Theme = resolvedTheme === "light" ? "light" : "dark";
+  const bg = theme === "light" ? LIGHT_BG : DARK_BG;
 
-  const smoothingRef = useRef(smoothing);
   const gainRef = useRef(gain);
   const barCountRef = useRef(barCount);
-
+  const themeRef = useRef<Theme>(theme);
   useEffect(() => {
-    smoothingRef.current = smoothing;
+    gainRef.current = gain;
+  }, [gain]);
+  useEffect(() => {
+    barCountRef.current = barCount;
+  }, [barCount]);
+  useEffect(() => {
+    themeRef.current = theme;
+  }, [theme]);
+  useEffect(() => {
     if (audioRef.current.status === "active") {
       audioRef.current.analyser.smoothingTimeConstant = smoothing;
     }
   }, [smoothing]);
 
   useEffect(() => {
-    gainRef.current = gain;
-  }, [gain]);
-
-  useEffect(() => {
-    barCountRef.current = barCount;
-  }, [barCount]);
-
-  // DPR-aware resize
-  useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-
-    const ro = new ResizeObserver((entries) => {
-      const entry = entries[0];
-      if (!entry) return;
-      const { width, height } = entry.contentRect;
+    const fit = () => {
       const dpr = window.devicePixelRatio || 1;
-      canvas.width = Math.round(width * dpr);
-      canvas.height = Math.round(height * dpr);
-    });
+      const w = canvas.clientWidth;
+      const h = canvas.clientHeight;
+      if (w === 0 || h === 0) return;
+      canvas.width = Math.round(w * dpr);
+      canvas.height = Math.round(h * dpr);
+    };
+    fit();
+    const ro = new ResizeObserver(fit);
     ro.observe(canvas);
     return () => ro.disconnect();
   }, []);
 
   const enableMic = useCallback(async () => {
     if (audioRef.current.status === "active") return;
-
     let stream: MediaStream;
     try {
       stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
     } catch (err: unknown) {
       const msg =
         err instanceof DOMException && err.name === "NotAllowedError"
-          ? "Microphone access was denied. Allow it in browser settings and try again."
+          ? "Microphone access was denied. Allow it in your browser settings and try again."
           : err instanceof DOMException && err.name === "NotFoundError"
             ? "No microphone was found on this device."
             : "Could not access the microphone.";
@@ -142,17 +93,16 @@ export default function MicSpectrumPlay() {
       setAudioStatus("error");
       return;
     }
-
     const ctx = new AudioContext();
     const source = ctx.createMediaStreamSource(stream);
     const analyser = ctx.createAnalyser();
     analyser.fftSize = FFT_SIZE;
-    analyser.smoothingTimeConstant = smoothingRef.current;
+    analyser.smoothingTimeConstant = smoothing;
     source.connect(analyser);
-
     audioRef.current = { status: "active", ctx, analyser, stream };
     setAudioStatus("active");
-  }, []);
+    setErrorMsg("");
+  }, [smoothing]);
 
   const disableMic = useCallback(() => {
     stopAudio(audioRef.current);
@@ -161,14 +111,9 @@ export default function MicSpectrumPlay() {
     setErrorMsg("");
   }, []);
 
-  // Cleanup on unmount
   useEffect(() => {
-    return () => {
-      stopAudio(audioRef.current);
-    };
+    return () => stopAudio(audioRef.current);
   }, []);
-
-  const dataRef = useRef<Uint8Array | null>(null);
 
   useAnimationFrame(
     useCallback(() => {
@@ -178,137 +123,106 @@ export default function MicSpectrumPlay() {
       if (!ctx2d) return;
 
       const dpr = window.devicePixelRatio || 1;
-      const w = canvas.width;
-      const h = canvas.height;
+      const cssW = canvas.clientWidth;
+      const cssH = canvas.clientHeight;
+      const t = themeRef.current;
       ctx2d.setTransform(dpr, 0, 0, dpr, 0, 0);
-      const cssW = w / dpr;
-      const cssH = h / dpr;
-
-      const bg = "#0a0a0a";
-      const fg = "rgba(237,237,237,0.7)";
+      ctx2d.fillStyle = t === "light" ? LIGHT_BG : DARK_BG;
+      ctx2d.fillRect(0, 0, cssW, cssH);
 
       const state = audioRef.current;
-      if (state.status !== "active") {
-        drawPrompt(ctx2d, cssW, cssH, bg, fg);
-        return;
-      }
+      if (state.status !== "active") return;
 
       const binCount = state.analyser.frequencyBinCount;
       if (!dataRef.current || dataRef.current.length !== binCount) {
         dataRef.current = new Uint8Array(binCount);
       }
-      state.analyser.getByteFrequencyData(dataRef.current);
+      const data = dataRef.current;
+      state.analyser.getByteFrequencyData(data);
 
-      drawSpectrum(ctx2d, dataRef.current, barCountRef.current, gainRef.current, cssW, cssH, bg);
+      const bars = barCountRef.current;
+      const g = gainRef.current;
+      const step = Math.max(1, Math.floor(data.length / bars));
+      const gap = Math.max(1, Math.round(cssW * 0.003));
+      const barW = (cssW - gap * (bars + 1)) / bars;
+      if (barW < 1) return;
+
+      for (let i = 0; i < bars; i++) {
+        const val = clamp((data[i * step] ?? 0) * g, 0, 255);
+        const barH = (val / 255) * (cssH - gap * 2);
+        const x = gap + i * (barW + gap);
+        ctx2d.fillStyle = cbRamp(i / Math.max(1, bars - 1), t);
+        ctx2d.fillRect(x, cssH - gap - barH, barW, barH);
+      }
     }, []),
-    { pauseWhenHidden: true, respectReducedMotion: true },
+    { pauseWhenHidden: true },
   );
 
+  const active = audioStatus === "active";
+  const labelClass = "text-xs text-foreground/70";
+  const sliderClass =
+    "w-24 accent-foreground/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
+  const btnClass =
+    "text-sm px-3 py-1 rounded border border-border hover:border-foreground/50 text-foreground/70 hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
+  const selectClass =
+    "text-sm rounded border border-border bg-background text-foreground/80 hover:text-foreground px-2 py-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
+
   return (
-    <div className="flex min-h-screen flex-col bg-[#0a0a0a] text-[#ededed]">
-      <header className="flex items-center gap-4 border-b border-white/10 px-5 py-3">
-        <Link
-          href="/mic-spectrum"
-          className="text-sm text-foreground/70 underline hover:text-foreground focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-        >
-          ← Mic Spectrum
-        </Link>
-        <span className="text-sm font-medium">Play</span>
-      </header>
-
-      <div className="relative flex-1">
-        <canvas
-          ref={canvasRef}
-          className="absolute inset-0 h-full w-full"
-          suppressHydrationWarning
-          style={{ background: "#0a0a0a" }}
-          aria-label="Microphone frequency spectrum visualization"
-        />
-
-        {audioStatus !== "active" && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-4">
-            {audioStatus === "error" ? (
-              <p
-                role="alert"
-                className="max-w-xs rounded border border-red-500/40 bg-red-950/60 px-4 py-3 text-center text-sm text-red-300"
-              >
-                {errorMsg}
-              </p>
-            ) : null}
-            <button
-              onClick={enableMic}
-              className="rounded bg-[#ededed] px-5 py-2.5 text-sm font-medium text-[#0a0a0a] hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
-            >
-              Enable microphone
-            </button>
-          </div>
-        )}
-      </div>
-
-      <footer className="border-t border-white/10 px-5 py-4">
-        <div className="flex flex-wrap items-center gap-x-8 gap-y-4 text-sm">
-          {audioStatus === "active" && (
-            <button
-              onClick={disableMic}
-              className="rounded border border-white/20 px-3 py-1.5 text-xs hover:border-white/40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
-            >
-              Disable microphone
-            </button>
-          )}
-
-          <div className="flex items-center gap-3">
-            <span id="gain-label" className="text-xs text-foreground/70">
-              Gain
+    <PlayShell
+      slug="mic-spectrum"
+      title="Mic Spectrum"
+      visualLabel="A live frequency spectrum driven by your microphone."
+      controls={
+        <>
+          <button type="button" onClick={active ? disableMic : enableMic} className={btnClass}>
+            {active ? "Mic off" : "Enable microphone"}
+          </button>
+          <div className="flex items-center gap-2">
+            <span id="ms-gain" className={labelClass}>
+              gain
             </span>
             <input
               type="range"
-              aria-labelledby="gain-label"
-              aria-valuemin={0.5}
-              aria-valuemax={4}
-              aria-valuenow={gain}
               min={0.5}
               max={4}
               step={0.1}
               value={gain}
               onChange={(e) => setGain(Number(e.target.value))}
-              className="w-28 accent-white"
+              className={sliderClass}
+              aria-labelledby="ms-gain"
+              aria-valuemin={0.5}
+              aria-valuemax={4}
+              aria-valuenow={gain}
             />
-            <span className="w-8 text-right text-xs tabular-nums text-foreground/70">
-              {gain.toFixed(1)}x
-            </span>
           </div>
-
-          <div className="flex items-center gap-3">
-            <span id="smooth-label" className="text-xs text-foreground/70">
-              Smoothing
+          <div className="flex items-center gap-2">
+            <span id="ms-smooth" className={labelClass}>
+              smoothing
             </span>
             <input
               type="range"
-              aria-labelledby="smooth-label"
-              aria-valuemin={0}
-              aria-valuemax={0.99}
-              aria-valuenow={smoothing}
               min={0}
-              max={0.99}
-              step={0.01}
+              max={0.95}
+              step={0.05}
               value={smoothing}
               onChange={(e) => setSmoothing(Number(e.target.value))}
-              className="w-28 accent-white"
+              className={sliderClass}
+              aria-labelledby="ms-smooth"
+              aria-valuemin={0}
+              aria-valuemax={0.95}
+              aria-valuenow={smoothing}
             />
-            <span className="w-8 text-right text-xs tabular-nums text-foreground/70">
-              {smoothing.toFixed(2)}
-            </span>
           </div>
-
-          <div className="flex items-center gap-3">
-            <span id="bars-label" className="text-xs text-foreground/70">
-              Bars
-            </span>
+          <div className="flex items-center gap-2">
+            <label id="ms-bars" htmlFor="ms-bars-select" className={labelClass}>
+              bars
+            </label>
             <select
-              aria-labelledby="bars-label"
+              id="ms-bars-select"
               value={barCount}
               onChange={(e) => setBarCount(Number(e.target.value) as BarCount)}
-              className="rounded border border-white/20 bg-transparent px-2 py-1 text-xs text-foreground focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+              className={selectClass}
+              aria-labelledby="ms-bars"
             >
               {BAR_COUNT_OPTIONS.map((n) => (
                 <option key={n} value={n}>
@@ -317,8 +231,38 @@ export default function MicSpectrumPlay() {
               ))}
             </select>
           </div>
+        </>
+      }
+      attribution={
+        <>Technique: getUserMedia microphone + Web Audio AnalyserNode FFT on Canvas 2D.</>
+      }
+    >
+      <canvas
+        ref={canvasRef}
+        className="absolute inset-0 h-full w-full"
+        aria-label="A live frequency spectrum driven by your microphone. Use the Enable microphone button to start."
+        suppressHydrationWarning
+        style={{ background: bg }}
+      />
+      {!active ? (
+        <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-4 p-4 text-center">
+          {audioStatus === "error" ? (
+            <p
+              role="alert"
+              className="max-w-sm rounded-md border border-border bg-background/90 px-4 py-3 text-sm text-foreground/80"
+            >
+              {errorMsg}
+            </p>
+          ) : null}
+          <button
+            type="button"
+            onClick={enableMic}
+            className="pointer-events-auto rounded-md border border-border bg-background px-5 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            Enable microphone
+          </button>
         </div>
-      </footer>
-    </div>
+      ) : null}
+    </PlayShell>
   );
 }

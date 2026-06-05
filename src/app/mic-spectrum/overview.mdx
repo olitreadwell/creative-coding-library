@@ -1,0 +1,27 @@
+## What this is
+
+Mic Spectrum listens to your microphone and draws a live bar chart of the sound
+it hears. Bass sits on the left, treble on the right, and each bar grows taller
+when that part of the sound gets louder. Click "Enable microphone", then speak,
+play music, or snap near the mic.
+
+Nothing is recorded or sent anywhere. The audio stays in your browser and the
+microphone only turns on after you press the button.
+
+## The big idea in plain words
+
+Sound is never just one note at one volume. A voice or a chord is many
+frequencies happening at once. The Web Audio API splits that mix into bins with
+an FFT (a Fast Fourier Transform), and each bin says how much energy sits in a
+narrow band of pitches.
+
+Read those bins every frame and paint one bar per bin, and you can watch a sound
+come apart into its pieces in real time.
+
+## Why it matters
+
+Four small steps unlock a whole category of work: ask for microphone access,
+build a tiny audio graph, read the FFT each frame, and draw it. The same steps
+power music visualizers, equalizers, voice-activated effects, and tuning tools.
+
+The How it works tab walks through the code.

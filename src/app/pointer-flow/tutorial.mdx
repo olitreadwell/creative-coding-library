@@ -1,0 +1,61 @@
+## How it works
+
+### 1. Seed the dots
+
+`makeParticles` builds the starting list from a seeded random generator. Passing
+the same seed string every time means the layout is identical on each load, so
+the sketch always opens looking the same.
+
+```ts
+particles = makeParticles({ count, width, height, seed: "pointer-flow" });
+```
+
+### 2. Fit the canvas sharply
+
+A `ResizeObserver` watches the canvas. When its size changes we set the pixel
+buffer to `clientWidth * devicePixelRatio` so it stays crisp on high-density
+screens, and draw with `ctx.setTransform(dpr, 0, 0, dpr, 0, 0)` so the rest of
+the code can think in plain CSS pixels.
+
+### 3. Record pointer events
+
+`onPointerMove` stores the cursor position in a ref, not React state, so moving
+the mouse does not trigger a re-render on every pixel. `onPointerDown` adds an
+impulse (a shockwave) and a visible ring.
+
+```ts
+const onPointerDown = (e) => {
+  const p = pointerAt(e);
+  impulses.push({ x: p.x, y: p.y, strength, age: 0 });
+  rings.push({ x: p.x, y: p.y, age: 0 });
+};
+```
+
+### 4. Update every dot each frame
+
+`useAnimationFrame` from the shared library runs the loop and pauses it when the
+tab is hidden or the global Play control is off. Each frame we clear the canvas,
+age the impulses and rings, then move every dot.
+
+```ts
+for (const p of particles) {
+  stepParticle(p, pointer, impulses, mode, strength, dt, width, height);
+  drawDot(p);
+}
+```
+
+`stepParticle` is where the physics lives: it steers the dot toward or away from
+the cursor, adds any shockwave push, applies friction, caps the speed, and wraps
+the dot at the edges.
+
+### 5. Safe colours
+
+Dot colours come from the Okabe-Ito palette in `@/lib/creative`, which stays
+distinct for the common kinds of colour blindness. The palette also swaps for
+light and dark themes so the dots keep good contrast either way.
+
+### Make it yours
+
+- Switch mode to repel and the dots flee the cursor instead of chasing it.
+- Raise strength to make clicks blast particles further.
+- More particles look denser but cost more per frame.

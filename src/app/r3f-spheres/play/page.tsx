@@ -1,8 +1,8 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { useTheme } from "next-themes";
-import { Canvas, useFrame } from "@react-three/fiber";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import { map } from "@/lib/creative/math";
 import { usePlaying } from "@/lib/creative/motion";
@@ -118,6 +118,41 @@ function SphereField({
       </instancedMesh>
     </group>
   );
+}
+
+// XZ half-extent of the grid plus sphere radius and wave amplitude.
+// halfW = halfD = ((GRID_COLS - 1) * SPHERE_SPACING) / 2 = 7.7
+// Diagonal bounding radius in XZ = halfW * sqrt(2) ≈ 10.89; add sphere radius + wave amplitude.
+const FIELD_BOUNDING_RADIUS =
+  (((GRID_COLS - 1) * SPHERE_SPACING) / 2) * Math.SQRT2 + SPHERE_RADIUS + WAVE_AMPLITUDE;
+
+const FOV_RAD = (45 * Math.PI) / 180;
+
+/**
+ * Sits inside the Canvas and repositions the PerspectiveCamera so the field
+ * fills the viewport at any size. The camera direction (angled view) is kept
+ * by normalizing the current position vector and scaling it to the new distance.
+ */
+function CameraFit(): null {
+  const { camera, size } = useThree();
+
+  useEffect(() => {
+    if (!(camera instanceof THREE.PerspectiveCamera)) return;
+
+    const { width, height } = size;
+    const aspect = width / height;
+    // Use the shorter axis to drive the distance so the field fills even on
+    // tall narrow (portrait) viewports.
+    const fovHalfTan = Math.tan(FOV_RAD / 2);
+    const distance = (FIELD_BOUNDING_RADIUS * 1.1) / (fovHalfTan * Math.min(1, aspect));
+
+    // Preserve the normalized direction of the existing camera position.
+    const dir = camera.position.clone().normalize();
+    camera.position.copy(dir.multiplyScalar(distance));
+    camera.updateProjectionMatrix();
+  }, [camera, size]);
+
+  return null;
 }
 
 export default function R3FSpheresPage(): React.ReactElement {
@@ -260,11 +295,12 @@ export default function R3FSpheresPage(): React.ReactElement {
     >
       <Canvas
         camera={{ position: [14, 10, 18], fov: 45 }}
-        style={{ position: "absolute", inset: 0 }}
+        style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }}
       >
         {/* Set the clear color in-scene (client only) so the Canvas DOM style
             carries no theme-dependent attribute that would mismatch on SSR. */}
         <color attach="background" args={[bgColor]} />
+        <CameraFit />
         <ambientLight intensity={isLight ? 1.2 : 0.7} />
         <directionalLight position={[6, 12, 8]} intensity={isLight ? 3.0 : 2.4} color="#ffffff" />
         <directionalLight

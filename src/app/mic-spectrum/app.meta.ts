@@ -3,8 +3,7 @@ import { defineApp } from "@/lib/creative/registry";
 export const meta = defineApp({
   slug: "mic-spectrum",
   title: "Mic Spectrum",
-  description:
-    "Your microphone drawn live as a bouncing frequency spectrum.",
+  description: "Your microphone drawn live as a bouncing frequency spectrum.",
   library: "Web Audio + Canvas 2D",
   concepts: ["interaction", "audio", "generative"],
   level: 2,

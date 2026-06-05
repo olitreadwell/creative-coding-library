@@ -19,7 +19,7 @@ const MIN_INTENSITY = 0.2;
 const MAX_INTENSITY = 2.0;
 const STEP_INTENSITY = 0.05;
 
-const PROMPT_TEXT = "Click \"Enable camera\" to start";
+const PROMPT_TEXT = 'Click "Enable camera" to start';
 
 // ---------------------------------------------------------------------------
 // Luminance helper (BT.601 coefficients)
@@ -248,15 +248,15 @@ export default function WebcamMirrorPage() {
 
     streamRef.current = stream;
 
-    let video = videoRef.current;
-    if (!video) {
-      video = document.createElement("video");
-      video.muted = true;
-      video.playsInline = true;
-      video.autoplay = true;
-      video.setAttribute("aria-hidden", "true");
-      videoRef.current = video;
+    if (!videoRef.current) {
+      const v = document.createElement("video");
+      v.muted = true;
+      v.playsInline = true;
+      v.autoplay = true;
+      v.setAttribute("aria-hidden", "true");
+      videoRef.current = v;
     }
+    const video = videoRef.current;
     video.srcObject = stream;
 
     try {
@@ -299,11 +299,7 @@ export default function WebcamMirrorPage() {
       const currentTheme = themeRef.current;
       const video = videoRef.current;
 
-      if (
-        cameraState !== "active" ||
-        !video ||
-        video.readyState < 2
-      ) {
+      if (cameraState !== "active" || !video || video.readyState < 2) {
         if (cameraState === "denied" || cameraState === "unavailable") {
           ctx.fillStyle = currentTheme === "dark" ? "#0a0a0a" : "#f5f5f5";
           ctx.fillRect(0, 0, cssW, cssH);
@@ -356,8 +352,7 @@ export default function WebcamMirrorPage() {
       visualLabel="Your camera redrawn as a grid of colored dots sized by brightness"
       attribution={
         <>
-          getUserMedia + Canvas 2D brightness sampling. Colorblind-safe dot
-          colors via the{" "}
+          getUserMedia + Canvas 2D brightness sampling. Colorblind-safe dot colors via the{" "}
           <a
             href="https://jfly.uni-koeln.de/color/"
             target="_blank"

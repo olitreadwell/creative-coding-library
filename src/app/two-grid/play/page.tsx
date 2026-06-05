@@ -17,8 +17,25 @@ const DEFAULT_WAVE_SPEED = 18; // maps to 0.018 time-per-frame (÷1000)
 const DEFAULT_AMPLITUDE = 50; // maps to 0.5 spread multiplier (÷100)
 const DEFAULT_COLOR_SCHEME = "default";
 
-const CELL_SIZE = 48;
-const SHAPE_SIZE = 34;
+// Fraction of the cell that each square occupies (edge-to-edge tiling means
+// no gaps at 1.0; 0.7 gives a small visual gap while still filling the area).
+const SHAPE_FRACTION = 0.7;
+
+/**
+ * Derives cell dimensions and shape size from the container box.
+ * DPR is factored in so the canvas renders at device resolution.
+ */
+function computeCellSize(
+  containerW: number,
+  containerH: number,
+  cols: number,
+  rows: number,
+): { cellW: number; cellH: number; shapeSize: number } {
+  const cellW = containerW / cols;
+  const cellH = containerH / rows;
+  const shapeSize = Math.min(cellW, cellH) * SHAPE_FRACTION;
+  return { cellW, cellH, shapeSize };
+}
 
 /** Stage background color keyed by resolved theme name. */
 const STAGE_BG: Record<string, string> = {
@@ -134,13 +151,15 @@ export default function TwoGridPlayPage() {
   const twoRef = useRef<InstanceType<typeof import("two.js").default> | null>(null);
 
   // The two.js scene is rebuilt when theme or gridSize changes (because the
-  // scene graph depends on total number of shapes).
+  // scene graph depends on total number of shapes), and also when the
+  // container is resized so cells always fill the full container area.
   useEffect(() => {
     const containerEl = containerRef.current;
     if (!containerEl) return;
 
+    // cancelled gates the async Two.js import; destroyScene tears down live instances.
     let cancelled = false;
-    let cleanup: (() => void) | undefined;
+    let destroyScene: (() => void) | undefined;
 
     const stageBg = resolvedTheme
       ? (STAGE_BG[resolvedTheme] ?? STAGE_BG_DEFAULT)
@@ -153,24 +172,43 @@ export default function TwoGridPlayPage() {
     const cols = gridSizeRef.current;
     const rows = gridSizeRef.current;
 
-    (async () => {
-      const Two = (await import("two.js")).default;
-      if (cancelled) return;
+    // buildScene creates (or re-creates) the Two.js instance sized to match
+    // the container's current CSS pixel dimensions. It must be called after
+    // Two.js has been imported and whenever the container size changes.
+    function buildScene(
+      el: HTMLElement,
+      Two: typeof import("two.js").default,
+      containerW: number,
+      containerH: number,
+    ): void {
+      // Tear down any previous scene before rebuilding.
+      destroyScene?.();
 
-      const two = new Two({ fitted: true, autostart: false }).appendTo(containerEl);
+      const { cellW, cellH, shapeSize } = computeCellSize(containerW, containerH, cols, rows);
+
+      // Size the renderer canvas to exactly match the container, DPR-aware.
+      const dpr = typeof window !== "undefined" ? (window.devicePixelRatio ?? 1) : 1;
+      const two = new Two({
+        type: Two.Types.canvas,
+        width: containerW,
+        height: containerH,
+        autostart: false,
+        ratio: dpr,
+      }).appendTo(el);
+
       twoRef.current = two;
 
-      const svgEl = containerEl.querySelector("svg");
-      if (svgEl) {
-        svgEl.style.background = stageBg;
+      // Fill background via canvas style; the element already covers the container.
+      const canvasEl = el.querySelector("canvas");
+      if (canvasEl) {
+        canvasEl.style.background = stageBg;
+        canvasEl.style.display = "block";
+        canvasEl.style.width = `${containerW}px`;
+        canvasEl.style.height = `${containerH}px`;
       }
 
-      const cells = gridPositions(cols, rows, CELL_SIZE, CELL_SIZE);
-      const totalW = cols * CELL_SIZE;
-      const totalH = rows * CELL_SIZE;
-
-      const offsetX = (two.width - totalW) / 2;
-      const offsetY = (two.height - totalH) / 2;
+      // Cells start at (cellW/2, cellH/2) and tile edge-to-edge — no centering offsets.
+      const cells = gridPositions(cols, rows, cellW, cellH);
 
       const shapeLightnessMin = isLight ? 0.3 : 0.5;
       const shapeLightnessMax = isLight ? 0.5 : 0.75;
@@ -187,7 +225,7 @@ export default function TwoGridPlayPage() {
         const distance = centerDistance(row, col, cols, rows);
         const baseColor = palette[i % palette.length] as string;
 
-        const rect = two.makeRectangle(offsetX + x, offsetY + y, SHAPE_SIZE, SHAPE_SIZE);
+        const rect = two.makeRectangle(x, y, shapeSize, shapeSize);
         rect.fill = baseColor;
         rect.noStroke();
 
@@ -239,21 +277,46 @@ export default function TwoGridPlayPage() {
         two.play();
       }
 
-      cleanup = () => {
+      destroyScene = () => {
         two.pause();
         two.clear();
         twoRef.current = null;
-        if (containerEl) containerEl.innerHTML = "";
+        // Remove the canvas element Two.js appended.
+        const canvas = el.querySelector("canvas");
+        if (canvas) canvas.remove();
       };
+    }
+
+    // Track the Two.js constructor across async boundary.
+    let TwoClass: typeof import("two.js").default | undefined;
+
+    (async () => {
+      TwoClass = (await import("two.js")).default;
+      if (cancelled) return;
+
+      const { width, height } = containerEl.getBoundingClientRect();
+      buildScene(containerEl, TwoClass, width, height);
     })();
+
+    // Rebuild scene on container resize so cells fill the new dimensions.
+    const observer = new ResizeObserver((entries) => {
+      if (!TwoClass) return; // Two.js import not yet resolved
+      const entry = entries[0];
+      if (!entry) return;
+      const { width, height } = entry.contentRect;
+      if (width === 0 || height === 0) return;
+      buildScene(containerEl, TwoClass, width, height);
+    });
+    observer.observe(containerEl);
 
     return () => {
       cancelled = true;
-      cleanup?.();
+      observer.disconnect();
+      destroyScene?.();
     };
-    // Rebuild when theme changes. gridSize changes trigger a rebuild via the
-    // dependency below; speed/amplitude/colorScheme are read live from refs.
-    // `playing` is intentionally excluded: handled by the effect below.
+    // Rebuild when theme or gridSize changes. speed/amplitude/colorScheme are
+    // read live from refs. `playing` is intentionally excluded: handled by the
+    // effect below.
   }, [resolvedTheme, gridSize]);
 
   // React live to the Play/Pause toggle without rebuilding the scene.

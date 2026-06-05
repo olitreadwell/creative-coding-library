@@ -22,6 +22,7 @@ const ANIMATED = new Set([
   "reaction-diffusion",
   "shader-gradient",
   "two-grid",
+  "wireframe",
 ]);
 
 // Console noise that is not an app defect.
@@ -89,17 +90,22 @@ for (const app of apps) {
       expect(m1.boxH, `${slug}: canvas box height ${m1.boxH} too short`).toBeGreaterThan(120);
     }
 
-    // Stability: nothing should grow over time (catches overgrow/flash-resize).
+    // Stability: once settled, nothing should keep growing (catches a real
+    // overgrow/flash-resize loop). Compare two post-settle samples so a single
+    // one-time layout settle (e.g. the control bar finishing wrapping) does not
+    // count as overgrowth.
     await page.waitForTimeout(1200);
     const m2 = await measure(page);
-    if (m1.hasCanvas && m2.hasCanvas) {
+    await page.waitForTimeout(1200);
+    const m3 = await measure(page);
+    if (m2.hasCanvas && m3.hasCanvas) {
       expect(
-        Math.abs(m2.bufH - m1.bufH),
-        `${slug}: canvas buffer height changed ${m1.bufH} -> ${m2.bufH} (overgrowing)`,
+        Math.abs(m3.bufH - m2.bufH),
+        `${slug}: canvas buffer height keeps changing ${m2.bufH} -> ${m3.bufH} (overgrowing)`,
       ).toBeLessThanOrEqual(2 + m1.dpr);
       expect(
-        Math.abs(m2.boxH - m1.boxH),
-        `${slug}: canvas box height changed ${m1.boxH} -> ${m2.boxH}`,
+        Math.abs(m3.boxH - m2.boxH),
+        `${slug}: canvas box height keeps changing ${m2.boxH} -> ${m3.boxH}`,
       ).toBeLessThanOrEqual(2);
     }
 

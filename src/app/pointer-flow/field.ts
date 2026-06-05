@@ -24,7 +24,12 @@ export type FieldOptions = {
   seed?: number | string;
 };
 
-export function makeParticles({ count, width, height, seed = "pointer-flow" }: FieldOptions): Particle[] {
+export function makeParticles({
+  count,
+  width,
+  height,
+  seed = "pointer-flow",
+}: FieldOptions): Particle[] {
   const rng = makeRng(seed);
   return Array.from({ length: count }, () => ({
     x: randRange(rng, 0, width),
@@ -92,7 +97,5 @@ export function stepParticle(
 }
 
 export function ageImpulses(impulses: Impulse[], dt: number): Impulse[] {
-  return impulses
-    .map((imp) => ({ ...imp, age: imp.age + dt }))
-    .filter((imp) => imp.age < 0.6);
+  return impulses.map((imp) => ({ ...imp, age: imp.age + dt })).filter((imp) => imp.age < 0.6);
 }

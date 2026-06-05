@@ -4,7 +4,7 @@ This app draws a perfect maze using plain Canvas 2D. No library. The algorithm l
 
 ## Step 1: the grid is a graph
 
-The grid starts as a rectangular array of cells. Every cell has four walls: north, east, south, west. Walls are stored as a four-bit bitmask on each cell — a set bit means "wall present", a clear bit means "open passage".
+The grid starts as a rectangular array of cells. Every cell has four walls: north, east, south, west. Walls are stored as a four-bit bitmask on each cell: a set bit means "wall present", a clear bit means "open passage".
 
 ```ts
 export const WALL_N = 0b0001;
@@ -68,7 +68,7 @@ expect(edges).toBe(total - 1);
 
 `generateMaze` returns the finished grid. `carveSteps` returns the same maze but also the ordered list of every carve event, so the play page can replay them frame by frame.
 
-Both functions call the same internal backtracker with the same rng, so given the same seed they produce identical mazes. The animation is not re-running the algorithm — it is replaying a recorded script of moves.
+Both functions call the same internal backtracker with the same rng, so given the same seed they produce identical mazes. The animation is not re-running the algorithm; it is replaying a recorded script of moves.
 
 ## Step 5: drawing walls
 

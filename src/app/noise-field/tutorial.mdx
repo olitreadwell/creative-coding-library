@@ -6,7 +6,7 @@ This sketch has four moving parts: a noise function, a flow field, a particle sy
 
 Perlin noise takes a 2D position `(x, y)` and returns a number, always between the same range, always smooth. Two nearby positions always return similar numbers. That smoothness is what creates flowing, organic patterns.
 
-We create one noise function at startup using a **seed** — a number that fixes the shape of the noise. The same seed always produces the same pattern. Hitting "New seed" picks a different number, which produces a completely different pattern.
+We create one noise function at startup using a **seed**, a number that fixes the shape of the noise. The same seed always produces the same pattern. Hitting "New seed" picks a different number, which produces a completely different pattern.
 
 ### Step 2: turn noise into a flow angle
 
@@ -21,7 +21,7 @@ function flowAngle(perlin: PerlinNoise2D, x: number, y: number, scale: number): 
 }
 
 // Move a particle one step in the direction given by `angle`.
-// `wrap` keeps the particle on canvas — it teleports to the other side
+// `wrap` keeps the particle on canvas; it teleports to the other side
 // when it reaches an edge.
 function stepParticle(p, angle, speed, width, height): Particle {
   const nx = wrap(p.x + Math.cos(angle) * speed, 0, width);
@@ -34,7 +34,7 @@ function stepParticle(p, angle, speed, width, height): Particle {
 
 ### Step 3: spawn particles
 
-We create 2,000 particles at random positions. Each particle is just an `{ x, y }` pair. No velocity, no mass — the field provides all the direction.
+We create 2,000 particles at random positions. Each particle is just an `{ x, y }` pair. No velocity, no mass: the field provides all the direction.
 
 ### Step 4: the draw loop
 

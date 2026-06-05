@@ -24,7 +24,7 @@ function makeBoids(rng, count, width, height): Boid[] {
 
 ### Step 2: look at neighbours
 
-Every frame, each boid scans all other boids. It only cares about boids inside its **perception radius** — a circle around itself. Boids outside that radius are invisible to it.
+Every frame, each boid scans all other boids. It only cares about boids inside its **perception radius**, a circle around itself. Boids outside that radius are invisible to it.
 
 ### Step 3: apply three steering rules
 
@@ -46,7 +46,7 @@ The small multipliers (0.05, 0.001) stop any one rule from overpowering the othe
 
 ### Step 4: limit speed and wrap the edges
 
-After applying all three forces, the new velocity might be too fast or too slow. We clamp it to `[minSpeed, maxSpeed]`. Then we move the boid by its velocity and wrap it at the canvas edge — a boid that flies off the right side reappears on the left.
+After applying all three forces, the new velocity might be too fast or too slow. We clamp it to `[minSpeed, maxSpeed]`. Then we move the boid by its velocity and wrap it at the canvas edge: a boid that flies off the right side reappears on the left.
 
 ### Step 5: draw each boid as an oriented triangle
 
@@ -57,7 +57,7 @@ The draw loop runs every animation frame via `useAnimationFrame`, which handles 
 ## Try this
 
 - Click **New flock** to reseed with a different starting arrangement. Same rules, different starting point, different personality.
-- Notice how the flock splits and rejoins when it encounters a tight cluster. No one decided to split — it falls out of the separation rule.
+- Notice how the flock splits and rejoins when it encounters a tight cluster. No one decided to split; it falls out of the separation rule.
 - The edges are toroidal: boids wrapping off one side see boids near the opposite edge as neighbours, so the flock stays coherent across the boundary.
 
 ## What to remember

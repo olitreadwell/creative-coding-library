@@ -13,27 +13,38 @@ import { fieldAt, marchingSquares } from "../field";
 import type { Ball } from "../field";
 
 // ---------------------------------------------------------------------------
-// Constants
+// Default parameter values — unchanged from the original so the default look
+// is identical to before the controls were added.
 // ---------------------------------------------------------------------------
 
-/** Number of drifting blobs. */
-const BALL_COUNT = 5;
-
-/** Fraction of the canvas width used as radius for each ball. */
-const RADIUS_FRACTION = 0.09;
+const DEFAULT_BALL_COUNT = 5;
+const DEFAULT_THRESHOLD = 0.75;
+const DEFAULT_SPEED = 90; // pixels/sec at 600px reference height
+const DEFAULT_RADIUS_FRACTION = 0.09; // fraction of Math.min(w, h)
 
 /** Number of grid cells along the shorter axis. Smaller = coarser but faster. */
 const GRID_CELLS = 60;
 
-/**
- * Iso-value threshold. With the r^2/d^2 influence function, a ball's edge sits
- * at influence == 1 when d == r. Using 0.75 places the visible blob outline
- * slightly inside the radius so blobs start merging before they overlap.
- */
-const THRESHOLD = 0.75;
+/** Hue used for the blob color (blue-teal family). */
+const BLOB_HUE = 200;
 
-/** Ball speed in pixels per second, relative to a 600px reference height. */
-const BASE_SPEED = 90;
+// ---------------------------------------------------------------------------
+// Slider range constants
+// ---------------------------------------------------------------------------
+
+const MIN_BALLS = 3;
+const MAX_BALLS = 15;
+
+const MIN_THRESHOLD = 0.3;
+const MAX_THRESHOLD = 1.5;
+const STEP_THRESHOLD = 0.05;
+
+const MIN_SPEED = 20;
+const MAX_SPEED = 300;
+
+const MIN_RADIUS = 0.04;
+const MAX_RADIUS = 0.2;
+const STEP_RADIUS = 0.01;
 
 // ---------------------------------------------------------------------------
 // Ball state (mutable, not React state — owned by the animation loop)
@@ -47,13 +58,21 @@ type BallState = Ball & {
 /**
  * Spawns `count` balls with random positions and velocities, seeded for
  * reproducibility. The canvas dimensions are needed to bound the initial
- * positions.
+ * positions. `radiusFraction` controls each ball's influence radius relative
+ * to the shorter canvas dimension.
  */
-function spawnBalls(seed: number, w: number, h: number, count: number): BallState[] {
+function spawnBalls(
+  seed: number,
+  w: number,
+  h: number,
+  count: number,
+  radiusFraction: number,
+  baseSpeed: number,
+): BallState[] {
   const rng = makeRng(seed);
-  const r = Math.min(w, h) * RADIUS_FRACTION;
+  const r = Math.min(w, h) * radiusFraction;
   const speedScale = h / 600;
-  const speed = BASE_SPEED * speedScale;
+  const speed = baseSpeed * speedScale;
 
   return Array.from({ length: count }, () => {
     const angle = randRange(rng, 0, Math.PI * 2);
@@ -69,11 +88,18 @@ function spawnBalls(seed: number, w: number, h: number, count: number): BallStat
 
 /**
  * Steps one ball by `dt` seconds, bouncing off axis-aligned walls.
+ * The `speedMultiplier` scales velocities live without re-spawning.
  * Mutates the ball in place.
  */
-function stepBall(ball: BallState, dt: number, w: number, h: number): void {
-  ball.x += ball.vx * dt;
-  ball.y += ball.vy * dt;
+function stepBall(
+  ball: BallState,
+  dt: number,
+  w: number,
+  h: number,
+  speedMultiplier: number,
+): void {
+  ball.x += ball.vx * dt * speedMultiplier;
+  ball.y += ball.vy * dt * speedMultiplier;
 
   if (ball.x - ball.r < 0) {
     ball.x = ball.r;
@@ -98,7 +124,7 @@ function stepBall(ball: BallState, dt: number, w: number, h: number): void {
 
 /**
  * Fills a pre-allocated Float32Array with scalar field samples on a regular
- * grid covering the canvas. Returns the cell size in pixels.
+ * grid covering the canvas.
  */
 function sampleField(
   balls: readonly BallState[],
@@ -123,17 +149,10 @@ function sampleField(
 
 type Theme = "dark" | "light";
 
-/** Hue used for the blob color (blue-teal family). */
-const BLOB_HUE = 200;
-
 /**
  * Draws the iso-contour and a flood-filled interior using Canvas 2D path ops.
- * The segments from marching squares are connected into paths by grouping
- * adjacent endpoints (simple O(n^2) stitching — acceptable for ≤a few thousand
- * segs at 60 Hz on a coarse grid).
- *
- * `contourColor` is a colorblind-safe hex string (from cbColor) used for the
- * blob stroke, improving protanopia legibility.
+ * `threshold` controls where the iso-surface sits; `contourColor` is a
+ * colorblind-safe hex string (from cbColor) used for the blob stroke.
  */
 function drawFrame(
   ctx: CanvasRenderingContext2D,
@@ -144,6 +163,7 @@ function drawFrame(
   cellSize: number,
   theme: Theme,
   contourColor: string,
+  threshold: number,
 ): void {
   const w = ctx.canvas.width;
   const h = ctx.canvas.height;
@@ -159,19 +179,14 @@ function drawFrame(
   // Sample the scalar field into the pre-allocated buffer.
   sampleField(balls, values, cols, rows, cellSize);
 
-  // Get iso-contour segments.
-  const segments = marchingSquares(values, cols, rows, cellSize, THRESHOLD);
+  // Get iso-contour segments using the current threshold.
+  const segments = marchingSquares(values, cols, rows, cellSize, threshold);
   if (segments.length === 0) return;
 
   // --- Fill the iso-surface interior using the segment paths ---
-  // Build closed paths by stitching endpoints. We use a simple greedy
-  // approach: start a path, keep extending it while a matching endpoint
-  // exists within epsilon, then close it.
-  const EPSILON = cellSize * 0.55; // slightly more than half a cell diagonal
+  const EPSILON = cellSize * 0.55;
   const used = new Uint8Array(segments.length);
 
-  // Fill color: translucent blob interior. Stroke uses the colorblind-safe
-  // contour color for protanopia legibility.
   if (theme === "dark") {
     ctx.fillStyle = hslString(hsl(BLOB_HUE, 0.85, 0.55), 0.22);
     ctx.strokeStyle = contourColor;
@@ -186,7 +201,6 @@ function drawFrame(
     ctx.shadowColor = "transparent";
   }
 
-  // Draw filled + stroked closed paths.
   const drawPaths = (): void => {
     for (let startIdx = 0; startIdx < segments.length; startIdx++) {
       if (used[startIdx]) continue;
@@ -253,6 +267,12 @@ export default function MetaballsPage() {
   const [seed, setSeed] = useState<number>(() => Date.now());
   const [size, setSize] = useState<{ w: number; h: number; dpr: number } | null>(null);
 
+  // --- Configurable parameters (React state, drive controls) ---
+  const [ballCount, setBallCount] = useState<number>(DEFAULT_BALL_COUNT);
+  const [threshold, setThreshold] = useState<number>(DEFAULT_THRESHOLD);
+  const [speed, setSpeed] = useState<number>(DEFAULT_SPEED);
+  const [radiusFraction, setRadiusFraction] = useState<number>(DEFAULT_RADIUS_FRACTION);
+
   const { resolvedTheme } = useTheme();
   const theme: Theme = resolvedTheme === "light" ? "light" : "dark";
 
@@ -262,6 +282,19 @@ export default function MetaballsPage() {
   const colsRef = useRef<number>(0);
   const rowsRef = useRef<number>(0);
   const cellSizeRef = useRef<number>(1);
+
+  // Keep refs for parameters that the animation loop reads every frame so it
+  // always sees the latest value without needing a callback re-wrap.
+  const thresholdRef = useRef<number>(threshold);
+  const speedRef = useRef<number>(speed);
+
+  useEffect(() => {
+    thresholdRef.current = threshold;
+  }, [threshold]);
+
+  useEffect(() => {
+    speedRef.current = speed;
+  }, [speed]);
 
   // -------------------------------------------------------------------
   // Resize + DPR handling
@@ -292,14 +325,15 @@ export default function MetaballsPage() {
   }, []);
 
   // -------------------------------------------------------------------
-  // Re-spawn balls when seed or canvas size changes
+  // Re-spawn balls when seed, canvas size, blob count, or radius changes.
+  // Speed changes are applied live via the speedRef; no re-spawn needed.
   // -------------------------------------------------------------------
 
   useEffect(() => {
     if (!size) return;
     const { w, h } = size;
 
-    ballsRef.current = spawnBalls(seed, w, h, BALL_COUNT);
+    ballsRef.current = spawnBalls(seed, w, h, ballCount, radiusFraction, DEFAULT_SPEED);
 
     // Compute grid dimensions. The shorter axis gets GRID_CELLS cells;
     // the longer axis is proportional.
@@ -312,7 +346,7 @@ export default function MetaballsPage() {
     colsRef.current = cols;
     rowsRef.current = rows;
     valuesRef.current = new Float32Array(cols * rows);
-  }, [seed, size]);
+  }, [seed, size, ballCount, radiusFraction]);
 
   // -------------------------------------------------------------------
   // Animation loop
@@ -331,10 +365,11 @@ export default function MetaballsPage() {
 
         const balls = ballsRef.current;
         const { w, h } = size;
+        const currentSpeedMult = speedRef.current / DEFAULT_SPEED;
 
-        // Step physics.
+        // Step physics with live speed multiplier.
         for (const ball of balls) {
-          stepBall(ball, dt, w, h);
+          stepBall(ball, dt, w, h, currentSpeedMult);
         }
 
         drawFrame(
@@ -346,6 +381,7 @@ export default function MetaballsPage() {
           cellSizeRef.current,
           theme,
           contourColor,
+          thresholdRef.current,
         );
       },
       [size, theme, contourColor],
@@ -360,6 +396,15 @@ export default function MetaballsPage() {
     setSeed(Date.now());
   }, []);
 
+  // -------------------------------------------------------------------
+  // Control label IDs
+  // -------------------------------------------------------------------
+
+  const blobCountLabelId = "metaballs-blob-count-label";
+  const thresholdLabelId = "metaballs-threshold-label";
+  const speedLabelId = "metaballs-speed-label";
+  const radiusLabelId = "metaballs-radius-label";
+
   const btnClass =
     "inline-flex items-center gap-1.5 rounded border border-border px-3 py-1.5 text-sm text-foreground/70 transition-colors hover:border-foreground/50 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
 
@@ -370,6 +415,97 @@ export default function MetaballsPage() {
       visualLabel="Organic blobs drifting and merging on a canvas"
       controls={
         <>
+          {/* Blob count — re-spawns balls */}
+          <div className="flex items-center gap-2">
+            <span id={blobCountLabelId} className="text-xs text-foreground/70">
+              blobs
+            </span>
+            <input
+              type="range"
+              min={MIN_BALLS}
+              max={MAX_BALLS}
+              step={1}
+              value={ballCount}
+              onChange={(e) => setBallCount(Number(e.target.value))}
+              className="w-24 accent-foreground/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              aria-labelledby={blobCountLabelId}
+              aria-valuemin={MIN_BALLS}
+              aria-valuemax={MAX_BALLS}
+              aria-valuenow={ballCount}
+            />
+            <span className="w-5 text-right text-xs text-foreground/70 tabular-nums">
+              {ballCount}
+            </span>
+          </div>
+
+          {/* Threshold — live iso-surface cutoff */}
+          <div className="flex items-center gap-2">
+            <span id={thresholdLabelId} className="text-xs text-foreground/70">
+              merge
+            </span>
+            <input
+              type="range"
+              min={MIN_THRESHOLD}
+              max={MAX_THRESHOLD}
+              step={STEP_THRESHOLD}
+              value={threshold}
+              onChange={(e) => setThreshold(Number(e.target.value))}
+              className="w-24 accent-foreground/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              aria-labelledby={thresholdLabelId}
+              aria-valuemin={MIN_THRESHOLD}
+              aria-valuemax={MAX_THRESHOLD}
+              aria-valuenow={threshold}
+            />
+            <span className="w-8 text-right text-xs text-foreground/70 tabular-nums">
+              {threshold.toFixed(2)}
+            </span>
+          </div>
+
+          {/* Speed — live drift multiplier */}
+          <div className="flex items-center gap-2">
+            <span id={speedLabelId} className="text-xs text-foreground/70">
+              speed
+            </span>
+            <input
+              type="range"
+              min={MIN_SPEED}
+              max={MAX_SPEED}
+              step={1}
+              value={speed}
+              onChange={(e) => setSpeed(Number(e.target.value))}
+              className="w-24 accent-foreground/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              aria-labelledby={speedLabelId}
+              aria-valuemin={MIN_SPEED}
+              aria-valuemax={MAX_SPEED}
+              aria-valuenow={speed}
+            />
+            <span className="w-8 text-right text-xs text-foreground/70 tabular-nums">{speed}</span>
+          </div>
+
+          {/* Radius fraction — re-spawns balls with new size */}
+          <div className="flex items-center gap-2">
+            <span id={radiusLabelId} className="text-xs text-foreground/70">
+              size
+            </span>
+            <input
+              type="range"
+              min={MIN_RADIUS}
+              max={MAX_RADIUS}
+              step={STEP_RADIUS}
+              value={radiusFraction}
+              onChange={(e) => setRadiusFraction(Number(e.target.value))}
+              className="w-24 accent-foreground/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              aria-labelledby={radiusLabelId}
+              aria-valuemin={MIN_RADIUS}
+              aria-valuemax={MAX_RADIUS}
+              aria-valuenow={radiusFraction}
+            />
+            <span className="w-8 text-right text-xs text-foreground/70 tabular-nums">
+              {Math.round(radiusFraction * 100)}%
+            </span>
+          </div>
+
+          {/* Shuffle — re-seeds positions */}
           <button
             type="button"
             onClick={handleShuffle}

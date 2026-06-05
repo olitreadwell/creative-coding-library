@@ -15,6 +15,10 @@ export const fragment = /* glsl */ `
   uniform float uSeed;
   // 1.0 = light theme, 0.0 = dark theme.
   uniform float uTheme;
+  // Spatial frequency multiplier: higher = more zoomed-in / finer pattern.
+  uniform float uScale;
+  // Contrast boost applied before output: 1.0 = unchanged, >1 = more contrast.
+  uniform float uContrast;
 
   // Classic cosine palette by Inigo Quilez:
   // color = a + b * cos(TAU * (c * t + d))
@@ -33,8 +37,9 @@ export const fragment = /* glsl */ `
   }
 
   void main() {
-    // Normalize fragment coordinate to [-1, 1] on the long axis.
+    // Normalize fragment coordinate to [-1, 1] on the long axis, then scale.
     vec2 uv = (gl_FragCoord.xy * 2.0 - uResolution) / min(uResolution.x, uResolution.y);
+    uv *= uScale;
 
     float driven = uTime * uSpeed;
 
@@ -69,8 +74,11 @@ export const fragment = /* glsl */ `
     // Mix between dark and light palettes based on the theme uniform.
     vec3 col = mix(darkCol, lightCol, uTheme);
 
+    // Apply contrast: pivot around 0.5, scale by uContrast, then clamp.
+    col = clamp((col - 0.5) * uContrast + 0.5, 0.0, 1.0);
+
     // Subtle vignette keeps edges from blowing out.
-    float vignette = 1.0 - dot(uv * 0.35, uv * 0.35);
+    float vignette = 1.0 - dot(uv / uScale * 0.35, uv / uScale * 0.35);
     col *= clamp(vignette, 0.0, 1.0);
 
     gl_FragColor = vec4(col, 1.0);

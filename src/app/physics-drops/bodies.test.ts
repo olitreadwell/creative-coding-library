@@ -20,11 +20,11 @@ describe("makeSpecs", () => {
     }
   });
 
-  it("every size is within expected bounds [12, 36]", () => {
+  it("every size is within expected bounds [40, 80]", () => {
     const specs = makeSpecs(makeRng("sizes"), 80, WIDTH);
     for (const s of specs) {
-      expect(s.size).toBeGreaterThanOrEqual(12);
-      expect(s.size).toBeLessThanOrEqual(36);
+      expect(s.size).toBeGreaterThanOrEqual(40);
+      expect(s.size).toBeLessThanOrEqual(80);
     }
   });
 

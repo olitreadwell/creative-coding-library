@@ -11,8 +11,10 @@ export type BodySpec = {
   hue: number;
 };
 
-const MIN_SIZE = 12;
-const MAX_SIZE = 36;
+// Size here is a diameter in px; buildBody halves it to get a radius.
+// These values produce radii of 20–40 px at sizeScale=1.0 — visibly chunky.
+const MIN_SIZE = 40;
+const MAX_SIZE = 80;
 const MIN_SIDES = 3;
 const MAX_SIDES = 7;
 

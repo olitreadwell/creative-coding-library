@@ -1,21 +1,18 @@
 "use client";
 
-import { useLayoutEffect, useRef, useCallback } from "react";
+import { useLayoutEffect, useRef, useCallback, useState } from "react";
 import { useTheme } from "next-themes";
 import { gsap } from "gsap";
 import { PlayShell } from "@/components/play-shell";
 import { hsl, hslString } from "@/lib/creative/color";
 import { map } from "@/lib/creative/math";
+import { usePlaying } from "@/lib/creative/motion";
 import { gridCells, centerDistance } from "../grid";
 
-const COLS = 12;
-const ROWS = 8;
-const CELLS = gridCells(COLS, ROWS);
-
 // Map a cell's distance from center to a hue so outer tiles shift in color.
-function cellHue(row: number, col: number): number {
-  const maxDist = centerDistance(0, 0, COLS, ROWS);
-  const d = centerDistance(row, col, COLS, ROWS);
+function cellHue(row: number, col: number, cols: number, rows: number): number {
+  const maxDist = centerDistance(0, 0, cols, rows);
+  const d = centerDistance(row, col, cols, rows);
   return map(d, 0, maxDist, 200, 310);
 }
 
@@ -23,60 +20,168 @@ function cellHue(row: number, col: number): number {
 // the page background in both light and dark modes.
 function tileColor(hue: number, resolvedTheme: string): string {
   const isDark = resolvedTheme !== "light";
-  // Dark background: brighter, more vivid tiles (high lightness, high sat).
-  // Light background: deeper, more saturated tiles so they don't wash out.
   const saturation = isDark ? 0.72 : 0.8;
   const lightness = isDark ? 0.58 : 0.42;
   return hslString(hsl(hue, saturation, lightness));
 }
 
+type StaggerFrom = "start" | "center" | "edges" | "end";
+
+const EASE_OPTIONS = [
+  "sine.inOut",
+  "power1.out",
+  "power2.inOut",
+  "power3.out",
+  "back.out(1.7)",
+  "elastic.out(1, 0.3)",
+  "none",
+] as const;
+type EaseOption = (typeof EASE_OPTIONS)[number];
+
+const FROM_OPTIONS: StaggerFrom[] = ["center", "start", "edges", "end"];
+
+const DEFAULT_STAGGER = 0.045;
+const DEFAULT_COLS = 12;
+const DEFAULT_ROWS = 8;
+const DEFAULT_EASE: EaseOption = "sine.inOut";
+const DEFAULT_FROM: StaggerFrom = "center";
+
+const btnClass =
+  "text-sm px-3 py-1 rounded border border-border hover:border-foreground/50 text-foreground/70 hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
+
+const selectClass =
+  "text-sm rounded border border-border bg-background text-foreground/70 hover:text-foreground px-2 py-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
+
 export default function StaggerGridPage() {
   const scopeRef = useRef<HTMLDivElement>(null);
   const timelineRef = useRef<gsap.core.Timeline | null>(null);
+  const ctxRef = useRef<gsap.Context | null>(null);
+
   const { resolvedTheme } = useTheme();
   const theme = resolvedTheme ?? "dark";
 
-  const buildTimeline = useCallback((ctx: gsap.Context) => {
-    ctx.add(() => {
-      // Tiles stay visible at all times; the wave ripples scale + rotation
-      // outward from the center and yoyos back, so the grid is never empty.
-      gsap.set(".stagger-tile", { scale: 1, opacity: 1, rotation: 0 });
+  const playing = usePlaying();
 
-      const tl = gsap.timeline({ repeat: -1, yoyo: true });
-      tl.to(".stagger-tile", {
-        scale: 0.45,
-        rotation: 180,
-        duration: 1.2,
-        ease: "sine.inOut",
-        stagger: {
-          each: 0.045,
-          from: "center",
-          grid: [ROWS, COLS],
-        },
+  const [stagger, setStagger] = useState<number>(DEFAULT_STAGGER);
+  const [cols, setCols] = useState<number>(DEFAULT_COLS);
+  const [ease, setEase] = useState<EaseOption>(DEFAULT_EASE);
+  const [from, setFrom] = useState<StaggerFrom>(DEFAULT_FROM);
+
+  // rows is proportional to cols so tiles stay roughly square in the viewport
+  const rows = Math.round((cols * DEFAULT_ROWS) / DEFAULT_COLS);
+  const cells = gridCells(cols, rows);
+
+  const buildTimeline = useCallback(
+    (
+      ctx: gsap.Context,
+      currentStagger: number,
+      currentEase: string,
+      currentFrom: StaggerFrom,
+      currentCols: number,
+      currentRows: number,
+      startPlaying: boolean,
+    ) => {
+      ctx.add(() => {
+        gsap.set(".stagger-tile", { scale: 1, opacity: 1, rotation: 0 });
+
+        const tl = gsap.timeline({
+          repeat: -1,
+          yoyo: true,
+          repeatDelay: 0.4,
+          paused: !startPlaying,
+        });
+        tl.to(".stagger-tile", {
+          scale: 0.45,
+          rotation: 180,
+          duration: 1.2,
+          ease: currentEase,
+          stagger: {
+            each: currentStagger,
+            from: currentFrom,
+            grid: [currentRows, currentCols],
+          },
+        });
+
+        timelineRef.current = tl;
       });
+    },
+    [],
+  );
 
-      timelineRef.current = tl;
-    });
-  }, []);
+  const restartAnimation = useCallback(
+    (
+      currentStagger: number,
+      currentEase: EaseOption,
+      currentFrom: StaggerFrom,
+      currentCols: number,
+      currentRows: number,
+      startPlaying: boolean,
+    ) => {
+      const el = scopeRef.current;
+      if (!el) return;
 
+      // Kill the old context so all tweens/timelines are cleaned up.
+      if (ctxRef.current) {
+        ctxRef.current.revert();
+        ctxRef.current = null;
+      }
+
+      const ctx = gsap.context((self) => {
+        buildTimeline(
+          self,
+          currentStagger,
+          currentEase,
+          currentFrom,
+          currentCols,
+          currentRows,
+          startPlaying,
+        );
+      }, el);
+
+      ctxRef.current = ctx;
+    },
+    [buildTimeline],
+  );
+
+  // Initial mount — build the timeline (paused or playing per motion store).
   useLayoutEffect(() => {
     const el = scopeRef.current;
     if (!el) return;
 
-    // Respect prefers-reduced-motion: skip the infinite animation and leave
-    // tiles in their static resting state so users who opt out of motion are
-    // not subjected to a continuous looping animation.
-    const reducedMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
-    if (reducedMotion) return;
-
     const ctx = gsap.context((self) => {
-      buildTimeline(self);
+      buildTimeline(self, stagger, ease, from, cols, rows, playing);
     }, el);
+
+    ctxRef.current = ctx;
 
     return () => {
       ctx.revert();
+      ctxRef.current = null;
     };
-  }, [buildTimeline]);
+    // Only on mount — param changes are handled via restartAnimation below.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Restart whenever any animation parameter changes (grid size causes a
+  // re-render, so the DOM is already updated before this effect fires).
+  useLayoutEffect(() => {
+    // Skip the very first render — the mount effect above handles it.
+    if (!ctxRef.current && !timelineRef.current) return;
+    restartAnimation(stagger, ease, from, cols, rows, playing);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [stagger, ease, from, cols, rows]);
+
+  // Play or pause the existing timeline when the motion store toggles.
+  // Does NOT rebuild the timeline — just calls .play()/.pause() on it.
+  useLayoutEffect(() => {
+    const tl = timelineRef.current;
+    if (!tl) return;
+    if (playing) {
+      tl.play();
+    } else {
+      tl.pause();
+    }
+  }, [playing]);
 
   function handleReplay() {
     const tl = timelineRef.current;
@@ -84,20 +189,114 @@ export default function StaggerGridPage() {
     tl.restart();
   }
 
+  const staggerLabelId = "stagger-amount-label";
+  const colsLabelId = "grid-cols-label";
+
   return (
     <PlayShell
       slug="gsap-stagger"
       title="Stagger Grid"
       visualLabel="Stagger grid animation: a ripple wave of colored tiles spreading from the center"
       controls={
-        <button
-          type="button"
-          onClick={handleReplay}
-          className="text-sm px-3 py-1 rounded border border-border hover:border-foreground/50 text-foreground/70 hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          aria-label="Replay animation"
-        >
-          Replay
-        </button>
+        <>
+          {/* Stagger amount */}
+          <div className="flex items-center gap-2">
+            <span id={staggerLabelId} className="text-xs text-foreground/70">
+              stagger
+            </span>
+            <input
+              type="range"
+              min={0}
+              max={0.2}
+              step={0.005}
+              value={stagger}
+              onChange={(e) => setStagger(Number(e.target.value))}
+              className="w-20 accent-foreground/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              aria-labelledby={staggerLabelId}
+              aria-valuemin={0}
+              aria-valuemax={0.2}
+              aria-valuenow={stagger}
+            />
+            <span className="w-10 text-right text-xs text-foreground/70 tabular-nums">
+              {stagger.toFixed(3)}s
+            </span>
+          </div>
+
+          {/* Grid columns */}
+          <div className="flex items-center gap-2">
+            <span id={colsLabelId} className="text-xs text-foreground/70">
+              cols
+            </span>
+            <input
+              type="range"
+              min={4}
+              max={20}
+              step={1}
+              value={cols}
+              onChange={(e) => setCols(Number(e.target.value))}
+              className="w-20 accent-foreground/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              aria-labelledby={colsLabelId}
+              aria-valuemin={4}
+              aria-valuemax={20}
+              aria-valuenow={cols}
+            />
+            <span className="w-6 text-right text-xs text-foreground/70 tabular-nums">{cols}</span>
+          </div>
+
+          {/* Easing */}
+          <div className="flex items-center gap-2">
+            <label htmlFor="ease-select" className="sr-only">
+              Easing
+            </label>
+            <span className="text-xs text-foreground/70" aria-hidden="true">
+              ease
+            </span>
+            <select
+              id="ease-select"
+              value={ease}
+              onChange={(e) => setEase(e.target.value as EaseOption)}
+              className={selectClass}
+            >
+              {EASE_OPTIONS.map((opt) => (
+                <option key={opt} value={opt}>
+                  {opt}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Stagger origin */}
+          <div className="flex items-center gap-2">
+            <label htmlFor="from-select" className="sr-only">
+              Stagger origin
+            </label>
+            <span className="text-xs text-foreground/70" aria-hidden="true">
+              from
+            </span>
+            <select
+              id="from-select"
+              value={from}
+              onChange={(e) => setFrom(e.target.value as StaggerFrom)}
+              className={selectClass}
+            >
+              {FROM_OPTIONS.map((opt) => (
+                <option key={opt} value={opt}>
+                  {opt}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Replay */}
+          <button
+            type="button"
+            onClick={handleReplay}
+            className={btnClass}
+            aria-label="Replay animation"
+          >
+            Replay
+          </button>
+        </>
       }
       attribution={
         <>
@@ -122,18 +321,19 @@ export default function StaggerGridPage() {
         <div
           className="grid gap-1.5"
           style={{
-            gridTemplateColumns: `repeat(${COLS}, minmax(0, 1fr))`,
+            gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`,
             width: "min(90vw, 720px)",
           }}
           role="presentation"
         >
-          {CELLS.map(({ index, row, col }) => {
-            const h = cellHue(row, col);
+          {cells.map(({ index, row, col }) => {
+            const h = cellHue(row, col, cols, rows);
             const color = tileColor(h, theme);
             return (
               <div
                 key={index}
                 className="stagger-tile aspect-square rounded-sm"
+                suppressHydrationWarning
                 style={{ backgroundColor: color }}
                 aria-hidden="true"
               />

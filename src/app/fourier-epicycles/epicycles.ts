@@ -14,6 +14,9 @@ export type Term = {
   phase: number;
 };
 
+/** Available target waveforms for the Fourier approximation. */
+export type WaveformType = "square" | "sawtooth" | "triangle";
+
 /**
  * Computes the tip position of a chain of epicycles at time `t`.
  *
@@ -58,24 +61,15 @@ export function epicycleArms(terms: readonly Term[], t: number): Array<{ x: numb
 }
 
 /**
- * A square-wave Fourier series approximation using the first N odd harmonics.
+ * Builds Fourier terms for a square wave using N odd harmonics.
  *
- * The Fourier series for a square wave is:
- *   f(t) = (4/pi) * sum_{k=0}^{N-1} sin((2k+1)*TAU*t) / (2k+1)
+ * Series: f(t) = (4/pi) * sum_{k=0}^{N-1} sin((2k+1)*TAU*t) / (2k+1)
  *
- * Visualised as epicycles this shows how stacking faster, smaller circles
- * builds up a shape with sharp corners from pure rotations.
- *
- * Amplitude is scaled so the total fits comfortably in a unit circle;
- * normalise by dividing by the theoretical sum (4/pi).
+ * Phase -pi/2 rotates the sine-based series so t=0 starts on the x-axis.
  */
-const SQUARE_WAVE_HARMONICS = 8;
-
-function buildSquareWaveTerms(): Term[] {
+function buildSquareWaveTerms(n: number): Term[] {
   const terms: Term[] = [];
-  // Phase -pi/2 rotates the sine-based series so it starts at t=0 on the x-axis,
-  // matching the visual convention where the arm begins pointing right.
-  for (let k = 0; k < SQUARE_WAVE_HARMONICS; k++) {
+  for (let k = 0; k < n; k++) {
     const harmonic = 2 * k + 1; // 1, 3, 5, 7, ...
     terms.push({
       freq: harmonic,
@@ -87,13 +81,75 @@ function buildSquareWaveTerms(): Term[] {
 }
 
 /**
+ * Builds Fourier terms for a sawtooth wave using N harmonics.
+ *
+ * Series: f(t) = (2/pi) * sum_{k=1}^{N} (-1)^(k+1) * sin(k*TAU*t) / k
+ *
+ * Phase -pi/2 aligns the start of the trace with the x-axis.
+ */
+function buildSawtoothWaveTerms(n: number): Term[] {
+  const terms: Term[] = [];
+  for (let k = 1; k <= n; k++) {
+    const sign = k % 2 === 1 ? 1 : -1;
+    terms.push({
+      freq: k,
+      amp: (2 / Math.PI) * (1 / k),
+      phase: sign > 0 ? -Math.PI / 2 : Math.PI / 2,
+    });
+  }
+  // Sort largest amplitude first so the chain is visually stable.
+  terms.sort((a, b) => b.amp - a.amp);
+  return terms;
+}
+
+/**
+ * Builds Fourier terms for a triangle wave using N odd harmonics.
+ *
+ * Series: f(t) = (8/pi^2) * sum_{k=0}^{N-1} (-1)^k * sin((2k+1)*TAU*t) / (2k+1)^2
+ */
+function buildTriangleWaveTerms(n: number): Term[] {
+  const terms: Term[] = [];
+  for (let k = 0; k < n; k++) {
+    const harmonic = 2 * k + 1; // 1, 3, 5, ...
+    const sign = k % 2 === 0 ? 1 : -1;
+    terms.push({
+      freq: harmonic,
+      amp: (8 / (Math.PI * Math.PI)) * (1 / (harmonic * harmonic)),
+      phase: sign > 0 ? -Math.PI / 2 : Math.PI / 2,
+    });
+  }
+  return terms;
+}
+
+/**
+ * Builds Fourier terms for the given waveform with the requested number of harmonics.
+ *
+ * Square and triangle waves use only odd harmonics; the `harmonics` value is
+ * the count of those odd terms (so 8 terms = harmonics 1, 3, 5, …, 15).
+ * Sawtooth uses all integer harmonics up to `harmonics`.
+ */
+export function buildWaveTerms(waveform: WaveformType, harmonics: number): readonly Term[] {
+  const n = Math.max(1, Math.floor(harmonics));
+  switch (waveform) {
+    case "square":
+      return buildSquareWaveTerms(n);
+    case "sawtooth":
+      return buildSawtoothWaveTerms(n);
+    case "triangle":
+      return buildTriangleWaveTerms(n);
+  }
+}
+
+/** Default harmonic count matching the original sketch. */
+export const DEFAULT_HARMONICS = 8;
+
+/**
  * A fixed set of Fourier terms that approximates a square wave.
  *
- * Eight odd harmonics (1, 3, 5, … 15) are included. The fundamental
- * circle (freq=1) has the largest radius; each successive harmonic is
- * smaller and spins faster, progressively sharpening the traced shape.
+ * Eight odd harmonics (1, 3, 5, … 15) are included. Exported for
+ * backwards compatibility; prefer `buildWaveTerms` for new code.
  */
-export const SQUARE_WAVE_TERMS: readonly Term[] = buildSquareWaveTerms();
+export const SQUARE_WAVE_TERMS: readonly Term[] = buildSquareWaveTerms(DEFAULT_HARMONICS);
 
 /** Convenience: the maximum possible radius (sum of all amplitudes). */
 export function totalAmplitude(terms: readonly Term[]): number {

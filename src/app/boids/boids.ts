@@ -38,8 +38,8 @@ export type BoidsOpts = {
 };
 
 export const DEFAULT_OPTS: BoidsOpts = {
-  perceptionRadius: 60,
-  separationRadius: 20,
+  perceptionRadius: 30,
+  separationRadius: 10,
   separationWeight: 1.6,
   alignmentWeight: 1.0,
   cohesionWeight: 0.9,

@@ -34,3 +34,4 @@ coverage
 # generated
 src/lib/creative/registry.generated.ts
 tsconfig.tsbuildinfo
+public/decks/

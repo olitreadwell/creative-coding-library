@@ -1,0 +1,30 @@
+## What this is
+
+A Maurer rose looks like an intricate woven web, but it is built from only two ingredients: a simple flower-shaped curve, and a set of straight lines drawn across it. This sketch draws that web and lets you reshape it with two sliders.
+
+## The big idea in plain words
+
+Start with a **rose curve**. In polar coordinates you describe a point by its angle and its distance from the center. A rose sets that distance to a sine wave of the angle:
+
+- **distance**: `r = sin(n * angle)`
+
+As the angle sweeps once around the circle, the distance rises and falls, tracing petals. The number `n` controls how many petals you get.
+
+Now the Maurer twist. Instead of drawing the smooth petals, you pick 361 angles, one every `d` degrees: 0, d, 2d, 3d, and so on up to 360 times d. You find the rose point at each of those angles, then connect them with **straight lines**. Because the angles jump in big steps, the lines cut straight across the flower instead of following its curve. Those chords overlap and cross, and the overlaps are what make the lacy pattern.
+
+Two numbers control everything:
+
+- **n**: how many petals the underlying rose has.
+- **d**: the angle step in degrees between connected points.
+
+Small changes to either one redraw the whole web. The faint pink outline behind the lines is the smooth rose itself, so you can see the curve the chords are sampling.
+
+## Why it matters
+
+The Maurer rose is a small, sharp lesson in three ideas at once:
+
+- **Polar coordinates.** Many natural and decorative shapes are far easier to describe by angle and radius than by x and y. Flowers, spirals, and gears all want polar thinking.
+- **Sampling.** The same curve sampled at different intervals gives wildly different results. This is the heart of how digital audio, images, and animation all work: a continuous thing measured at chosen moments.
+- **Emergence.** No single line is interesting. The pattern only appears once hundreds of plain lines overlap. A lot of generative art works exactly this way.
+
+Drag the sliders and watch how a one-degree change in the step can turn a tidy star into a dense net. The Tutorial tab shows the few lines of code behind it.

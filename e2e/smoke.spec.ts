@@ -24,6 +24,7 @@ const ANIMATED = new Set([
   "two-grid",
   "wireframe",
   "strange-attractor",
+  "phyllotaxis",
 ]);
 
 // Console noise that is not an app defect.

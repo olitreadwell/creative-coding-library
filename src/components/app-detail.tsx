@@ -71,6 +71,7 @@ export function AppDetail({ meta, synopsis, tutorial }: AppDetailProps) {
           key={`full-${viewKey}`}
           src={`${playHref}?embed=controls`}
           title={`Live example: ${meta.title}`}
+          allow="camera; microphone"
           className="min-h-0 w-full flex-1 border-0 bg-background"
         />
       ) : (
@@ -105,6 +106,7 @@ export function AppDetail({ meta, synopsis, tutorial }: AppDetailProps) {
               key={`info-${viewKey}`}
               src={`${playHref}?embed=controls`}
               title={`Live preview of ${meta.title}`}
+              allow="camera; microphone"
               className="h-full w-full border-0 bg-background"
             />
           </div>

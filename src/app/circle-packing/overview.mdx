@@ -1,0 +1,26 @@
+## What this is
+
+This sketch fills the canvas with circles that never overlap. They appear one at a time, each growing outward until it bumps into a neighbor or the edge, then freezing in place. The result is a tight mosaic of big and small discs, like soap bubbles pressed flat or pebbles settled in a riverbed.
+
+## The big idea in plain words
+
+The rule is short:
+
+1. Pick a random spot on the canvas.
+2. Grow a circle there until its edge just touches the nearest circle or wall.
+3. If the circle ended up big enough to bother keeping, keep it. Otherwise throw it away.
+4. Repeat hundreds of times.
+
+Early circles have the whole canvas to themselves, so they grow large. Later ones must squeeze into the leftover gaps, so they stay small. That is why the packing naturally mixes a few large discs with many tiny ones, without anyone deciding the sizes ahead of time.
+
+Because the random spots come from a **seeded** generator, the same seed always produces the exact same packing. Press **shuffle** to advance the seed and watch a completely different arrangement assemble. The **density** slider controls how many spots are tried, and **min size** sets the smallest circle worth keeping.
+
+## Why it matters
+
+Packing problems sit at the meeting point of geometry, nature, and design:
+
+- **Nature loves packing.** Cells, seeds in a sunflower, bubbles in foam, and cracks in dried mud all settle into packings because each unit grows until it meets its neighbors. The same greedy rule appears everywhere.
+- **Design and layout.** Treemaps, tag clouds, and dashboard widgets use circle and rectangle packing to fit many items into a fixed space without overlap.
+- **A first taste of constraints.** The sketch is a tiny constraint solver: every circle must fit without crossing another. Holding many simple rules at once and letting a result emerge is the core move behind a lot of generative design.
+
+The version here is the simplest one that works: try a spot, grow, keep or discard. The Tutorial tab walks through the few lines that enforce the no-overlap rule.

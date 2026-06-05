@@ -1,0 +1,54 @@
+## How it works, step by step
+
+Plain Canvas 2D, plus the lab's seeded random helper. The packing is built by one short loop, and the no-overlap rule lives in a single function.
+
+### Step 1: how big can a circle here be?
+
+Given a candidate center, the largest safe radius is the distance to whatever is closest: a wall, or the edge of an existing circle. We start from the four wall distances, then shrink toward any circle that is nearer.
+
+```ts
+export function maxRadiusAt(x, y, width, height, circles, maxRadius): number {
+  let r = Math.min(x, y, width - x, height - y); // nearest wall
+  for (const c of circles) {
+    const gap = Math.hypot(x - c.x, y - c.y) - c.r; // distance to that circle's edge
+    if (gap < r) r = gap;
+  }
+  return Math.min(r, maxRadius);
+}
+```
+
+`Math.hypot(x - c.x, y - c.y)` is the straight-line distance between centers. Subtracting the other circle's radius leaves the gap to its _edge_. The smallest gap across all circles and walls is the most we can grow.
+
+### Step 2: try, grow, keep or discard
+
+Now the main loop. Each attempt drops a random point, grows it, and keeps it only if it cleared the minimum size after a small padding gap is removed.
+
+```ts
+export function packCircles(rng, opts): Circle[] {
+  const circles: Circle[] = [];
+  for (let i = 0; i < attempts; i++) {
+    const x = randRange(rng, 0, width);
+    const y = randRange(rng, 0, height);
+    const r = maxRadiusAt(x, y, width, height, circles, maxRadius) - padding;
+    if (r >= minRadius) circles.push({ x, y, r });
+  }
+  return circles;
+}
+```
+
+The `rng` comes from `makeRng(seed)`, the lab's seeded generator. Same seed, same sequence of random points, same packing every time. That is what makes the **shuffle** button reproducible: it just feeds the next seed.
+
+The `padding` leaves a hairline gap between neighbors so circles kiss rather than fuse. Because each new circle is grown to _avoid_ every earlier one, no two can ever overlap. The tests assert exactly that: for every pair, the distance between centers is at least the sum of their radii.
+
+### Step 3: reveal them in order
+
+The packing is computed all at once, but drawing it instantly would be dull. Each frame we advance a `reveal` counter, and each circle scales up from zero as the counter passes its index:
+
+```ts
+const grow = smoothstep(0, 1, clamp(reveal - i, 0, 1));
+const r = c.r * grow;
+```
+
+`smoothstep` eases the growth so circles pop in softly instead of snapping. The reveal speed is measured in circles per second times `dt`, so it looks the same on any screen, and the reduced-motion path draws the finished packing in one still frame.
+
+Colors come from the lab's colorblind-safe ramp, mapped by radius: small circles cool, large circles warm. Try the **density** slider high with a low **min size** to pack thousands of tiny discs into the gaps.

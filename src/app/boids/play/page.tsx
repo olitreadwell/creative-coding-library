@@ -10,12 +10,12 @@ import { makeBoids, stepBoids, DEFAULT_OPTS } from "../boids";
 import type { Boid, BoidsOpts } from "../boids";
 
 /** Size of each boid triangle (half-length along heading axis). */
-const BOID_HALF_LEN = 4;
-const BOID_HALF_WIDTH = 2;
+const BOID_HALF_LEN = 8;
+const BOID_HALF_WIDTH = 4;
 
 const MIN_FLOCK_SIZE = 50;
-const MAX_FLOCK_SIZE = 400;
-const DEFAULT_FLOCK_SIZE = 120;
+const MAX_FLOCK_SIZE = 800;
+const DEFAULT_FLOCK_SIZE = 320;
 
 /** Generates a numeric seed from the current timestamp. */
 function freshSeed(): number {

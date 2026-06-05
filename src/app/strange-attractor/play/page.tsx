@@ -18,6 +18,9 @@ import {
 const DARK_BG = "#06070d";
 const LIGHT_BG = "#f5f5f0";
 const POINTS_PER_FRAME = 7000;
+// Drawn in a single frame right after a parameter change so the attractor
+// appears already formed instead of flashing in from an empty canvas.
+const WARMUP_POINTS = 90000;
 const KEY_STEP = 0.02;
 type Theme = "light" | "dark";
 
@@ -73,7 +76,11 @@ export default function StrangeAttractorPlayPage() {
     const light = t === "light";
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-    if (clearRef.current) {
+    // On a parameter change we clear and rebuild. To avoid a flash to an empty
+    // canvas (very visible when holding the arrow keys), the cleared frame draws
+    // a big warmup batch so a formed attractor appears immediately.
+    const justCleared = clearRef.current;
+    if (justCleared) {
       ctx.globalCompositeOperation = "source-over";
       ctx.globalAlpha = 1;
       ctx.fillStyle = light ? LIGHT_BG : DARK_BG;
@@ -90,7 +97,8 @@ export default function StrangeAttractorPlayPage() {
     ctx.globalCompositeOperation = light ? "source-over" : "lighter";
     ctx.globalAlpha = light ? 0.09 : 0.07;
 
-    for (let i = 0; i < POINTS_PER_FRAME; i++) {
+    const points = justCleared ? WARMUP_POINTS : POINTS_PER_FRAME;
+    for (let i = 0; i < points; i++) {
       const next = stepDeJong(x, y, p);
       x = next.x;
       y = next.y;

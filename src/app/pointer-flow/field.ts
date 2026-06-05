@@ -51,14 +51,17 @@ export function stepParticle(
   width: number,
   height: number,
 ): void {
-  const maxSpeed = 300;
+  // Scale the speed cap with strength so the top of the slider really flings
+  // particles, while the base force is strong enough that even the low end pulls
+  // visibly. This widens the felt range at both extremes.
+  const maxSpeed = 160 + strength * 95;
   const friction = 0.88;
 
   if (pointer !== null) {
     const dx = pointer.x - p.x;
     const dy = pointer.y - p.y;
     const dist = Math.sqrt(dx * dx + dy * dy) + 1;
-    const force = (strength * 60) / (dist * 0.6 + 40);
+    const force = (strength * 115) / (dist * 0.5 + 35);
     const sign = mode === "attract" ? 1 : -1;
     p.vx += sign * (dx / dist) * force * dt;
     p.vy += sign * (dy / dist) * force * dt;
@@ -71,7 +74,7 @@ export function stepParticle(
     const radius = 200;
     if (dist < radius) {
       const falloff = 1 - dist / radius;
-      const impForce = (imp.strength * falloff * 400) / (dist + 20);
+      const impForce = (imp.strength * falloff * 600) / (dist + 20);
       p.vx += (dx / dist) * impForce * dt;
       p.vy += (dy / dist) * impForce * dt;
     }

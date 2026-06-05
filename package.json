@@ -5,12 +5,11 @@
   "type": "module",
   "scripts": {
     "registry": "node scripts/build-app-registry.mjs",
-    "predev": "pnpm registry",
     "prebuild": "pnpm registry",
     "prelint": "pnpm registry",
     "pretypecheck": "pnpm registry",
     "pretest": "pnpm registry",
-    "dev": "next dev",
+    "dev": "node scripts/dev.mjs",
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",

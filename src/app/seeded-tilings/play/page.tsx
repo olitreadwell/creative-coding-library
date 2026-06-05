@@ -61,7 +61,7 @@ function drawTiling(
 
 export default function SeededTilingsPage() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [seed, setSeed] = useState<string>("truchet");
+  const [seed, setSeed] = useState<string>(() => randomSeedString());
   const [tileSize, setTileSize] = useState<number>(DEFAULT_TILE_SIZE);
   const { resolvedTheme } = useTheme();
 

@@ -42,7 +42,7 @@ type SimState = {
 export default function ConwayLifePlayPage() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const stateRef = useRef<SimState | null>(null);
-  const [seed, setSeed] = useState<string>("conway-life");
+  const [seed, setSeed] = useState<string>(() => randomSeedString());
   const [playing, setPlaying] = useState<boolean>(true);
   const { resolvedTheme } = useTheme();
 

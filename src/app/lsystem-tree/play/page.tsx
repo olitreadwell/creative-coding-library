@@ -113,7 +113,7 @@ function drawTree(
 
 export default function LSystemTreePage(): React.ReactElement {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [seed, setSeed] = useState<number>(() => 0x1a2b3c4d);
+  const [seed, setSeed] = useState<number>(() => randomSeed());
   const [iterations, setIterations] = useState<number>(5);
   const [size, setSize] = useState<CanvasSize>({ width: 0, height: 0 });
   const { resolvedTheme } = useTheme();

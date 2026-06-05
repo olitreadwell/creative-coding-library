@@ -107,7 +107,7 @@ export default function PhysicsDropsPage() {
   const containerRef = useRef<HTMLDivElement>(null);
   const sceneRef = useRef<SceneRefs | null>(null);
   const matterRef = useRef<MatterNS | null>(null);
-  const seedRef = useRef<string>("physics-drops");
+  const seedRef = useRef<string>(randomSeed());
   const { resolvedTheme } = useTheme();
 
   /** Returns the correct stage background for the active theme. */

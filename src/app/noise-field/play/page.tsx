@@ -91,7 +91,7 @@ function particleColor(
 export default function NoiseFieldPlayPage() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const stateRef = useRef<FieldState | null>(null);
-  const [seed, setSeed] = useState<string>("noise-field");
+  const [seed, setSeed] = useState<string>(() => randomSeedString());
   const { resolvedTheme } = useTheme();
   // Guard undefined (SSR / hydrating). Default to "dark" so the canvas
   // renders correctly before next-themes resolves on the client.

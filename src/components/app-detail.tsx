@@ -16,18 +16,26 @@ type AppDetailProps = {
 
 export function AppDetail({ meta, synopsis, tutorial }: AppDetailProps) {
   const [fullScreen, setFullScreen] = useState(false);
+  // Bumped on every view switch so the iframe remounts and the animation
+  // restarts when entering either Info or Full screen.
+  const [viewKey, setViewKey] = useState(0);
   const playHref = `/${meta.slug}/play`;
+
+  const goTo = (full: boolean) => {
+    setViewKey((k) => k + 1);
+    setFullScreen(full);
+  };
 
   const headerBtn =
     "inline-flex items-center gap-1.5 rounded-md border border-border px-2.5 py-1.5 text-sm text-foreground/80 transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
 
   return (
-    <div className="flex h-dvh flex-col">
-      <header className="flex shrink-0 items-center gap-2 border-b border-border bg-background px-4 py-3 sm:gap-3 sm:px-6">
+    <div className="flex min-h-dvh flex-col lg:h-dvh">
+      <header className="sticky top-0 z-10 flex shrink-0 items-center gap-2 border-b border-border bg-background px-4 py-3 sm:gap-3 sm:px-6 lg:static">
         {fullScreen ? (
           <button
             type="button"
-            onClick={() => setFullScreen(false)}
+            onClick={() => goTo(false)}
             className="inline-flex items-center gap-1.5 rounded-md px-1.5 py-1 text-sm text-foreground/70 transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             <ArrowLeft className="size-4" aria-hidden="true" />
@@ -46,7 +54,7 @@ export function AppDetail({ meta, synopsis, tutorial }: AppDetailProps) {
           {meta.title}
         </h1>
         {!fullScreen && (
-          <button type="button" onClick={() => setFullScreen(true)} className={headerBtn}>
+          <button type="button" onClick={() => goTo(true)} className={headerBtn}>
             <Maximize2 className="size-4" aria-hidden="true" />
             <span className="hidden sm:inline">Full screen</span>
           </button>
@@ -60,13 +68,14 @@ export function AppDetail({ meta, synopsis, tutorial }: AppDetailProps) {
 
       {fullScreen ? (
         <iframe
+          key={`full-${viewKey}`}
           src={`${playHref}?embed=controls`}
           title={`Live example: ${meta.title}`}
           className="min-h-0 w-full flex-1 border-0 bg-background"
         />
       ) : (
-        <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
-          <div className="order-2 min-h-0 overflow-y-auto px-4 py-6 sm:px-6 lg:order-1 lg:w-[36%] lg:max-w-2xl lg:shrink-0">
+        <div className="flex flex-1 flex-col lg:min-h-0 lg:flex-row">
+          <div className="order-2 px-4 py-6 sm:px-6 lg:order-1 lg:min-h-0 lg:w-[36%] lg:max-w-2xl lg:shrink-0 lg:overflow-y-auto">
             <p className="mb-5 max-w-prose text-base text-foreground/80">{meta.description}</p>
             <div className="mb-5 flex flex-wrap gap-1.5">
               <Badge variant="secondary">{meta.library}</Badge>
@@ -91,8 +100,9 @@ export function AppDetail({ meta, synopsis, tutorial }: AppDetailProps) {
             </Tabs>
           </div>
 
-          <div className="order-1 h-[67svh] min-h-0 border-b border-border lg:order-2 lg:h-auto lg:flex-1 lg:border-b-0 lg:border-l">
+          <div className="order-1 h-[67svh] shrink-0 border-b border-border lg:order-2 lg:h-auto lg:min-h-0 lg:shrink lg:flex-1 lg:border-b-0 lg:border-l">
             <iframe
+              key={`info-${viewKey}`}
               src={`${playHref}?embed=controls`}
               title={`Live preview of ${meta.title}`}
               className="h-full w-full border-0 bg-background"

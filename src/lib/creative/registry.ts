@@ -9,6 +9,11 @@ export type AppSource = {
   license: string;
 };
 
+export type RecallCheck = {
+  q: string;
+  a: string;
+};
+
 export type AppMeta = {
   slug: string;
   title: string;
@@ -22,6 +27,10 @@ export type AppMeta = {
   commercialUse: CommercialUse;
   kind: AppKind;
   builtAt: string;
+  prereqs?: string[];
+  understandWhen?: string;
+  predictPrompt?: string;
+  recallChecks?: RecallCheck[];
 };
 
 export function defineApp(meta: AppMeta): AppMeta {

@@ -68,6 +68,7 @@ interactive-learning/
 ```
 
 Rules:
+
 - Update the counts above when notes are added or removed.
 - `journeys/` is generator output. Do not hand-edit existing journeys; append new dated ones.
 - `pedagogy/`, `platforms/`, `patterns/` are source-of-truth notes. Edit in place.

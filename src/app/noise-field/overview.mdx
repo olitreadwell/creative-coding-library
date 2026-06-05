@@ -1,0 +1,25 @@
+## What this is
+
+A noise field is a canvas full of particles. Thousands of tiny dots are placed at random positions. Each frame, every dot moves one small step. The direction of that step comes from a "flow field" built from Perlin noise. The result looks like smoke, flowing water, or wind patterns on a weather map.
+
+The sketch runs in your browser using Canvas 2D. No library handles the physics. The code does all the work.
+
+## The big idea in plain words
+
+There are two main ingredients.
+
+**Perlin noise** is a way to make smooth, random-looking numbers. Regular randomness jumps all over the place. Perlin noise changes slowly and gradually, so nearby positions get similar values. Think of it like a gentle landscape of hills and valleys instead of a spike chart.
+
+**A flow field** turns those noise values into directions. For every point on the canvas, we sample the noise at that position and convert the result to an angle. That angle tells a particle, "go this way." Because the noise is smooth, nearby particles get similar angles, so they tend to flow together rather than scatter.
+
+Each particle draws a thin line from where it was to where it is now. The lines are painted with additive blending: where many lines overlap, the colors add up and glow brighter. Over time, the canvas fills with a luminous pattern of streams.
+
+## Why it matters
+
+This sketch shows three ideas that come up constantly in creative coding and simulation:
+
+- **Smooth randomness.** Perlin noise is the workhorse of procedural generation. Terrain, clouds, organic shapes, and animations all use it.
+- **Vector fields.** Assigning a direction to every point in space is a technique used in physics simulations, fluid dynamics, and data visualization.
+- **Trails and blending.** Additive blending is a simple trick that makes overlapping thin lines look like glowing light. It shows up in particle systems, data art, and shader programming.
+
+You do not need to understand the math to watch it run. The Tutorial tab walks through the code, one step at a time.

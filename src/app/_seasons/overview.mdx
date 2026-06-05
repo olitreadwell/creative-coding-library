@@ -1,0 +1,15 @@
+## What this is
+
+Seasons draws layered flowing curves on a canvas and shifts their colors through four palettes: spring, summer, autumn, and winter. The transition between palettes is smooth because every color is blended gradually using linear interpolation. Watch the ribbons breathe through cool greens, warm yellows, deep oranges, and quiet blues.
+
+## The big idea in plain words
+
+A color does not jump from one season to the next. It slides there. The code holds two seasons at once, a "from" and a "to," plus a number `t` that goes from 0 to 1. When `t` is 0, you see the current season. When `t` is 1, the next season has fully arrived, and the cycle resets. That sliding number is called a **lerp**, short for linear interpolation.
+
+The curves themselves are layered sine waves drawn across the canvas each frame. Different ribbons have different frequencies and amplitudes, so they move at slightly different speeds and never line up perfectly. Small floating dots drift through the scene: soft petals in spring, bright glints in summer, amber leaves in autumn, and faint snowflakes in winter.
+
+## Why it matters
+
+Smooth color transitions show up everywhere: weather maps that shift from blue to red, map gradients, game day-night cycles, and data dashboards. The lerp formula is tiny but powerful. Once you can lerp one channel of a color, you can lerp all three channels at once, which is exactly how this sketch blends full palettes. The technique scales to any kind of value, not just color.
+
+All palettes use the Okabe-Ito colorblind-safe set. The hues are chosen along the blue, orange, and yellow axis rather than red and green, so the scene stays readable for protanopia (red-blind) and deuteranopia (green-blind) viewers.

@@ -1,0 +1,68 @@
+## How it works
+
+### 1. Start the camera and the model (on a click)
+
+For privacy nothing runs until you press Enable. The button asks for the camera,
+then loads Google's MediaPipe hand model. The model files come from a CDN, so the
+first start takes a moment.
+
+```ts
+const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
+const vision = await import("@mediapipe/tasks-vision");
+const fileset = await vision.FilesetResolver.forVisionTasks(WASM_URL);
+const handLandmarker = await vision.HandLandmarker.createFromOptions(fileset, {
+  baseOptions: { modelAssetPath: MODEL_URL },
+  runningMode: "VIDEO",
+  numHands: 2,
+});
+```
+
+We try the GPU first and fall back to CPU if that is not available, and we catch
+errors (denied camera, offline) and show a message instead of crashing.
+
+### 2. Read the hands each frame
+
+When a new camera frame is ready, we ask the model for landmarks. Each hand comes
+back as 21 points with x/y in the range 0 to 1.
+
+```ts
+const result = handLandmarker.detectForVideo(video, performance.now());
+const hands = result.landmarks; // array of hands, each an array of 21 points
+```
+
+Because the camera is shown mirrored (like a selfie), we flip x when drawing:
+`canvasX = (1 - point.x) * width`.
+
+### 3. Detect the pinch
+
+The pinch is just the distance between the thumb tip (point 4) and the index
+fingertip (point 8). Below a threshold, the fingers are touching.
+
+```ts
+const d = pinchDistance(hand[4], hand[8]);
+if (isPinching(d, sensitivity)) {
+  const grab = midpoint(hand[4], hand[8]); // the grab point
+}
+```
+
+The sensitivity slider is that threshold.
+
+### 4. Drive the blob
+
+- No pinch: the blob eases back to its resting size.
+- One pinch: the blob's center eases toward that grab point (drag).
+- Two pinches: the blob stretches so opposite edges sit at the two grab points.
+
+```ts
+jelly.cx = lerp(jelly.cx, targetCx, 0.25); // smooth follow
+```
+
+The blob is drawn as a ring of points with a small sine wobble so it looks soft
+and alive.
+
+### Make it yours
+
+- Lower the sensitivity if pinches register too easily, raise it if they do not.
+- Pinch with both hands and pull apart to stretch the blob wide or tall.
+- The same 21 points let you detect other gestures: an open palm, a point, a
+  fist. Try mapping one of those to a new action.

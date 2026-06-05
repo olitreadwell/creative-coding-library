@@ -1,0 +1,78 @@
+## How it works, step by step
+
+This app draws a live dot grid from your camera using plain Canvas 2D and the browser's `getUserMedia` API. No libraries handle the video or the pixel math. Here is the whole chain broken into four steps.
+
+## Step 1: requesting camera access
+
+The camera is never started on page load. The sketch renders a prompt and waits for the user to click "Enable camera." Only then does the browser ask for permission.
+
+```ts
+const stream = await navigator.mediaDevices.getUserMedia({
+  video: { facingMode: "user" },
+});
+```
+
+`facingMode: "user"` prefers the front-facing camera on phones. If the user denies permission, or if no camera is found, the error is caught and a readable message is shown instead of throwing an uncaught exception.
+
+## Step 2: mirroring the video into a small canvas
+
+Each animation frame we draw the video into a tiny offscreen canvas that matches the dot grid dimensions (for example, 60 columns x 40 rows). Before drawing we flip the canvas horizontally so the image reads as a mirror.
+
+```ts
+sample.ctx.save();
+sample.ctx.translate(cols, 0);
+sample.ctx.scale(-1, 1);
+sample.ctx.drawImage(video, 0, 0, cols, rows);
+sample.ctx.restore();
+```
+
+This small canvas makes reading pixels fast because `getImageData` returns only as many bytes as there are dots, not the full camera resolution.
+
+## Step 3: sampling brightness per cell
+
+We call `getImageData` on the small canvas to get every pixel's RGBA values. For each cell we calculate luminance using the BT.601 coefficients, which weight green more than red or blue because human eyes are most sensitive to green.
+
+```ts
+function luminance(r: number, g: number, b: number): number {
+  return 0.299 * r + 0.587 * g + 0.114 * b;
+}
+```
+
+Dividing by 255 normalises the result to [0, 1]. Multiplying by the contrast (intensity) slider then scales the result. Values are clamped so they never overflow.
+
+## Step 4: drawing the dots
+
+For each cell we map its [0, 1] brightness to a dot radius and a color.
+
+```ts
+const radius = adjusted * maxRadius;
+ctx.beginPath();
+ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+ctx.fillStyle = cbRamp(adjusted, theme);
+ctx.fill();
+```
+
+`cbRamp` returns a color from the Okabe-Ito sequential ramp: deep blue at 0, bright yellow at 1. This ramp reads correctly in grayscale and for the most common forms of color vision deficiency.
+
+The whole draw runs inside `useAnimationFrame`, which pauses when the page is hidden and when the user has requested reduced motion.
+
+## Cleanup
+
+When the component unmounts, every `MediaStreamTrack` is stopped so the camera indicator light turns off. This also happens if the user leaves the sketch and returns.
+
+```ts
+for (const track of stream.getTracks()) {
+  track.stop();
+}
+```
+
+## Try it yourself
+
+- Drag the **dot size** slider to minimum for a near-photographic look, or maximum for bold abstract shapes.
+- Raise **contrast** and watch dark background areas vanish while bright areas saturate.
+- Hold a colored object close to the camera and notice how the ramp maps different brightnesses to different hues.
+- Try the sketch in a dark room with a single light source to see the gradient clearly.
+
+## What to remember
+
+`getUserMedia` + `drawImage` + `getImageData` is the three-step recipe for any real-time camera effect in the browser. You sample the video, read the pixels, and draw whatever you want based on the values. The browser handles permission, privacy, and hardware access; your code just works with numbers.

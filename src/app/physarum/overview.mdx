@@ -1,0 +1,13 @@
+## What this is
+
+Physarum polycephalum is a real organism, a single-celled slime mold that builds efficient transport networks by sending countless tiny moving fronts through its environment. This simulation copies that behavior using thousands of software agents that sense a shared "chemical trail" map, turn toward stronger trails, move, and leave their own deposit behind. The trail map diffuses and fades over time, so only paths that many agents reinforce survive. A text mask makes the slime spell out the words wind, water, fire, and grass as it grows.
+
+## The big idea in plain words
+
+Imagine dropping thousands of ants onto a canvas, each one following a simple rule: sniff the air a little to your left and a little to your right, then turn toward whichever side smells stronger, move forward, and leave a scent mark where you stepped. If the canvas also slowly blurs and evaporates those marks, then busy paths stay strong and quiet areas fade. Out of this one rule, repeated thousands of times per frame, roads appear, curves emerge, and letters take shape.
+
+The text works as an attractor. At every step, a small amount of trail is added to all pixels that belong to the current word. Agents smell that extra concentration, turn toward it, and pack themselves into the letter shapes. The result looks biological: veins running through a leaf, capillaries forming under pressure.
+
+## Why it matters
+
+Physarum transport networks are studied in computer science because they solve difficult optimization problems, like shortest paths and fault-tolerant networks, using only local rules and no central controller. A slime mold connecting two food sources will, given time, grow a path that rivals engineer-designed road networks. This simulation is a minimal version of that idea, small enough to run at sixty frames per second in a browser, expressive enough to spell words.

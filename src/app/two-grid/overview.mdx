@@ -1,0 +1,26 @@
+## What this is
+
+Vector Grid is a 10 by 10 grid of squares that spin, pulse, and change color. Each square is a **vector shape**: a math-described object, not a grid of pixels. The grid comes alive with a ripple wave that starts at the center and spreads outward.
+
+Click **Play** to watch it run. The Tutorial tab explains the code step by step.
+
+## The big idea in plain words
+
+Imagine a hundred spinning tops arranged in a grid. Every top spins at its own speed. The tops near the center spin faster and pulse bigger. The ones at the edges lag behind.
+
+Because each top follows a slightly different timing, a wave appears. No single shape knows about the wave. It emerges from each shape following a simple rule about its **distance from the center**.
+
+Two main ideas make this work:
+
+- **Vector graphics.** Shapes are described by math (position, size, rotation, color), not pixels. You can change a shape's rotation or scale and the renderer redraws it cleanly at any size.
+- **A scene graph.** Every shape lives as an object you create once and then update each frame. The library walks the graph and draws everything. You only describe _what changed_, not _how to redraw_.
+
+## Why it matters
+
+This pattern shows up across creative coding, games, and UI animation:
+
+- **Transforms.** Rotating and scaling an object is a foundational skill. Every 2D and 3D engine works this way.
+- **Phase offsets.** Staggering a timing value by distance gives you waves, ripples, and cascades without any special wave code.
+- **Generative color.** Tying hue and lightness to a live variable (time, scale) creates color that feels alive, not static.
+
+You do not need to understand trigonometry to read the code. The Tutorial breaks it down line by line.

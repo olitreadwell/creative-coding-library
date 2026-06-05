@@ -1,0 +1,34 @@
+## What this is
+
+An L-system tree is a fractal plant drawn by a computer. It looks like a branching tree: thick trunk, thin branches, and tiny tips spreading outward. The shape is different every time you click Re-roll, but the overall structure stays the same.
+
+The whole tree comes from one short rule, applied over and over again.
+
+## The big idea in plain words
+
+**L-system** stands for Lindenmayer system, named after the biologist Aristid Lindenmayer, who invented it in 1968 to model how plants grow.
+
+Here is the core idea:
+
+- Start with a short string of letters, called the **axiom**. For this tree, the axiom is `X`.
+- Apply **substitution rules**: every `X` becomes `F+[[X]-X]-F[-FX]+X`, and every `F` becomes `FF`.
+- Do that substitution again on the result. Repeat several times.
+
+After a few rounds the string is thousands of characters long. Then a "**turtle**" reads the string and draws:
+
+- `F` — move forward and draw a line (one branch segment).
+- `+` — turn left by the turn angle.
+- `-` — turn right by the turn angle.
+- `[` — save the current position and direction (start a branch).
+- `]` — jump back to the last saved position (end a branch, return to the parent).
+
+The `[` and `]` brackets create the branching structure. Every pair is one fork in the tree.
+
+## Why it matters
+
+- **String rewriting is powerful.** A rule that fits on one line can describe a shape that would take thousands of lines to write by hand.
+- **Self-similarity.** Each branch looks like a smaller version of the whole tree. That is the definition of a fractal.
+- **Turtle graphics.** This drawing model is old and simple, but it can produce complex geometry. The same idea is used to teach programming (the Logo language used a turtle in the 1960s).
+- **Biology.** L-systems model real plant growth patterns. Researchers use them to simulate how leaves, ferns, and branching roots develop.
+
+Use the Iterations slider to watch the tree grow. At 1 iteration the string is short and the shape is rough. At 6 iterations the string is enormous and the tree looks dense and organic. The Tutorial tab shows exactly how the code does it, step by step.

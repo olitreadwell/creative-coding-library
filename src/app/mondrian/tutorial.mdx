@@ -1,0 +1,86 @@
+## How it works, step by step
+
+This sketch has two main parts: a pure subdivision function and a draw function that reads the output and paints the canvas.
+
+### Step 1: represent a rectangle
+
+Everything in this sketch is a plain object with four numbers.
+
+```ts
+type Rect = { x: number; y: number; w: number; h: number };
+```
+
+`x` and `y` are the top-left corner. `w` is the width and `h` is the height. That is all we need.
+
+### Step 2: the subdivision function
+
+`subdivide(rect, depth, rng)` is the core of the sketch. It returns a flat array of leaf rectangles.
+
+```ts
+export function subdivide(rect: Rect, depth: number, rng: Rng): Rect[] {
+  if (depth <= 0) return [rect];
+
+  const splitHorizontal = rng() < 0.5;
+
+  if (splitHorizontal) {
+    const split = rect.h * (0.25 + rng() * 0.5);
+    const top = { x: rect.x, y: rect.y, w: rect.w, h: split };
+    const bottom = { x: rect.x, y: rect.y + split, w: rect.w, h: rect.h - split };
+    return [...subdivide(top, depth - 1, rng), ...subdivide(bottom, depth - 1, rng)];
+  } else {
+    const split = rect.w * (0.25 + rng() * 0.5);
+    const left = { x: rect.x, y: rect.y, w: split, h: rect.h };
+    const right = { x: rect.x + split, y: rect.y, w: rect.w - split, h: rect.h };
+    return [...subdivide(left, depth - 1, rng), ...subdivide(right, depth - 1, rng)];
+  }
+}
+```
+
+- `depth <= 0` is the **base case**. The function stops calling itself and returns the rectangle as a leaf.
+- Otherwise it flips a coin to decide whether to split horizontally or vertically.
+- The split position is chosen between 25% and 75% of the current dimension, so no child becomes too thin.
+- Both halves are subdivided by calling `subdivide` again with `depth - 1`. This is the **recursive case**.
+
+### Step 3: seed a deterministic random number generator
+
+`rng` is a seeded PRNG from `@/lib/creative/random`. Given the same seed, it always returns the same sequence of numbers, which means the same seed always produces the same layout. Clicking the canvas picks a new seed, which produces a completely different layout.
+
+### Step 4: paint the canvas
+
+After `subdivide` returns the leaf list, the draw function loops over each leaf:
+
+```ts
+for (const leaf of leaves) {
+  if (colorRng() < colorAmount) {
+    const idx = Math.floor(colorRng() * palette.length);
+    ctx.fillStyle = palette[idx] ?? neutralFill;
+  } else {
+    ctx.fillStyle = neutralFill;
+  }
+  ctx.fillRect(leaf.x, leaf.y, leaf.w, leaf.h);
+}
+```
+
+Each leaf has a `colorAmount` chance of getting a bold accent color from the colorblind-safe palette. Otherwise it gets the neutral background color.
+
+Then a second pass draws the grid lines:
+
+```ts
+ctx.strokeStyle = strokeColor;
+ctx.lineWidth = lineWeight;
+for (const leaf of leaves) {
+  ctx.strokeRect(leaf.x, leaf.y, leaf.w, leaf.h);
+}
+```
+
+Stroking every leaf draws all the dividing lines in one loop. Mondrian used thick black lines; here the color follows the active theme (dark on light, light on dark).
+
+## Try this
+
+- Move the **depth** slider from 2 to 7 and watch the composition get more detailed.
+- Move the **color** slider to 100% and see what a fully colored Mondrian looks like.
+- Click the canvas repeatedly and notice that the same sliders produce infinite variety.
+
+## What to remember
+
+Recursion is a function that solves a smaller version of its own problem. The base case stops the calls. Each level of recursion adds one generation of splits. The tree of calls produces a flat list of leaf rectangles that tile the whole canvas without gaps.

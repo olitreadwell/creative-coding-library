@@ -1,0 +1,102 @@
+## How it works, step by step
+
+Poster Poetry has three moving parts: fetching a quote from an API, wrapping the text to fit the canvas, and drawing a Swiss-style composition using Canvas 2D.
+
+## Step 1: show something immediately, then fetch
+
+Waiting for a network request before drawing anything leaves a blank screen. Instead, the app picks a fallback quote from a bundled array on first render:
+
+```ts
+const FALLBACK_QUOTES: readonly Quote[] = [
+  { quote: "The journey of a thousand miles begins with one step.", author: "Lao Tzu" },
+  // ...more public-domain quotes
+];
+
+const [quote, setQuote] = useState<Quote>(() => randomFallback());
+```
+
+The fetch starts in a `useEffect`. When it resolves, `setQuote` swaps in the API result. The poster re-draws with the new words. If the fetch fails for any reason, the catch block does nothing -- the fallback quote stays.
+
+## Step 2: cancel in-flight requests on unmount
+
+React components can unmount before a fetch finishes. Without cleanup, the resolved fetch tries to call `setQuote` on an unmounted component. An `AbortController` prevents this:
+
+```ts
+const ctrl = new AbortController();
+abortRef.current = ctrl;
+
+fetchQuote(ctrl.signal)
+  .then((q) => setQuote(q))
+  .catch(() => {
+    /* abort or network failure: keep current quote */
+  });
+
+// cleanup
+return () => {
+  abortRef.current?.abort();
+};
+```
+
+Aborting a fetch throws a `DOMException` with the name `AbortError`. The catch block handles it the same way as any other network failure -- silently.
+
+## Step 3: word-wrap with Canvas measureText
+
+CSS wraps text automatically. Canvas 2D does not. The `wrapText` helper uses `ctx.measureText` to measure each candidate line before committing to it:
+
+```ts
+export function wrapText(ctx: CanvasRenderingContext2D, text: string, maxWidth: number): string[] {
+  const words = text.split(/\s+/);
+  const lines: string[] = [];
+  let current = "";
+
+  for (const word of words) {
+    const candidate = current ? `${current} ${word}` : word;
+    if (ctx.measureText(candidate).width <= maxWidth) {
+      current = candidate;
+    } else {
+      if (current) lines.push(current);
+      current = word;
+    }
+  }
+
+  if (current) lines.push(current);
+  return lines;
+}
+```
+
+A word that is wider than `maxWidth` on its own still gets its own line. That prevents an infinite loop when a single token overflows.
+
+## Step 4: DPR-aware canvas sizing
+
+A canvas drawn at CSS pixel dimensions looks blurry on high-density screens. The fix is to scale the backing buffer by `devicePixelRatio`, then draw in CSS-pixel space using `ctx.setTransform`:
+
+```ts
+const fit = () => {
+  const dpr = window.devicePixelRatio ?? 1;
+  canvas.width = Math.round(canvas.clientWidth * dpr);
+  canvas.height = Math.round(canvas.clientHeight * dpr);
+  draw();
+};
+
+const ro = new ResizeObserver(fit);
+ro.observe(canvas);
+```
+
+Inside `draw`, every measurement (font sizes, margins) uses CSS pixels. The transform scales them up to physical pixels transparently.
+
+## Step 5: three Swiss layouts
+
+Each layout is a pure function that takes the canvas context, the quote text, and a color scheme, then draws a different composition. The `layout` state selects which function runs:
+
+- **Top-left block** -- a color rectangle occupies the upper-left corner; the quote sits below and to the right.
+- **Centered band** -- a full-width color band crosses mid-canvas; the quote runs inside it in reversed ink.
+- **Big glyph** -- a large faint `#` fills the right side; the quote flows left of it.
+
+All three share the same line-height rhythm and margin scale, so swapping layouts feels like a design variation, not a different app.
+
+## Try this
+
+- Open the app in a narrow window and watch the text reflow automatically.
+- Switch to "Centered band" with the "Gold" color to see the reversed-type effect.
+- Open the network panel in browser dev tools, go offline, then click "New quote" -- the poster does not break.
+- Write a new layout function that places the author name vertically along the left edge.

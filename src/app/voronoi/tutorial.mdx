@@ -1,0 +1,102 @@
+## How it works, step by step
+
+This app is built with plain TypeScript and a Canvas 2D draw loop. No geometry library. Here is how each piece works.
+
+### Step 1: the core question
+
+The whole algorithm comes down to one function:
+
+```ts
+function nearestSiteIndex(x: number, y: number, sites: readonly Site[]): number {
+  let best = 0;
+  let bestDist2 = Infinity;
+  for (let i = 0; i < sites.length; i++) {
+    const site = sites[i];
+    const dx = site.x - x;
+    const dy = site.y - y;
+    const dist2 = dx * dx + dy * dy; // squared distance is fine; we only compare
+    if (dist2 < bestDist2) {
+      bestDist2 = dist2;
+      best = i;
+    }
+  }
+  return best;
+}
+```
+
+We skip `Math.sqrt` because comparing squared distances gives the same winner at lower cost.
+
+### Step 2: draw on a downsampled grid
+
+Computing the nearest site for every pixel at full resolution would be slow. Instead the canvas is divided into cells of `CELL_SIZE` pixels (6 in this app). For each cell we ask once which site is nearest to the cell center, then fill the whole block with that site's color.
+
+```ts
+const cols = Math.ceil(cssW / CELL_SIZE);
+const rows = Math.ceil(cssH / CELL_SIZE);
+for (let row = 0; row < rows; row++) {
+  for (let col = 0; col < cols; col++) {
+    const cx = col * CELL_SIZE + CELL_SIZE / 2;
+    const cy = row * CELL_SIZE + CELL_SIZE / 2;
+    const owner = nearestSiteIndex(cx, cy, sites);
+    ctx.fillStyle = cbColor(owner, theme);
+    ctx.fillRect(col * CELL_SIZE, row * CELL_SIZE, CELL_SIZE, CELL_SIZE);
+  }
+}
+```
+
+### Step 3: draw visible cell borders
+
+Where two adjacent cells have different owners, we draw a thin line between them. This makes the Voronoi edges visible without running any geometric edge-finding algorithm.
+
+```ts
+if (col + 1 < cols && owners[row * cols + col + 1] !== me) {
+  ctx.beginPath();
+  ctx.moveTo((col + 1) * CELL_SIZE, row * CELL_SIZE);
+  ctx.lineTo((col + 1) * CELL_SIZE, (row + 1) * CELL_SIZE);
+  ctx.stroke();
+}
+```
+
+### Step 4: move the sites and bounce
+
+Each site has a velocity `(vx, vy)`. Every frame we add the velocity to the position and reflect off the canvas edges.
+
+```ts
+s.x += s.vx;
+s.y += s.vy;
+if (s.x < 0) {
+  s.x = 0;
+  s.vx = Math.abs(s.vx);
+} else if (s.x > width) {
+  s.x = width;
+  s.vx = -Math.abs(s.vx);
+}
+```
+
+### Step 5: add a site on click
+
+When the user clicks, we convert the pointer position from page coordinates to canvas CSS coordinates using `getBoundingClientRect`, then push a new site into the array.
+
+```ts
+const rect = canvas.getBoundingClientRect();
+const cx = e.clientX - rect.left;
+const cy = e.clientY - rect.top;
+sitesRef.current = [...sitesRef.current, { x: cx, y: cy, vx, vy }];
+```
+
+The next animation frame picks up the updated array and redraws everything automatically.
+
+### Step 6: DPR-aware canvas
+
+On high-resolution screens (DPR > 1), we set the canvas pixel dimensions to `cssWidth * dpr` and then apply `ctx.setTransform(dpr, 0, 0, dpr, 0, 0)` so all drawing coordinates stay in CSS pixels. This keeps the simulation logic simple and the output sharp.
+
+## Try this
+
+- Drag the **sites** slider to more sites; watch how the cells subdivide.
+- Set **speed** to 0.1 and study the slow drift. Set it to 3 and watch the cells churn.
+- Click rapidly in one corner to crowd many sites there. Notice how small the cells become.
+- The **Reset** button re-seeds all sites at random positions with fresh velocities.
+
+## What to remember
+
+Voronoi is nearest-neighbor assignment visualized. The partition changes continuously as sites move, but the rule is always the same: every point belongs to its closest site. That single idea, asked at every location in a space, produces rich and useful geometry.

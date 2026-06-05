@@ -1,0 +1,99 @@
+## How it works, step by step
+
+### Step 1: describe a mushroom as data
+
+Before drawing anything, we define what a mushroom is. A `MushroomGeometry` object holds all the numbers that describe one mushroom: its position, stem height, cap radii, lean angle, color index, spot count, and a depth value.
+
+```ts
+export type MushroomGeometry = {
+  x: number;
+  baseY: number;
+  stemH: number;
+  stemW: number;
+  capRx: number;
+  capRy: number;
+  lean: number;
+  colorIdx: number;
+  spotCount: number;
+  depth: number;
+};
+```
+
+Separating data from drawing is important. It means we can sort mushrooms by depth, serialize them, or test them without touching the canvas.
+
+### Step 2: fill the geometry with seeded random values
+
+`makeMushroom` takes an RNG (random number generator) and a position, then calls `randRange` and `randInt` to pick all the varying numbers.
+
+```ts
+export function makeMushroom(rng: Rng, x: number, baseY: number): MushroomGeometry {
+  const depth = rng();
+  const scale = 0.4 + depth * 0.6;
+  const stemH = randRange(rng, 28, 60) * scale;
+  const capRx = randRange(rng, 18, 36) * scale;
+  const capRy = randRange(rng, 12, 24) * scale;
+  const lean = randRange(rng, -0.18, 0.18);
+  const colorIdx = randInt(rng, 0, 6);
+  const spotCount = randInt(rng, 2, 7);
+  return {
+    x,
+    baseY,
+    stemH,
+    stemW: randRange(rng, 6, 12) * scale,
+    capRx,
+    capRy,
+    lean,
+    colorIdx,
+    spotCount,
+    depth,
+  };
+}
+```
+
+Notice `scale` is derived from `depth`: a deep mushroom (depth near 1) gets full size; a far one (depth near 0) gets 40% size. One number controls both perceived distance and size at once.
+
+### Step 3: sort back-to-front
+
+`scatterMushrooms` creates the full patch and then sorts by depth ascending, so far mushrooms are drawn first and close ones paint over them.
+
+```ts
+list.sort((a, b) => a.depth - b.depth);
+```
+
+This is the painter's algorithm. It costs one sort but produces correct overlap with no depth buffer.
+
+### Step 4: draw the shapes
+
+`drawMushroom` issues three Canvas 2D drawing calls:
+
+1. A tapered quadrilateral for the stem (four `lineTo` calls).
+2. A half-ellipse for the cap (`ellipse` with start angle `Math.PI`, end angle `0`).
+3. Small filled circles for spots, positioned on the upper arc of the cap.
+
+All three shapes share the mushroom's `alpha`, which is `0.35 + depth * 0.65`. Far mushrooms are dim; close ones are nearly opaque.
+
+### Step 5: animate with a sine sway
+
+Each frame, we compute a per-mushroom sway offset:
+
+```ts
+const phase = m.x * 0.013 + m.depth * 2.3;
+const sway = Math.sin(t * swaySpeed + phase) * m.capRx * 0.08;
+```
+
+`t` is the elapsed time in seconds from `useAnimationFrame`. The phase shifts every mushroom into a different part of the sine wave so they do not all rock together. The amplitude is 8% of the cap radius, so larger caps sway more, which feels natural.
+
+### Step 6: click to plant
+
+`onPointerDown` reads the canvas-relative pointer coordinates via `getBoundingClientRect`, builds one new `MushroomGeometry`, inserts it into the array sorted by depth, and the next frame draws it.
+
+## Try this
+
+- Drag the "count" slider to 40 for a dense crowd, or down to 5 for a sparse clearing.
+- Set sway to 0 for a still scene. Raise it to 2 for exaggerated motion.
+- Click "Regenerate" several times and notice the variety the same short set of rules can produce.
+- Click in the foreground (lower part of the canvas) to plant a large, near mushroom. Click near the top for a small, far one.
+
+## What to remember
+
+A complex-looking organic scene can be fully described by a short function and a handful of numbers from a seeded generator. Sorting by depth gives the illusion of 3D. A sine wave with per-object phase gives the illusion of independent life.

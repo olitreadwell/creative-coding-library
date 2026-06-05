@@ -1,0 +1,19 @@
+## What this is
+
+This sketch divides a rectangle into smaller rectangles, over and over, then paints some of them with bold colors and leaves the rest white or near-white. Thick black lines separate every region. The result looks like a painting by Piet Mondrian, the Dutch artist whose grid-based compositions became the signature style of the De Stijl movement.
+
+Each time you click the canvas or press Regenerate, the code picks a new random layout. Same rules, different pattern.
+
+## The big idea in plain words
+
+**Recursion** means a function that calls itself. Here, `subdivide` starts with one big rectangle, splits it in two, then calls itself on each half, then on each quarter, and so on. The split can go left-right or top-bottom, at a random position. The function stops when it has gone deep enough.
+
+The result is a flat list of leaf rectangles. Every leaf rectangle exactly fits inside the original and they never overlap. Together they tile the whole canvas with no gaps.
+
+**Depth** controls how many generations of splitting happen. A depth of 2 produces a few large blocks. A depth of 6 or 7 produces many small blocks, some tiny. The number of rectangles grows fast: each extra level can up to double the count.
+
+**Color probability** controls how often a leaf gets a bold accent color instead of the neutral background. Set it low and you get a sparse Mondrian. Set it high and the canvas fills with color.
+
+## Why it matters
+
+Recursive subdivision appears everywhere in computer science: binary search, merge sort, quad-trees for collision detection, BSP trees for 3D rendering, and spatial data structures. Learning to think recursively is one of the most useful skills in programming. This sketch makes the idea visible and interactive.

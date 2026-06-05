@@ -1,0 +1,73 @@
+## How it works
+
+### 1. Build the grid
+
+`buildGrid` lays tiles across the canvas. The number of columns comes from the density slider; the tile size is `canvasWidth / columns`. Each tile stores its centre position (`cx`, `cy`), a colour index, and a **phase** value.
+
+```ts
+phase: ((col + row) % 8) / 8;
+```
+
+Phase is a number from 0 to 1 that says where in the animation cycle this tile starts. Tiles along the same diagonal share a phase, so the wave travels diagonally.
+
+### 2. Fit the canvas at any size
+
+A `ResizeObserver` watches the canvas element. When the window resizes, we set the pixel buffer to `clientWidth * devicePixelRatio` so lines stay sharp on high-density screens, and draw with `ctx.setTransform(dpr, 0, 0, dpr, 0, 0)` so the rest of the code works in plain CSS pixels.
+
+### 3. The base wave
+
+Every frame, each tile computes a wave value from its phase and the current time:
+
+```ts
+const basePhase = tile.phase + (t * speed) / 20;
+const wave = easeInOutCubic(((basePhase % 1) + 1) % 1);
+```
+
+`easeInOutCubic` converts a 0-1 input into a smooth curve that accelerates in and decelerates out. Without easing, the animation would feel mechanical. With it, tiles seem to breathe.
+
+### 4. The hover influence field
+
+When the pointer moves, we store its CSS position in a ref (not React state, so no re-render fires on every pixel). Each frame, every tile computes its distance to the pointer and calls `radialFalloff`:
+
+```ts
+const dx = tile.cx - pointer.x;
+const dy = tile.cy - pointer.y;
+const dist = Math.sqrt(dx * dx + dy * dy);
+hoverStr = radialFalloff(dist, HOVER_RADIUS);
+```
+
+`radialFalloff` returns 1 at distance 0 and falls as a cubic curve to 0 at `HOVER_RADIUS`. Tiles beyond that radius get zero. The result is a smooth field of influence centred on the cursor.
+
+### 5. Click ripples
+
+`onPointerDown` records a ripple: just an `{x, y, age}` object in a ref array. Each frame, we age every ripple by `dt` and remove ones older than the lifetime. For each live ripple, we compute its current radius (`age * RIPPLE_SPEED`) and call `rippleInfluence`:
+
+```ts
+const currentRadius = ripple.age * RIPPLE_SPEED;
+const fade = easeOutCubic(1 - ripple.age / RIPPLE_LIFETIME);
+rippleStr += rippleInfluence(dist, currentRadius, RIPPLE_RING_WIDTH) * fade;
+```
+
+`rippleInfluence` returns a bell-curve value that peaks when a tile sits on the ring, and zero when the tile is inside or outside. The `fade` multiplier makes the ring weaker as it ages.
+
+### 6. Drag stirring
+
+While the pointer button is held down, `onPointerMove` spawns an extra ripple every ~60 px of travel. This leaves a trail of overlapping rings that continuously disturbs tiles along the drag path.
+
+### 7. Drawing each tile
+
+The final scale and rotation for each tile add the wave, hover, and ripple contributions together:
+
+```ts
+const totalScale = BASE_SCALE + wave * 0.08 + hoverStr * HOVER_BOOST + rippleStr * RIPPLE_BOOST;
+const rotation = wave * 0.18 * PI + hoverStr * 0.35 * PI + rippleStr * 0.22 * PI;
+```
+
+The tile is drawn with `ctx.save() / ctx.translate / ctx.rotate / ctx.restore` so each tile's transform does not affect the next.
+
+### Make it yours
+
+- Raise density for a tighter grid (costs more per frame on large screens).
+- Try square or petal shapes for a completely different feel.
+- Increase speed to make the base wave race across the grid.
+- Click rapidly in different spots and watch the ripples interfere with each other.

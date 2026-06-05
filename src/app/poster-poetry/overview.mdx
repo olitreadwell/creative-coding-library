@@ -1,0 +1,19 @@
+## What this is
+
+Poster Poetry generates a Swiss International-style typographic poster around a quote fetched live from the web. Every time you click "New quote," the app pulls a fresh quote from a public API, then draws it large and bold on a canvas using classic grid-based composition.
+
+## The big idea in plain words
+
+Swiss-style design is about simplicity and clarity. A strong color block, one or two typefaces, careful alignment, and generous white space. The poster carries a single message with no decorative clutter.
+
+Generative typography takes that idea and automates it. The app measures each word before placing it, breaks the quote into lines that fit the canvas width, then positions the author credit below a thin rule line. Change the canvas size and the layout recalculates. Change the quote and new lines form to fit the new words.
+
+The data comes from a free JSON API. On load, the app shows a well-known public-domain quote immediately so the poster is never blank. When the fetch resolves, the poster updates with the live quote. If the network is unavailable, the app keeps using the bundled quotes quietly, with no error thrown.
+
+## Why these ideas matter
+
+- **Generative layouts** let content drive the composition. You write rules for placement and the code does the geometry.
+- **External data** makes a static sketch alive. The same drawing code produces a different poster every time you press a button.
+- **Graceful fallback** is a real-world skill. Network requests fail. A good app shows something useful while it waits and recovers silently when it cannot.
+
+Hit "New quote" to pull a fresh idea from the API. Switch layouts to see three different Swiss-inspired compositions. Change the color scheme to explore four colorblind-safe palettes drawn from the Okabe-Ito set.

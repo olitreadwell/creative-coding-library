@@ -3,11 +3,12 @@ import { defineApp } from "@/lib/creative/registry";
 export const meta = defineApp({
   slug: "pointer-flow",
   title: "Pointer Flow",
-  description: "A field of particles that chases your cursor and scatters when you click.",
+  description:
+    "Soft blobby balloons that drift toward your cursor and get hit by a shockwave when you click.",
   library: "Canvas 2D",
-  concepts: ["interaction", "particle-system", "generative"],
+  concepts: ["interaction", "physics", "generative"],
   level: 1,
-  technique: "pointer-steered particle field on Canvas 2D",
+  technique: "shockwave-driven balloon simulation on Canvas 2D",
   license: "MIT",
   commercialUse: "paid-gig-safe",
   kind: "creative",

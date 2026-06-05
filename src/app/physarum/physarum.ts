@@ -143,7 +143,9 @@ export function diffuseAndDecay(
       const bl = trail[yD * w + xL] ?? 0;
       const br = trail[yD * w + xR] ?? 0;
 
-      const avg = (center + top + bot + left + right + tl + tr + bl + br) / 9;
+      // Weighted kernel: center = 4, cardinal neighbours = 2, corners = 1 (sum = 16).
+      // Heavier centre weight keeps filaments crisp instead of smearing them.
+      const avg = (center * 4 + (top + bot + left + right) * 2 + tl + tr + bl + br) / 16;
 
       temp[y * w + x] = avg * decayRate;
     }

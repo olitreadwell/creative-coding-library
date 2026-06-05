@@ -1,61 +1,93 @@
 ## How it works
 
-### 1. Seed the dots
+### 1. Build the balloons
 
-`makeParticles` builds the starting list from a seeded random generator. Passing
-the same seed string every time means the layout is identical on each load, so
-the sketch always opens looking the same.
+`makeBalloons` creates the starting set from a seeded random generator. Passing
+the same seed string on every load means the layout is stable: the same
+balloons appear in the same spots each time you open the sketch.
 
 ```ts
-particles = makeParticles({ count, width, height, seed: "pointer-flow" });
+balloons = makeBalloons({ count, width, height, seed: "pointer-flow" });
 ```
+
+Each balloon stores its center position, velocity, base radius, a color palette
+index, a wobble phase and speed, and a squash value (starts at 1, meaning
+un-deformed).
 
 ### 2. Fit the canvas sharply
 
-A `ResizeObserver` watches the canvas. When its size changes we set the pixel
-buffer to `clientWidth * devicePixelRatio` so it stays crisp on high-density
-screens, and draw with `ctx.setTransform(dpr, 0, 0, dpr, 0, 0)` so the rest of
-the code can think in plain CSS pixels.
+A `ResizeObserver` watches the canvas element. On any size change it sets the
+pixel buffer to `clientWidth * devicePixelRatio` for crisp rendering on
+high-density screens. Drawing uses `ctx.setTransform(dpr, 0, 0, dpr, 0, 0)` so
+the rest of the code can think in plain CSS pixels.
 
-### 3. Record pointer events
+### 3. Emit a shockwave on click
 
-`onPointerMove` stores the cursor position in a ref, not React state, so moving
-the mouse does not trigger a re-render on every pixel. `onPointerDown` adds an
-impulse (a shockwave) and a visible ring.
+`onPointerDown` records the click position and calls `makeShockwave`, which
+returns a ring object with a starting radius of 0 and a speed proportional to
+the canvas size:
 
 ```ts
 const onPointerDown = (e) => {
   const p = pointerAt(e);
-  impulses.push({ x: p.x, y: p.y, strength, age: 0 });
-  rings.push({ x: p.x, y: p.y, age: 0 });
+  const canvasSize = Math.max(canvas.clientWidth, canvas.clientHeight);
+  shockwaves.push(makeShockwave(p.x, p.y, strength, canvasSize));
 };
 ```
 
-### 4. Update every dot each frame
+`stepShockwaves` runs each frame to expand every ring's radius and remove rings
+that have aged past 1.4 seconds.
 
-`useAnimationFrame` from the shared library runs the loop and pauses it when the
-tab is hidden or the global Play control is off. Each frame we clear the canvas,
-age the impulses and rings, then move every dot.
+### 4. Physics each frame
+
+`useAnimationFrame` runs the loop and pauses it when the tab is hidden or the
+global Play control is off. Each frame:
+
+1. Advance shockwaves, then draw the visible ring.
+2. Call `stepBalloon` for every balloon.
 
 ```ts
-for (const p of particles) {
-  stepParticle(p, pointer, impulses, mode, strength, dt, width, height);
-  drawDot(p);
+for (const b of balloons) {
+  stepBalloon(b, pointer, shockwaves, balloons, mode, strength, dt, w, h);
 }
 ```
 
-`stepParticle` is where the physics lives: it steers the dot toward or away from
-the cursor, adds any shockwave push, applies friction, caps the speed, and wraps
-the dot at the edges.
+Inside `stepBalloon`:
 
-### 5. Safe colours
+- **Cursor force.** A force proportional to `strength / (distance + offset)`
+  pulls or pushes the balloon toward or away from the cursor.
+- **Shockwave impulse.** `shockwaveImpulse` computes a Gaussian envelope around
+  the ring edge. The impulse peaks when the ring lines up with the balloon center
+  and is zero when the ring is far away. If any impulse fires, the squash spring
+  receives a downward kick so the balloon compresses on impact.
+- **Soft separation.** A gentle push keeps overlapping balloons from stacking.
+- **Friction and speed cap.** Velocity is multiplied by 0.82 each frame, and
+  capped at `240 + strength * 60` CSS px/s so high strength still feels
+  snappy without going off screen.
+- **Squash spring.** `squash` is a scalar that deforms the balloon shape. A
+  simple spring equation restores it toward 1 after each hit, giving the bounce-
+  back feel.
 
-Dot colours come from the Okabe-Ito palette in `@/lib/creative`, which stays
-distinct for the common kinds of colour blindness. The palette also swaps for
-light and dark themes so the dots keep good contrast either way.
+### 5. Draw the wobbly shape
+
+`drawBalloon` builds a ring of 20 points around the balloon center. Each point's
+distance from center is the balloon radius plus a small sine offset driven by
+the global time and a per-balloon phase, so each blob wobbles independently. The
+squash value deforms the ring into an ellipse: narrower vertically, wider
+horizontally.
+
+The points connect via quadratic bezier curves through their midpoints, giving a
+smooth closed shape with no sharp corners. A small radial gradient highlight near
+the top-left of each balloon makes it read as a soft rounded object.
+
+### 6. Safe colors
+
+Balloon colors come from `cbColor`, which picks from the Okabe-Ito
+colorblind-safe palette. The palette has separate light-theme and dark-theme
+variants so balloons always have strong contrast against the background.
 
 ### Make it yours
 
-- Switch mode to repel and the dots flee the cursor instead of chasing it.
-- Raise strength to make clicks blast particles further.
-- More particles look denser but cost more per frame.
+- Switch mode to repel and the balloons scatter from the cursor.
+- Raise strength to send balloons flying and make shockwaves hit harder.
+- Reduce the balloon count for a sparse, calm feel; raise it for a packed crowd.

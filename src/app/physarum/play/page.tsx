@@ -9,10 +9,10 @@ import { makeRng } from "@/lib/creative/random";
 import { useAnimationFrame } from "@/lib/creative/useAnimationFrame";
 import { type Agent, stepAgents, diffuseAndDecay, injectMask, trailIndex } from "../physarum";
 
-// Simulation grid resolution. Fixed at ~260 px on the long side, independent
-// of canvas display size. This keeps the per-frame work budget predictable.
-const SIM_W = 260;
-const SIM_H = 195;
+// Simulation grid resolution. Slightly larger than the original 260x195 to
+// produce sharper filaments; still well within per-frame budget.
+const SIM_W = 320;
+const SIM_H = 240;
 
 const WORDS = ["wind", "water", "fire", "grass"] as const;
 type Word = (typeof WORDS)[number];
@@ -59,8 +59,9 @@ const MAX_SENSE_DEG = 60;
 const DEFAULT_SENSE_DEG = 35;
 
 // Trail injection amount per step for mask cells.
-const MASK_INJECT = 0.04;
-const DECAY_RATE = 0.95;
+// Kept deliberately weak so the mask acts as an attractor, not a solid fill.
+const MASK_INJECT = 0.012;
+const DECAY_RATE = 0.96;
 const DEPOSIT = 0.08;
 const SENSE_DIST = 5;
 const STEP_SIZE = 1.2;
@@ -76,9 +77,13 @@ function buildLut(word: Word, theme: string | undefined): Uint8ClampedArray {
 
   for (let i = 0; i < LUT_SIZE; i++) {
     const t = i / (LUT_SIZE - 1);
+    // Apply a power curve so low trail values stay near background and only
+    // bright filaments receive colour. Exponent 2.4 gives a clear threshold
+    // without flattening the top of the range.
+    const tc = Math.pow(t, 2.4);
     const lightness = dark
-      ? clamp(0.06 + t * (WORD_DARK_LIGHTNESS[word] - 0.06), 0, 1)
-      : clamp(0.96 - t * (0.96 - WORD_LIGHT_LIGHTNESS[word]), 0, 1);
+      ? clamp(0.06 + tc * (WORD_DARK_LIGHTNESS[word] - 0.06), 0, 1)
+      : clamp(0.96 - tc * (0.96 - WORD_LIGHT_LIGHTNESS[word]), 0, 1);
     const rgb = hslToRgb({ h: hue, s: saturation, l: lightness });
     const pixIdx = i * 4;
     lut[pixIdx] = Math.round(clamp(rgb.r, 0, 1) * 255);
@@ -253,8 +258,9 @@ export default function PhysarumPlayPage() {
     agentsRef.current = spawnAgents(DEFAULT_AGENTS, mask, SIM_W, SIM_H, Date.now());
     lutRef.current = buildLut(word, themeRef.current);
 
-    // Pre-seed trail inside the mask so the slime starts on the letters.
-    injectMask(trailRef.current, mask, SIM_W, SIM_H, 0.5);
+    // Pre-seed trail lightly inside the mask so agents have something to follow
+    // from the start without painting a solid block.
+    injectMask(trailRef.current, mask, SIM_W, SIM_H, 0.15);
     fadeStepsRef.current = FADE_STEPS + 1;
   }, []);
 
@@ -289,7 +295,7 @@ export default function PhysarumPlayPage() {
     }
 
     agentsRef.current = spawnAgents(agentCountRef.current, mask, SIM_W, SIM_H, Date.now());
-    injectMask(trail, mask, SIM_W, SIM_H, 0.4);
+    injectMask(trail, mask, SIM_W, SIM_H, 0.12);
     fadeStepsRef.current = 0;
 
     // Rebuild LUT for new word.
@@ -351,6 +357,7 @@ export default function PhysarumPlayPage() {
       const cssW = canvas.clientWidth;
       const cssH = canvas.clientHeight;
       ctx.save();
+      ctx.imageSmoothingEnabled = false;
       ctx.scale(dpr, dpr);
       ctx.drawImage(oc, 0, 0, cssW, cssH);
       ctx.restore();

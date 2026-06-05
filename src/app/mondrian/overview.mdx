@@ -1,19 +1,25 @@
 ## What this is
 
-This sketch divides a rectangle into smaller rectangles, over and over, then paints some of them with bold colors and leaves the rest white or near-white. Thick black lines separate every region. The result looks like a painting by Piet Mondrian, the Dutch artist whose grid-based compositions became the signature style of the De Stijl movement.
+This sketch sends a field of De Stijl panels flying toward you. Each panel is a Mondrian-style grid: recursive rectangle subdivision, bold primary-ish fills, thick black lines. But instead of one flat composition, there are many panels stacked at different depths along a z-axis, all falling at the same speed. The result is an endless tunnel of Mondrian grids rushing past the camera.
 
-Each time you click the canvas or press Regenerate, the code picks a new random layout. Same rules, different pattern.
+A depth-of-field effect makes panels near the focus plane sharp and fully opaque while panels far from it fade toward transparent. The combination of perspective scaling, continuous motion, and selective opacity gives a sense of 3D space using nothing but Canvas 2D math.
 
-## The big idea in plain words
+Click the canvas or press Regenerate to scramble all the layers at once.
 
-**Recursion** means a function that calls itself. Here, `subdivide` starts with one big rectangle, splits it in two, then calls itself on each half, then on each quarter, and so on. The split can go left-right or top-bottom, at a random position. The function stops when it has gone deep enough.
+## The big ideas in plain words
 
-The result is a flat list of leaf rectangles. Every leaf rectangle exactly fits inside the original and they never overlap. Together they tile the whole canvas with no gaps.
+**Perspective projection** converts a 3D z-coordinate into a 2D scale factor. The formula is `scale = focal / (focal + z)`. A panel far away gets a small scale; a panel close gets a large scale. This is the same math used in early flight simulators and game engines.
 
-**Depth** controls how many generations of splitting happen. A depth of 2 produces a few large blocks. A depth of 6 or 7 produces many small blocks, some tiny. The number of rectangles grows fast: each extra level can up to double the count.
+**Recursive subdivision** is what fills each panel. `subdivide` starts with one normalised unit square, splits it in two, then calls itself on each half, then on each quarter, and so on. At each split it decides randomly whether to cut horizontally or vertically, and where along that axis to cut (between 25% and 75% of the dimension). When depth reaches zero it returns the current rectangle as a leaf. All leaves tile the original square with no gaps.
 
-**Color probability** controls how often a leaf gets a bold accent color instead of the neutral background. Set it low and you get a sparse Mondrian. Set it high and the canvas fills with color.
+**Depth of field** is a camera optics phenomenon: only objects at the focus distance are sharp. Here it is faked by mapping each panel's z-distance from the focus plane to an alpha value. Panels within the focal range are drawn at full opacity. Panels further away are drawn translucent, so the scene reads as having a limited focus window.
 
-## Why it matters
+**Recycling** keeps the tunnel endless. Each animation frame, every panel moves forward (z decreases). When a panel passes the camera it is assigned a new random seed, placed at the far end of the tunnel, and subdivided fresh. The viewer never sees a repeated loop because each recycled panel is different.
 
-Recursive subdivision appears everywhere in computer science: binary search, merge sort, quad-trees for collision detection, BSP trees for 3D rendering, and spatial data structures. Learning to think recursively is one of the most useful skills in programming. This sketch makes the idea visible and interactive.
+## Controls
+
+- **speed** -- how fast the panels fall toward the camera (z-units per second).
+- **layers** -- how many panel sets exist in the tunnel at once. More layers means denser coverage.
+- **density** -- subdivision depth per panel. Higher values produce many small rectangles; lower values produce a few large blocks.
+- **focus** -- the z depth considered in focus. Drag this to shift which part of the tunnel is sharpest.
+- **line weight** -- thickness of the grid lines. Near panels get heavier lines automatically because they are scaled up by perspective.

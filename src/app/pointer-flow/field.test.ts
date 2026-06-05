@@ -1,61 +1,119 @@
 import { describe, it, expect } from "vitest";
 import fc from "fast-check";
-import { makeParticles, stepParticle, ageImpulses } from "./field";
-import type { Particle, Impulse } from "./field";
+import {
+  makeBalloons,
+  stepBalloon,
+  stepShockwaves,
+  makeShockwave,
+  shockwaveImpulse,
+} from "./field";
+import type { Balloon, Shockwave } from "./field";
 
-describe("makeParticles", () => {
+// ---------------------------------------------------------------------------
+// makeBalloons
+// ---------------------------------------------------------------------------
+
+describe("makeBalloons", () => {
   it("returns the requested count", () => {
-    const particles = makeParticles({ count: 50, width: 800, height: 600 });
-    expect(particles).toHaveLength(50);
+    expect(makeBalloons({ count: 12, width: 800, height: 600 })).toHaveLength(12);
   });
 
-  it("places particles within canvas bounds", () => {
+  it("places balloons within canvas bounds", () => {
     const W = 800;
     const H = 600;
-    const particles = makeParticles({ count: 200, width: W, height: H });
-    for (const p of particles) {
-      expect(p.x).toBeGreaterThanOrEqual(0);
-      expect(p.x).toBeLessThanOrEqual(W);
-      expect(p.y).toBeGreaterThanOrEqual(0);
-      expect(p.y).toBeLessThanOrEqual(H);
+    const balloons = makeBalloons({ count: 50, width: W, height: H });
+    for (const b of balloons) {
+      expect(b.x).toBeGreaterThan(0);
+      expect(b.x).toBeLessThan(W);
+      expect(b.y).toBeGreaterThan(0);
+      expect(b.y).toBeLessThan(H);
     }
   });
 
   it("is deterministic for the same seed", () => {
-    const a = makeParticles({ count: 20, width: 400, height: 300, seed: "test" });
-    const b = makeParticles({ count: 20, width: 400, height: 300, seed: "test" });
+    const a = makeBalloons({ count: 10, width: 400, height: 300, seed: "test" });
+    const b = makeBalloons({ count: 10, width: 400, height: 300, seed: "test" });
     expect(a).toEqual(b);
   });
 
   it("differs for different seeds", () => {
-    const a = makeParticles({ count: 5, width: 400, height: 300, seed: "aaa" });
-    const b = makeParticles({ count: 5, width: 400, height: 300, seed: "bbb" });
+    const a = makeBalloons({ count: 5, width: 400, height: 300, seed: "aaa" });
+    const b = makeBalloons({ count: 5, width: 400, height: 300, seed: "bbb" });
     expect(a).not.toEqual(b);
   });
 
-  it("assigns a hue in [0, 360)", () => {
-    const particles = makeParticles({ count: 100, width: 400, height: 300 });
-    for (const p of particles) {
-      expect(p.hue).toBeGreaterThanOrEqual(0);
-      expect(p.hue).toBeLessThan(360);
+  it("initialises squash at 1 (no deformation)", () => {
+    const balloons = makeBalloons({ count: 8, width: 400, height: 300 });
+    for (const b of balloons) {
+      expect(b.squash).toBe(1);
     }
   });
 });
 
-describe("stepParticle", () => {
-  function makeParticle(overrides?: Partial<Particle>): Particle {
+// ---------------------------------------------------------------------------
+// shockwaveImpulse (pure, property-testable)
+// ---------------------------------------------------------------------------
+
+describe("shockwaveImpulse", () => {
+  it("returns 0 when ring has not yet reached the balloon", () => {
+    // Ring at 50 px, balloon at 200 px — ring has not arrived.
+    expect(shockwaveImpulse(200, 50, 5)).toBe(0);
+  });
+
+  it("returns 0 when ring is far past the balloon", () => {
+    // Ring at 400 px, balloon at 100 px — ring is well past.
+    expect(shockwaveImpulse(100, 400, 5)).toBe(0);
+  });
+
+  it("returns a positive value when ring is passing through the balloon", () => {
+    // Ring radius equals balloon distance: delta = 0, envelope peaks at 1.
+    expect(shockwaveImpulse(150, 150, 5)).toBeGreaterThan(0);
+  });
+
+  it("scales linearly with strength", () => {
+    const low = shockwaveImpulse(150, 150, 2);
+    const high = shockwaveImpulse(150, 150, 4);
+    expect(high / low).toBeCloseTo(2, 3);
+  });
+
+  it("is deterministic for the same inputs", () => {
+    expect(shockwaveImpulse(120, 120, 3)).toBe(shockwaveImpulse(120, 120, 3));
+  });
+
+  it("is non-negative for all valid inputs (property)", () => {
+    fc.assert(
+      fc.property(
+        fc.float({ min: 0, max: 800, noNaN: true }),
+        fc.float({ min: 0, max: 800, noNaN: true }),
+        fc.float({ min: 1, max: 10, noNaN: true }),
+        (dist, ring, strength) => shockwaveImpulse(dist, ring, strength) >= 0,
+      ),
+    );
+  });
+});
+
+// ---------------------------------------------------------------------------
+// stepBalloon
+// ---------------------------------------------------------------------------
+
+describe("stepBalloon", () => {
+  function makeBalloon(overrides?: Partial<Balloon>): Balloon {
     return {
       x: 200,
       y: 200,
       vx: 0,
       vy: 0,
-      hue: 180,
-      radius: 2,
+      radius: 40,
+      colorIdx: 0,
+      wobblePhase: 0,
+      wobbleSpeed: 1,
+      squash: 1,
+      squashV: 0,
       ...overrides,
     };
   }
 
-  it("stays within canvas bounds after stepping", () => {
+  it("stays within canvas bounds after one step (property)", () => {
     fc.assert(
       fc.property(
         fc.float({ min: 0, max: 800, noNaN: true }),
@@ -63,61 +121,76 @@ describe("stepParticle", () => {
         fc.float({ min: -500, max: 500, noNaN: true }),
         fc.float({ min: -500, max: 500, noNaN: true }),
         (x, y, vx, vy) => {
-          const p = makeParticle({ x, y, vx, vy });
-          stepParticle(p, null, [], "attract", 1, 0.016, 800, 600);
-          return p.x >= 0 && p.x <= 800 && p.y >= 0 && p.y <= 600;
+          const b = makeBalloon({ x, y, vx, vy });
+          stepBalloon(b, null, [], [], "attract", 1, 0.016, 800, 600);
+          return b.x >= 0 && b.x <= 800 && b.y >= 0 && b.y <= 600;
         },
       ),
     );
   });
 
-  it("particle attracts toward pointer", () => {
-    const p = makeParticle({ x: 0, y: 0, vx: 0, vy: 0 });
-    const pointer = { x: 400, y: 400 };
-    stepParticle(p, pointer, [], "attract", 5, 0.1, 800, 600);
-    expect(p.vx).toBeGreaterThan(0);
-    expect(p.vy).toBeGreaterThan(0);
+  it("attracts toward pointer", () => {
+    // Centered so a boundary bounce can't flip the small attract velocity.
+    const b = makeBalloon({ x: 400, y: 300, vx: 0, vy: 0 });
+    stepBalloon(b, { x: 700, y: 500 }, [], [], "attract", 5, 0.1, 800, 600);
+    expect(b.vx).toBeGreaterThan(0);
+    expect(b.vy).toBeGreaterThan(0);
   });
 
-  it("particle repels from pointer", () => {
-    const p = makeParticle({ x: 400, y: 400, vx: 0, vy: 0 });
-    const pointer = { x: 400, y: 400 };
-    stepParticle(p, pointer, [], "repel", 5, 0.1, 800, 600);
-    expect(p.vx).toBeLessThanOrEqual(0);
-    expect(p.vy).toBeLessThanOrEqual(0);
+  it("repels from pointer when mode is repel", () => {
+    const b = makeBalloon({ x: 400, y: 300, vx: 0, vy: 0 });
+    stepBalloon(b, { x: 700, y: 500 }, [], [], "repel", 5, 0.1, 800, 600);
+    expect(b.vx).toBeLessThan(0);
+    expect(b.vy).toBeLessThan(0);
   });
 
-  it("impulse pushes particle away", () => {
-    const p = makeParticle({ x: 250, y: 250, vx: 0, vy: 0 });
-    const impulse: Impulse = { x: 200, y: 200, strength: 10, age: 0 };
-    stepParticle(p, null, [impulse], "attract", 1, 0.1, 800, 600);
-    expect(p.vx).toBeGreaterThan(0);
-    expect(p.vy).toBeGreaterThan(0);
+  it("shockwave pushes balloon outward and kicks squash spring", () => {
+    const b = makeBalloon({ x: 300, y: 300, vx: 0, vy: 0, squash: 1, squashV: 0 });
+    const dist = Math.sqrt((300 - 150) ** 2 + (300 - 150) ** 2);
+    const sw: Shockwave = {
+      x: 150,
+      y: 150,
+      radius: dist,
+      speed: 300,
+      strength: 8,
+      age: 0,
+    };
+    stepBalloon(b, null, [sw], [], "attract", 1, 0.1, 800, 600);
+    expect(b.vx).toBeGreaterThan(0);
+    expect(b.vy).toBeGreaterThan(0);
+    expect(b.squashV).toBeLessThan(0);
   });
 
-  it("does not crash with no pointer and no impulses", () => {
-    const p = makeParticle();
-    expect(() => stepParticle(p, null, [], "attract", 1, 0.016, 800, 600)).not.toThrow();
+  it("does not crash with no pointer and no shockwaves", () => {
+    const b = makeBalloon();
+    expect(() => stepBalloon(b, null, [], [], "attract", 1, 0.016, 800, 600)).not.toThrow();
   });
 });
 
-describe("ageImpulses", () => {
-  it("removes impulses older than 0.6 s", () => {
-    const old: Impulse = { x: 0, y: 0, strength: 1, age: 0.59 };
-    const young: Impulse = { x: 0, y: 0, strength: 1, age: 0 };
-    const result = ageImpulses([old, young], 0.1);
-    expect(result).toHaveLength(1);
-    expect(result[0]).toBeDefined();
+// ---------------------------------------------------------------------------
+// stepShockwaves
+// ---------------------------------------------------------------------------
+
+describe("stepShockwaves", () => {
+  it("expands ring radius by speed * dt", () => {
+    const sw = makeShockwave(100, 100, 5, 800);
+    const [next] = stepShockwaves([sw], 0.1);
+    expect(next?.radius).toBeCloseTo(sw.speed * 0.1, 2);
+  });
+
+  it("removes waves older than 1.4 s", () => {
+    const old: Shockwave = { x: 0, y: 0, radius: 600, speed: 400, strength: 5, age: 1.39 };
+    expect(stepShockwaves([old], 0.1)).toHaveLength(0);
+  });
+
+  it("keeps young waves alive", () => {
+    const young: Shockwave = { x: 0, y: 0, radius: 0, speed: 400, strength: 5, age: 0 };
+    expect(stepShockwaves([young], 0.016)).toHaveLength(1);
   });
 
   it("increments age by dt", () => {
-    const imp: Impulse = { x: 0, y: 0, strength: 1, age: 0.1 };
-    const result = ageImpulses([imp], 0.05);
-    expect(result[0]?.age).toBeCloseTo(0.15);
-  });
-
-  it("returns empty when all impulses expire", () => {
-    const old: Impulse = { x: 0, y: 0, strength: 1, age: 0.9 };
-    expect(ageImpulses([old], 0.1)).toHaveLength(0);
+    const sw = makeShockwave(0, 0, 3, 600);
+    const [next] = stepShockwaves([sw], 0.05);
+    expect(next?.age).toBeCloseTo(0.05, 5);
   });
 });

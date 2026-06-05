@@ -30,6 +30,7 @@ const ANIMATED = new Set([
   "cyclic-ca",
   "tile-pulse",
   "physarum",
+  "mondrian",
 ]);
 
 // Console noise that is not an app defect.

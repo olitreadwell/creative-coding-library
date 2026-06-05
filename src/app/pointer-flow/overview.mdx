@@ -1,32 +1,41 @@
 ## What this is
 
-Pointer Flow scatters a field of small dots across the canvas. Each dot watches
-where your cursor is and either drifts toward it or pushes away, depending on the
-mode you pick. When you click, a pulse spreads outward and scatters every dot
-near it.
+Pointer Flow fills the canvas with a small group of large, soft balloons. Each
+balloon drifts gently on its own and reacts to your cursor: in attract mode they
+float toward your hand; in repel mode they shy away. When you click, a bright
+ring blasts outward from the click point. As the ring sweeps over each balloon,
+it shoves the balloon hard and squashes it flat for a moment before it springs
+back to its round shape.
 
-It looks alive and organic, but it is built from a few simple rules applied to
-every dot on every frame.
+The result looks punchy because the feedback is immediate and physical: the ring
+expands fast, every balloon in its path reacts at the right moment, and the
+spring rebound makes each hit feel satisfying.
 
 ## The big idea in plain words
 
-A particle system is just a list of objects, each with a position and a speed.
-On every frame you do three things to each object:
+The sketch runs two loops on every animation frame:
 
-1. Add up the forces acting on it (here: the pull or push toward your cursor,
-   plus any shockwave from a recent click).
-2. Change its speed by those forces, then trim the speed a little so nothing runs
-   away forever. That trim is friction.
-3. Move it by its speed times the time since the last frame.
+1. **Physics step.** For each balloon, add up the forces acting on it (cursor
+   pull or push, shockwave impulse, soft nudge away from neighboring balloons),
+   apply a small amount of friction, cap the speed, then move the balloon by its
+   velocity times the elapsed time.
 
-Mouse, touch, and stylus all arrive through the same browser pointer events, so
-the sketch works on a phone or tablet with no extra code.
+2. **Draw step.** For each balloon, compute a ring of points around its center
+   with a tiny sine ripple on the radius, connect them with smooth curves, fill
+   with a palette color, and paint a small radial gradient highlight to give the
+   illusion of a rounded surface.
+
+The shockwave is a simple expanding ring. Its impulse on a balloon is strongest
+when the ring edge lines up exactly with the balloon center, and falls off
+quickly on either side. That timing is what makes each balloon appear to get
+"hit" rather than all moving at once.
 
 ## Why it matters
 
-Interaction makes a sketch feel alive in a way that pure animation cannot. The
-attract and repel pattern here is the same idea behind flocking birds, magnetic
-field lines, and the way network graphs settle into a shape. Learn it once and
-you can reuse it everywhere.
+The attract/repel pattern and the shockwave impulse model are the same building
+blocks used in games for area-of-effect explosions, fluid simulations, and crowd
+steering. The squash-and-stretch spring is the same trick animators use to show
+weight and elasticity. Learning these three pieces together gives you a practical
+toolkit for interactive motion.
 
-The How it works tab walks through the code.
+The How it works tab walks through the code in detail.

@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "registry": "node scripts/build-app-registry.mjs",
+    "sr-deck": "node scripts/build-sr-deck.mjs",
     "prebuild": "pnpm registry",
     "prelint": "pnpm registry",
     "pretypecheck": "pnpm registry",

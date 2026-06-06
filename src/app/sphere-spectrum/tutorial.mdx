@@ -1,74 +1,34 @@
-## How it works
+# Tutorial: Sphere Spectrum
 
-### 1. One sphere, cached
+By the end of this tutorial you will understand how each vertex on the sphere is assigned to a frequency band and how the envelope makes the response feel punchy.
 
-A single `IcosahedronGeometry` is built once. For every vertex we cache its unit
-direction (which way it points from the center) and its band (its latitude). At
-rest the sphere just turns slowly.
+## Predict
 
-```ts
-const geo = new THREE.IcosahedronGeometry(1, DETAIL);
-// per vertex: dir = normalize(pos); band = vertexBand(dir.y, 1, NUM_BANDS);
-```
+Each vertex is assigned a band by its latitude (its y direction from the center). Band 0 is at the top (bass). The highest band is at the bottom (treble).
 
-### 2. The microphone (on a click)
+If you sing a high note, which part of the sphere do you expect to spike: the top, the bottom, or the equator? (A high note is treble, not bass.)
 
-Nothing runs until you press Enable. Then we open the mic into a Web Audio
-AnalyserNode and read its FFT each frame.
+## Run
 
-```ts
-const analyser = ctx.createAnalyser();
-analyser.fftSize = 2048;
-analyser.smoothingTimeConstant = 0.65;
-analyser.getByteFrequencyData(data); // data[i] in 0..255
-```
+1. Click "Enable" and allow microphone access.
+2. Hum a low note for two seconds, then a high note for two seconds. Watch which latitude spikes for each.
+3. Snap your fingers once near the microphone. Notice how quickly the spike rises and how slowly it decays.
+4. Set the audio slider to maximum and hum. The spikes should be more dramatic.
 
-### 3. Log-frequency banding (the important bit)
+## Look closer
 
-Raw FFT bins are linear, but pitch is logarithmic, so bass crowds into the first
-few bins and treble sprawls across hundreds. We group the bins into a couple of
-dozen bands with geometric edges, average each band, and add a treble shelf so
-high frequencies survive.
+- The sphere geometry is computed once at startup. For every vertex the sketch pre-computes two things: the unit direction vector (which way the vertex points from the center) and the band index (which latitude ring it belongs to). These are cached so the per-frame loop stays fast.
+- Log-frequency band edges are computed with `edges[k] = round(1 * (hi/1)^(k/N))`. This geometric spacing gives each band roughly the same perceptual pitch range, rather than giving bass almost no bins and treble hundreds.
+- The envelope formula is `env = prev + (target - prev) * rate`. When the target is above `prev`, the rate is fast (attack). When below, the rate is slow (release). This is what makes spikes rise fast and decay gradually.
+- After moving vertices, `geometry.computeVertexNormals()` is called. This recalculates how the surface faces the light, so the lighting follows the new displaced shape.
 
-```ts
-const edges = logBandEdges(NUM_BANDS, usableBins); // edges[k] = round(1 * (hi/1)^(k/N))
-const raw = bandLevel(data, edges[b], edges[b + 1]) * shelfGain(b, NUM_BANDS);
-```
+## Break it
 
-### 4. Gate, curve, envelope
+- Enable the mic in a quiet room with "audio" at maximum. Even room tone may cause small, constant spikes.
+- Enable noise gate and compare. The sphere should stay smooth when no intentional sound is present.
+- Whistle a constant pitch and watch the sphere hold a spike at one latitude.
+- Clap with both hands far from the mic and then close. Compare the spike intensity.
 
-A noise gate drops room tone; a perceptual curve lifts quiet bands; a per-band
-attack/release envelope makes it punchy without jitter.
+## Recap
 
-```ts
-const target = Math.pow(clamp(gate(raw) * INPUT_GAIN, 0, 1), ENERGY_EXP);
-env[b] = prev + (target - prev) * (target > prev ? ATTACK : RELEASE); // fast up, slow down
-```
-
-### 5. Displace and color the surface
-
-Each vertex looks up its band's energy, pushes out along its cached direction, and
-takes a cold-to-hot color. The audio slider scales the reaction.
-
-```ts
-const energy = clamp(env[band] * audioGain, 0, 1);
-const r = BASE_RADIUS + energy * DISPLACE;
-position.setXYZ(i, dir.x * r, dir.y * r, dir.z * r);
-const hue = lerp(240, 0, energy); // cold blue -> hot red
-```
-
-After moving the vertices we call `geometry.computeVertexNormals()` so the lighting
-follows the new shape, and flat shading gives the peaks crisp facets.
-
-### Why refs, not state
-
-The audio changes 60 times a second. Storing it in React state would re-render the
-tree every frame, so the analyser, its buffer, and the per-band envelope live in
-refs and the render loop reads them directly. State is kept for the controls only.
-
-### Make it yours
-
-- Raise **audio** for violent spikes, lower it for a gentle shimmer.
-- Map the band to longitude instead of latitude, or to a noise field, for a
-  different surface pattern.
-- Swap the cold-to-hot ramp for frequency-to-hue if you want a fixed rainbow.
+Each vertex is assigned a frequency band by latitude. Every frame, that band's loudness pushes the vertex outward and shifts its color. An attack/release envelope makes the response punchy. Refs hold the audio data so the React tree does not re-render 60 times per second.

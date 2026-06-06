@@ -1,19 +1,25 @@
-## What this is
+# Superformula
 
-A single mathematical equation, the Gielis superformula, can produce shapes that look like flowers, stars, gears, blobs, and polygons. You change four numbers and the shape transforms smoothly in front of you.
+One equation, the Gielis superformula, that produces flowers, stars, gears, and blobs by changing four numbers.
 
-The sketch draws the closed curve in real time on an HTML Canvas using JavaScript. No extra library handles the math. It is all one function.
+Learners see how a single parametric formula in polar coordinates can describe a large family of shapes, from circles to complex polygons.
 
-## The big idea in plain words
+## What you see
 
-Most shapes we know from geometry are described by separate formulas. A circle is one formula. A square needs four sides. A star needs more rules still.
+- A closed curve drawn on the canvas, slowly breathing from a subtle auto-morph.
+- Four sliders (m, n1, n2, n3) that reshape the curve in real time.
+- Preset buttons (Flower, Star, Gear, Blob) that jump to named parameter sets.
+- Drag any slider and watch the shape transform smoothly.
 
-The superformula collapses all of that into one equation. It works in **polar coordinates**, which describe a point by its distance from the center (the radius) and its angle from the horizontal (theta). For each angle around the full 360 degrees, the formula tells you how far from the center the curve sits.
+## What it teaches
 
-When the four parameters (called m, n1, n2, and n3) are all equal to 1, you get a circle. Change m to 5 and you get a five-petal flower. Raise n1 and the petals sharpen into a star. Bring n2 and n3 close to each other and you get a rounded polygon. The same formula, different numbers, completely different shapes.
+- **Polar coordinates:** a point described by its distance from the center (radius) and its angle, rather than x and y.
+- **Parametric formula:** the superformula takes one angle and returns one radius. Sampling it at 720 angles and connecting the dots produces the shape.
+- **Parameter space:** four numbers control the formula. Integer values of `m` produce symmetric shapes; non-integer values break symmetry.
+- **Auto-morph:** a slow sine wave added to `n1` each frame makes the shape breathe without touching the sliders.
 
-## Why this matters
+## Try this
 
-Parametric shapes come up everywhere. Logos, icons, decorative patterns, and even biological forms follow equations similar to this one. Understanding that a single function can describe a huge family of shapes is a key idea in both mathematics and generative design.
-
-The slider controls in the sketch let you explore that family directly. A slow auto-morph keeps the shape moving so you can see it change over time without touching anything.
+- Drag `m` from 1 to 10 slowly. A new petal (or point) appears at each integer.
+- Set `n2` and `n3` to values above 6. The curve flattens into a polygon shape.
+- Set `n1` below 1. The shape inverts and becomes star-like.

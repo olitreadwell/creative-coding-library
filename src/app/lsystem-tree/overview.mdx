@@ -1,34 +1,25 @@
-## What this is
+# L-System Tree
 
-An L-system tree is a fractal plant drawn by a computer. It looks like a branching tree: thick trunk, thin branches, and tiny tips spreading outward. The shape is different every time you click Re-roll, but the overall structure stays the same.
+A fractal plant grown by applying one string substitution rule over and over, then reading the result as drawing instructions.
 
-The whole tree comes from one short rule, applied over and over again.
+Learners see how a single short rule, applied repeatedly, can produce a structure as complex as a tree without writing any branching code directly.
 
-## The big idea in plain words
+## What you see
 
-**L-system** stands for Lindenmayer system, named after the biologist Aristid Lindenmayer, who invented it in 1968 to model how plants grow.
+- A tree with a trunk, branches, and fine tips, drawn in brown and green.
+- Each branch looks like a smaller version of the whole tree.
+- Clicking "Re-roll" produces a different tree using the same rules but different random jitter.
+- Moving the "Iterations" slider from 1 to 6 shows the string growing into a tree step by step.
 
-Here is the core idea:
+## What it teaches
 
-- Start with a short string of letters, called the **axiom**. For this tree, the axiom is `X`.
-- Apply **substitution rules**: every `X` becomes `F+[[X]-X]-F[-FX]+X`, and every `F` becomes `FF`.
-- Do that substitution again on the result. Repeat several times.
+- **L-systems:** a string-rewriting system invented by biologist Aristid Lindenmayer in 1968 to model plant growth.
+- **Turtle graphics:** an imaginary pen that responds to letters in the string: forward, turn left, turn right, push position, pop position.
+- **Recursion and self-similarity:** each branch looks like a smaller version of the whole, because the same rule applied at every scale.
+- **Stack:** the `[` and `]` brackets save and restore the turtle's position, which is what creates branches.
 
-After a few rounds the string is thousands of characters long. Then a "**turtle**" reads the string and draws:
+## Try this
 
-- `F` — move forward and draw a line (one branch segment).
-- `+` — turn left by the turn angle.
-- `-` — turn right by the turn angle.
-- `[` — save the current position and direction (start a branch).
-- `]` — jump back to the last saved position (end a branch, return to the parent).
-
-The `[` and `]` brackets create the branching structure. Every pair is one fork in the tree.
-
-## Why it matters
-
-- **String rewriting is powerful.** A rule that fits on one line can describe a shape that would take thousands of lines to write by hand.
-- **Self-similarity.** Each branch looks like a smaller version of the whole tree. That is the definition of a fractal.
-- **Turtle graphics.** This drawing model is old and simple, but it can produce complex geometry. The same idea is used to teach programming (the Logo language used a turtle in the 1960s).
-- **Biology.** L-systems model real plant growth patterns. Researchers use them to simulate how leaves, ferns, and branching roots develop.
-
-Use the Iterations slider to watch the tree grow. At 1 iteration the string is short and the shape is rough. At 6 iterations the string is enormous and the tree looks dense and organic. The Tutorial tab shows exactly how the code does it, step by step.
+- Drag "Iterations" from 1 to 6 slowly. Watch the string double in complexity at each step.
+- Click "Re-roll" several times. The rules are the same, but a small random angle jitter changes the shape each time.
+- Set Iterations to 1 and find the basic shape. Then raise it and see that same shape repeating at every branch.

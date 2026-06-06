@@ -1,86 +1,34 @@
-## How it works, step by step
+# Tutorial: HSL Palette
 
-The app has two parts: a math layer (`palette.ts`) that computes colors, and a UI layer (`play/page.tsx`) that shows them. Here is how each piece fits together.
+By the end of this tutorial you will understand how each harmony scheme is computed and why the contrast threshold is set at 55% lightness.
 
-### Step 1: represent a color as HSL
+## Predict
 
-The `@/lib/creative/color` library exports a small `hsl()` constructor. It takes three numbers and returns a typed `Hsl` object.
+The "Complementary" scheme uses hue offsets 0 and 180. The "Triadic" scheme uses 0, 120, and 240. These offsets are added to the base hue and the result is wrapped around 360.
 
-```ts
-import { hsl } from "@/lib/creative/color";
-import type { Hsl } from "@/lib/creative/color";
+If you set the base hue to 300 and use the Triadic scheme, what are the three resulting hues? (Hint: add 120 and 240 to 300, then wrap any result above 360 back around.)
 
-// hue: 210 degrees (a cool blue)
-// saturation: 0.70 (70% vivid)
-// lightness:  0.50 (middle brightness)
-const base: Hsl = hsl(210, 0.7, 0.5);
-```
+## Run
 
-Hue is in degrees (0–360). Saturation and lightness are fractions (0–1). Having a typed object makes the rest of the code readable and safe.
+1. Open the sketch. Set hue to 0 (red), saturation to 0.7, lightness to 0.5. Note the Complementary swatches.
+2. Change the scheme to Triadic. The third swatch appears. Calculate what the three hues should be (0, 120, 240) and confirm.
+3. Change the scheme to Monochromatic. All swatches share the same hue but have different lightness values.
+4. Set lightness to 0.55 (the contrast threshold) and note which swatches switch from white text to black text.
 
-### Step 2: compute harmony offsets
+## Look closer
 
-`generatePalette` takes a base color and a scheme name. For most schemes, it rotates the hue by fixed offsets. For monochromatic, it steps through five lightness values while keeping the hue fixed.
+- The `Hsl` type stores hue in degrees (0 to 360) and saturation and lightness as fractions (0 to 1). This makes arithmetic easy: `hue + 180` gives the complement.
+- The `shift` helper wraps hue values using modular arithmetic. Adding 180 to hue 300 gives 480, which wraps to 120.
+- Readable text uses a single rule: lightness at or above 0.55 means black text, below means white. This works across all hue and saturation values without checking contrast ratios.
+- Clicking a swatch writes the hex code using `navigator.clipboard.writeText`. The "Copied" label replaces the hex for 1.5 seconds, then restores it.
 
-```ts
-const HUE_OFFSETS = {
-  complementary: [0, 180],
-  analogous: [-30, 0, 30],
-  triadic: [0, 120, 240],
-  tetradic: [0, 90, 180, 270],
-  monochromatic: [0, 0, 0, 0, 0], // overridden by lightness steps
-};
+## Break it
 
-export function generatePalette(base: Hsl, scheme: Scheme): Hsl[] {
-  if (scheme === "monochromatic") {
-    const STEPS = [0.15, 0.3, 0.45, 0.6, 0.75];
-    return STEPS.map((l) => hsl(base.h, base.s, l));
-  }
-  return HUE_OFFSETS[scheme].map((dh) => shift(base, dh, 0, 0));
-}
-```
+- Set saturation to 0. Change between all five schemes. The swatches stay grey because there is no hue to rotate.
+- Set lightness to 0 or 1. All swatches go black or white. Hue and saturation have no effect at the extremes.
+- Pick Triadic, then choose Tetradic. Count the swatches in each scheme and confirm they match the description (3 and 4).
+- Slowly drag lightness past 0.55. Find the exact point where the readable text on a swatch switches color.
 
-`shift` is a helper from the color library that adds to hue and wraps it around 360. So `shift(base, 180, 0, 0)` gives you the exact opposite color.
+## Recap
 
-### Step 3: pick readable text for each swatch
-
-Each swatch button shows a hex label. The label needs to be readable against the swatch's background color. The rule is simple: if lightness is above 55%, the background is light, so use black text. Otherwise use white text.
-
-```ts
-const THRESHOLD = 0.55;
-
-export function readableText(c: Hsl): "#000000" | "#ffffff" {
-  return c.l >= THRESHOLD ? "#000000" : "#ffffff";
-}
-```
-
-This keeps contrast acceptable across all hue and saturation values.
-
-### Step 4: convert HSL to hex for display and copy
-
-The browser needs hex codes for clipboard output. The color library provides two conversion helpers: `hslToRgb` turns the `Hsl` object into `{ r, g, b }` (each 0–1), and `rgbToHex` turns that into a `#RRGGBB` string.
-
-```ts
-const hex = rgbToHex(hslToRgb(color)); // e.g. "#3b82f6"
-```
-
-For the swatch background, `hslString(color)` returns a CSS `hsl(...)` string, which the browser renders directly.
-
-### Step 5: the UI
-
-The UI has three sliders (hue, saturation, lightness) and five scheme buttons. All state lives in the top-level component. Every change recomputes the palette from scratch. Because the math is fast (a handful of additions), this is fine with no memoization.
-
-Each swatch is a `<button>` so it is reachable by keyboard. Clicking writes the hex to the clipboard using `navigator.clipboard.writeText`. A short "Copied" confirmation replaces the label for 1.5 seconds.
-
-## Try this
-
-- Set saturation to 0. Now every scheme shows shades of grey. That is because there is no hue to rotate.
-- Set lightness to 0 or 100. All swatches go black or white. Hue and saturation have no effect at the extremes.
-- Pick Triadic, then slowly drag hue. Watch the three swatches stay 120 degrees apart as the whole group rotates.
-- Pick Complementary and adjust lightness. Notice how the readable text switches between black and white as you cross the 55% threshold.
-
-## What to remember
-
-- HSL makes color arithmetic readable. Rotating a hue by a fixed angle is one line of code.
-- Color harmonies are just geometry on a circle. The math is not complicated; the visual results are.
-- Readable contrast is a function of lightness, not hue. That one rule handles text color for all 360 possible hues.
+Color harmonies are fixed hue offsets on a 360-degree circle. HSL makes those offsets easy to compute. One lightness threshold handles readable text for all 360 possible hues.

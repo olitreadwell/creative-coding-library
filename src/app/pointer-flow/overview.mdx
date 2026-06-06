@@ -1,41 +1,25 @@
-## What this is
+# Pointer Flow
 
-Pointer Flow fills the canvas with a small group of large, soft balloons. Each
-balloon drifts gently on its own and reacts to your cursor: in attract mode they
-float toward your hand; in repel mode they shy away. When you click, a bright
-ring blasts outward from the click point. As the ring sweeps over each balloon,
-it shoves the balloon hard and squashes it flat for a moment before it springs
-back to its round shape.
+Soft balloons that drift, respond to your cursor, and react to a shockwave ring when you click.
 
-The result looks punchy because the feedback is immediate and physical: the ring
-expands fast, every balloon in its path reacts at the right moment, and the
-spring rebound makes each hit feel satisfying.
+Learners see how a few physics-style forces (attraction, repulsion, shockwave impulse, squash spring) combine to produce satisfying interactive motion.
 
-## The big idea in plain words
+## What you see
 
-The sketch runs two loops on every animation frame:
+- Several large soft balloons drifting gently on the canvas.
+- In attract mode, the balloons float toward your cursor. In repel mode, they move away.
+- Clicking sends an expanding ring outward. Each balloon squashes flat the moment the ring reaches it, then springs back.
+- The squash-and-spring response makes each hit feel physical.
 
-1. **Physics step.** For each balloon, add up the forces acting on it (cursor
-   pull or push, shockwave impulse, soft nudge away from neighboring balloons),
-   apply a small amount of friction, cap the speed, then move the balloon by its
-   velocity times the elapsed time.
+## What it teaches
 
-2. **Draw step.** For each balloon, compute a ring of points around its center
-   with a tiny sine ripple on the radius, connect them with smooth curves, fill
-   with a palette color, and paint a small radial gradient highlight to give the
-   illusion of a rounded surface.
+- **Forces and velocity:** each frame, forces are added to each balloon's velocity. Friction reduces the velocity. The velocity moves the position.
+- **Shockwave impulse:** the ring's impulse on a balloon peaks when the ring edge aligns with the balloon center, and drops off quickly on either side.
+- **Squash spring:** a spring equation restores the balloon's shape toward round after each hit. It gives motion the feel of weight and elasticity.
+- **Soft separation:** a gentle push keeps overlapping balloons from stacking on top of each other.
 
-The shockwave is a simple expanding ring. Its impulse on a balloon is strongest
-when the ring edge lines up exactly with the balloon center, and falls off
-quickly on either side. That timing is what makes each balloon appear to get
-"hit" rather than all moving at once.
+## Try this
 
-## Why it matters
-
-The attract/repel pattern and the shockwave impulse model are the same building
-blocks used in games for area-of-effect explosions, fluid simulations, and crowd
-steering. The squash-and-stretch spring is the same trick animators use to show
-weight and elasticity. Learning these three pieces together gives you a practical
-toolkit for interactive motion.
-
-The How it works tab walks through the code in detail.
+- Switch between attract and repel mode. Notice how the cursor becomes either a magnet or a repeller.
+- Click in the center of a group of balloons. Watch each balloon's squash happen at a slightly different time as the ring crosses each one.
+- Hold the mouse button down and drag. A trail of ring impulses follows your path.

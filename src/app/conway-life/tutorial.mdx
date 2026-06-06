@@ -1,82 +1,34 @@
-## How it works, step by step
+# Tutorial: Conway's Game of Life
 
-This app runs Conway's Game of Life on an HTML canvas. No library. Just a flat array of cells, a rule function, and a drawing loop.
+By the end of this tutorial you will understand how the four rules produce stable, repeating, and moving patterns from a random start.
 
-## Step 1: store the grid as a flat array
+## Predict
 
-A 2D grid is stored as a single `Uint8Array`. Each position holds `1` (alive) or `0` (dead). To get the value at column `col`, row `row`, you compute one index:
+The four rules are: a live cell with fewer than 2 live neighbors dies; a live cell with 2 or 3 lives; a live cell with more than 3 dies; a dead cell with exactly 3 becomes alive.
 
-```ts
-function idx(col: number, row: number, cols: number): number {
-  return row * cols + col;
-}
-```
+A single live cell has zero live neighbors, so it dies on the next tick. A cluster of exactly four cells arranged in a 2x2 square each has three neighbors. What happens to that cluster on the next tick?
 
-A flat array is faster than a nested array. The whole grid fits in one contiguous block of memory, so the CPU can read it quickly.
+## Run
 
-## Step 2: seed the grid
+1. Open the sketch and press Pause immediately. Count a few clusters in the frozen grid.
+2. Press Play for one second, then Pause again. Compare the grid to your memory of the first frame.
+3. Look for a 2x2 block of live cells. Watch it across several generations. It stays a 2x2 block forever.
+4. Press Randomize and watch the first twenty ticks. Notice how some areas stabilize quickly while others keep changing.
 
-Before the simulation starts, we fill the grid with random live cells. A seeded random-number generator (`makeRng`) means the same seed always produces the same starting pattern.
+## Look closer
 
-```ts
-export function makeGrid(rng: Rng, cols: number, rows: number, density: number): Uint8Array {
-  const grid = new Uint8Array(cols * rows);
-  for (let i = 0; i < grid.length; i++) {
-    grid[i] = rng() < density ? 1 : 0;
-  }
-  return grid;
-}
-```
+- The simulation runs at 10 ticks per second, independent of the frame rate. This keeps behavior consistent on any device.
+- The grid is stored as a single `Uint8Array`. Each cell is 0 (dead) or 1 (alive). Using one byte per cell is faster than using true/false values.
+- The next generation is always written into a separate array. The current generation is never changed mid-step. This prevents one cell's update from affecting its neighbor's calculation.
+- Cells are tinted by position, creating a color gradient. The color does not affect behavior: it only helps you see which areas are active.
 
-`density` is a number between 0 and 1. `0.28` means about 28% of cells start alive.
+## Break it
 
-## Step 3: count neighbours
+- Find a 3-cell L-shape (two cells in a row, one cell above the end). Watch it for five ticks. It becomes a 2x2 block within two ticks.
+- Try "Randomize" with a very sparse starting density. The grid may go quiet in a few ticks if there are not enough neighbors to sustain reactions.
+- Pause the grid and find a cluster with exactly three live neighbors around a dead cell. Predict that the dead cell will become alive on the next tick, then confirm.
+- Watch the edges. A live cell at the right edge has neighbors at the left edge. Does the behavior look continuous across that boundary?
 
-For each cell, we look at all eight surrounding cells. The grid wraps at the edges (called a **toroidal grid**). So a cell on the right edge is a neighbour of the cell on the left edge. No cell is ever missing neighbours.
+## Recap
 
-```ts
-export function countNeighbors(
-  grid: Uint8Array,
-  col: number,
-  row: number,
-  cols: number,
-  rows: number,
-): number {
-  let count = 0;
-  for (let dr = -1; dr <= 1; dr++) {
-    for (let dc = -1; dc <= 1; dc++) {
-      if (dr === 0 && dc === 0) continue;
-      const nc = (((col + dc) % cols) + cols) % cols;
-      const nr = (((row + dr) % rows) + rows) % rows;
-      count += grid[idx(nc, nr, cols)] ?? 0;
-    }
-  }
-  return count;
-}
-```
-
-The double modulo `(((col + dc) % cols) + cols) % cols` handles the wrap without negative indices.
-
-## Step 4: apply Conway's rules
-
-The `step` function reads the current grid, applies the four rules to every cell, and writes the results into a new array. The old grid is never changed.
-
-The rule is one line: a live cell survives with 2 or 3 neighbours; a dead cell is born with exactly 3 neighbours.
-
-## Step 5: draw to a canvas
-
-Every animation frame, the app fills the canvas with the background color, then draws a small rounded rectangle for each live cell. Cells are tinted by position to create a color gradient across the grid.
-
-The simulation runs at a fixed number of steps per second (10), not at the frame rate. This keeps the speed consistent even on a fast monitor.
-
-## Try this
-
-- Click **Randomize** to start from a new seed. Watch how different patterns emerge from different starting arrangements.
-- Click **Pause** and look at the frozen grid. Find clusters of 2 or 3 cells and predict which ones will survive.
-- A starting pattern of exactly three cells in an L-shape will become a 2x2 block. Try to spot that happening.
-
-## What to remember
-
-- Each cell only looks at its eight neighbours. No global communication.
-- The next state of every cell is computed from the current state. Order does not matter.
-- Complex, living-looking patterns emerge from four rules. That is emergence, and it shows up everywhere in nature.
+Four rules, applied simultaneously to every cell in the grid, produce a system that can generate order from noise. The simulation does not know about gliders or oscillators. Those patterns exist because they satisfy the rules in a self-sustaining way.

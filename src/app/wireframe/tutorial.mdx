@@ -1,76 +1,34 @@
-## How it works
+# Tutorial: Wireframe
 
-The whole sketch is four small steps: list the corners, spin them, flatten them,
-then draw them back to front.
+By the end of this tutorial you will understand the two-step process (rotate then project) and why drawing back-to-front produces correct overlap.
 
-### 1. List the corners
+## Predict
 
-A shape is just an array of 3D points plus a list of which points are joined by
-an edge. A cube is eight corners at every combination of plus and minus one.
+The perspective formula is `f = cameraDist / (cameraDist - z)`. A point with `z = 0` is at the center of the scene. A point with a large positive `z` is farther away.
 
-```ts
-type Vec3 = { x: number; y: number; z: number };
+If `cameraDist = 5` and a point has `z = 4`, what is `f`? (Divide 5 by `5 - 4`.) Now compute `f` for `z = 0`. Which point appears larger on screen and by how much?
 
-const cube: Vec3[] = [];
-for (const x of [-1, 1]) for (const y of [-1, 1]) for (const z of [-1, 1]) cube.push({ x, y, z });
-```
+## Run
 
-For the edges we connect every pair of corners that sit at the shortest distance
-apart. That recovers the real edges without typing them out by hand.
+1. Open the sketch and watch the default shape spin.
+2. Drag the perspective slider slowly from left to right. Find the point where the shape looks most "natural."
+3. Click the canvas and drag left-right to spin the shape around the vertical axis.
+4. Click and drag up-down to spin around the horizontal axis.
 
-### 2. Spin every corner
+## Look closer
 
-To rotate a point we turn it around an axis with sine and cosine. Doing it for
-the X axis then the Y axis gives a nice tumble.
+- A cube is defined as 8 corners at every combination of (+1, -1) across all three axes. That gives exactly 8 points: `[-1,-1,-1], [-1,-1,1], [-1,1,-1]`, and so on.
+- Edges are found by connecting corner pairs that are exactly distance 2 apart (one unit on one axis). This recovers the correct 12 cube edges without typing them manually.
+- Edges are sorted by their average depth (`(za + zb) / 2`) before drawing. Ascending order means far edges are drawn first.
+- Depth tinting maps z to brightness: near edges get a high color value, far edges get a low one. This is done with a `lerp` between two color values based on the projected depth.
 
-```ts
-function rotate(v: Vec3, ax: number, ay: number): Vec3 {
-  let { x, y, z } = v;
-  // around X
-  [y, z] = [y * Math.cos(ax) - z * Math.sin(ax), y * Math.sin(ax) + z * Math.cos(ax)];
-  // around Y
-  [x, z] = [x * Math.cos(ay) + z * Math.sin(ay), -x * Math.sin(ay) + z * Math.cos(ay)];
-  return { x, y, z };
-}
-```
+## Break it
 
-Each frame we add a little to the angles, so the shape keeps turning.
+- Try the perspective slider at its extreme minimum. Edges at different depths look very different in size, almost distorted.
+- Drag the canvas vigorously and let go. The shape keeps spinning because the drag momentum is applied to the angle each frame.
+- Try changing the shape to a sphere (icosphere). The same four steps (corners, rotate, project, draw back-to-front) produce a completely different wireframe.
+- Look at the shape from a side angle (drag to about 45 degrees). Compare how clearly you can see front versus back edges.
 
-### 3. Flatten with perspective
+## Recap
 
-The screen is 2D, so we drop the z value, but first we use it to fake depth.
-Divide by how far the point is from the camera. Near points stay large, far
-points shrink.
-
-```ts
-function project(v: Vec3, cameraDist: number) {
-  const f = cameraDist / (cameraDist - v.z);
-  return { x: v.x * f, y: v.y * f, scale: f, depth: v.z };
-}
-```
-
-That one division is the trick that makes a flat drawing look solid.
-
-### 4. Draw back to front
-
-If we drew edges in any order, near and far lines would cross wrongly. So we
-sort edges by their average depth and draw the far ones first. We also tint each
-edge by depth, near edges bright, far edges dim, which the eye reads as light and
-distance.
-
-```ts
-edges
-  .sort((a, b) => avgDepth(a) - avgDepth(b)) // far first
-  .forEach((e) => {
-    ctx.strokeStyle = depthColor(e);
-    ctx.lineWidth = depthWidth(e);
-    drawLine(e);
-  });
-```
-
-### Make it yours
-
-- Drag the canvas: the same `rotate` angles are nudged by the pointer.
-- The perspective slider changes `cameraDist`. Small values exaggerate depth;
-  large values look almost flat.
-- Swap the shape to see how the same four steps draw any set of points.
+Rotate every corner with sine and cosine. Project from 3D to 2D by dividing by distance. Sort edges by depth and draw far ones first. Tint by depth. Those four steps produce every 3D wireframe this sketch can draw.

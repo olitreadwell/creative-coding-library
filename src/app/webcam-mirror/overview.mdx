@@ -1,24 +1,25 @@
-## What this is
+# Webcam Mirror
 
-Webcam Mirror takes the live feed from your camera and redraws it as a grid of colored dots. Each dot sits at the center of a small square of pixels. The bigger and brighter the dot, the brighter that part of the image was. Dark areas disappear; bright areas glow.
+Your live camera feed redrawn as a grid of colored dots sized by brightness, creating a live halftone effect.
 
-You stay in control. The camera does not start until you click "Enable camera." You can close the tab at any time to stop the feed.
+Learners see the core three-step camera pipeline: request access, sample the video into a small canvas, read pixels back.
 
-## The big idea in plain words
+## What you see
 
-A video frame is just a big grid of colored pixels. Each pixel has a red value, a green value, and a blue value. From those three numbers we can calculate a single number called **luminance**, which tells us how bright that pixel is on a scale from 0 (black) to 1 (white).
+- A grid of colored dots replacing your camera image in real time.
+- Bright areas produce large dots. Dark areas produce small or invisible dots.
+- Dot colors run from deep blue (dark) to bright yellow (bright) on a colorblind-safe ramp.
+- Nothing runs until you click "Enable camera."
 
-We group the pixels into cells, one per dot. We sample the color at that cell, calculate the luminance, and then draw a circle. A luminance of 0 gives a dot with radius 0, invisible. A luminance of 1 gives the largest circle that fits inside the cell.
+## What it teaches
 
-The color of each dot comes from a **colorblind-safe sequential ramp** that runs from deep blue (dark areas) to bright yellow (highlights). This ramp stays readable for people with protanopia or deuteranopia because it avoids the red-green axis entirely.
+- **getUserMedia:** the browser API for requesting camera access. Permission is always required.
+- **Luminance:** a single brightness value computed from red, green, and blue using weighted addition. Green contributes most because human eyes are most sensitive to green.
+- **Dot radius from brightness:** a bright cell (luminance near 1) gets the largest dot. A dark cell (luminance near 0) gets a near-invisible dot.
+- **Mirroring:** the canvas is flipped horizontally so the result reads as a mirror, not a camera facing you.
 
-The image is **mirrored horizontally** so it matches what you expect from a mirror, not a camera facing you.
+## Try this
 
-## Controls
-
-- **Dot size** changes how many columns and rows of dots fit on the canvas. Larger dots give a coarser, more abstract look. Smaller dots reveal more detail.
-- **Contrast** multiplies each luminance value before it becomes a dot radius. Higher values push mid-tones toward full brightness and make the overall image punchier.
-
-## Why it matters
-
-This sketch introduces two important web concepts. First, `getUserMedia` is the browser API that requests a live video stream from the camera. It always asks the user for permission, and the browser enforces that permission natively. Second, drawing a video frame onto a canvas and reading pixels back with `getImageData` is how many real-time image effects work in the browser, from face filters to motion detection.
+- Hold your hand in front of a bright background and watch the dot sizes create a clear silhouette.
+- Raise "Contrast" and watch dark areas vanish while bright areas saturate.
+- Try the sketch in a dark room with one light source to see the gradient clearly.

@@ -1,58 +1,34 @@
-## How it works, step by step
+# Tutorial: Stagger Grid
 
-This app animates a grid of plain `div` elements using GSAP. No canvas. No WebGL. Just HTML, CSS, and a timeline.
+By the end of this tutorial you will understand what the `stagger` property does and how to predict the time it takes for the wave to reach the last tile.
 
-### Step 1: build the grid
+## Predict
 
-We define `COLS = 12` and `ROWS = 8`. A helper called `gridCells` returns an array of cell objects. Each object holds the cell's row number, column number, and a flat index.
+The sketch uses 96 tiles (12 columns by 8 rows) and a stagger delay of 0.045 seconds between each tile starting.
 
-We loop over that array in JSX and render one `div` per cell. Each div gets the CSS class `stagger-tile`. GSAP will use that class name as a selector later.
+The center tile starts first. The corner tiles start last. How many seconds do you think pass between the center tile starting and the last corner tile starting? Round to the nearest second.
 
-### Step 2: color by distance
+## Run
 
-Each tile gets a hue based on how far it sits from the center of the grid. Center tiles are blue-purple (hue around 200). Outer tiles shift toward pink (hue around 310). This is done with a helper called `cellHue`. The gradient is subtle, but it makes the ripple visible.
+1. Open the sketch and count slowly as the wave travels from the center to the corner. See how close your estimate was.
+2. Watch the wave reach an outer tile. Note that the tile is already midway through its animation before the very last corner tile has started.
+3. Watch the animation reverse. The corners return first, then the center returns last.
+4. Time the full forward-and-back cycle. It takes several seconds to complete.
 
-### Step 3: create the GSAP timeline
+## Look closer
 
-A **timeline** is a container for animations. Think of it like a playlist: you add animations to it in order, and it plays them in sequence. Here we use it differently: we add one animation and let stagger handle the sequencing.
+- The `stagger` object includes `from: "center"` and `grid: [8, 12]`. GSAP uses those values to compute which tile starts first and how delays increase outward.
+- Each tile animates to `scale: 0.45` and `rotation: 180`. These are the only changes. The ripple effect is entirely due to the staggered start times.
+- `repeat: -1` means the timeline loops forever. `yoyo: true` means it plays forward, then in reverse, then forward again.
+- The animation is scoped using `gsap.context()` with a ref to the outer div. This prevents GSAP from selecting `.stagger-tile` elements from other parts of the page.
 
-```ts
-const tl = gsap.timeline({ repeat: -1, yoyo: true });
-tl.to(".stagger-tile", {
-  scale: 0.45,
-  rotation: 180,
-  duration: 1.2,
-  ease: "sine.inOut",
-  stagger: {
-    each: 0.045, // seconds between each tile starting
-    from: "center",
-    grid: [ROWS, COLS],
-  },
-});
-```
+## Break it
 
-`repeat: -1` means it loops forever. `yoyo: true` means it plays forward then backward, so the tiles always return to their starting state.
+- Try changing `each: 0.045` to `each: 0.01` in the source code. The wave should move much faster, almost all at once.
+- Try `each: 0.12`. The wave slows to a crawl. The full cycle takes much longer.
+- Change `from: "center"` to `from: "start"`. The wave should begin at the top-left corner instead.
+- Change `ease: "sine.inOut"` to `ease: "linear"`. The motion becomes mechanical and even-paced.
 
-### Step 4: stagger does the heavy lifting
+## Recap
 
-The `stagger` object tells GSAP:
-
-- `from: "center"`: start from the middle of the grid, not the top-left corner.
-- `grid: [ROWS, COLS]`: treat the targets as a 2D grid, not a flat list.
-- `each: 0.045`: wait 45 milliseconds between each tile starting.
-
-With 96 tiles total, the last tile starts roughly 4 seconds after the first. That long sweep is what creates the ripple feeling.
-
-### Step 5: scope the animation
-
-We wrap everything in `gsap.context()`. The context is scoped to the `ref` of the outer `div`. This means GSAP only selects `.stagger-tile` elements inside that div, not anywhere else on the page. When the component unmounts, `ctx.revert()` cleans up all animations automatically.
-
-## Try this
-
-- Change `each: 0.045` to `each: 0.01` for a fast burst, or `each: 0.1` for a slow wave.
-- Change `from: "center"` to `from: "start"` to see the wave begin in the top-left corner instead.
-- Change `ease: "sine.inOut"` to `ease: "bounce.out"` for a bouncier motion.
-
-## What to remember
-
-Stagger is just a delay applied to each item in a group. The animation itself is simple: scale and rotate. The ripple effect comes entirely from spreading those start times across a 2D grid. Change the delay, change the pattern.
+Stagger is just a delay: each tile's start time is offset by a fixed amount from the previous tile. One simple animation (scale and rotate) applied to 96 tiles with increasing delays produces a wave, without any wave code.

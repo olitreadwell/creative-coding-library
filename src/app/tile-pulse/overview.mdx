@@ -1,25 +1,25 @@
-## What this is
+# Tile Pulse
 
-Tile Pulse fills the screen with a grid of geometric shapes. Each tile animates on its own looping cycle, and a travelling wave ripples across the grid so the motion looks alive even before you touch it.
+A grid of geometric tiles animated with a travelling wave, reacting to cursor hover and expanding rings when you click.
 
-Move your cursor near a tile and it reacts: nearby tiles scale up and rotate toward you. Click anywhere to send a ring of animation spreading outward from that point. Hold the mouse down and drag to leave a continuous trail of disturbance.
+Learners see how phase offsets, radial falloff functions, and event-driven ripples combine to produce interactive motion.
 
-## The big idea in plain words
+## What you see
 
-Every tile has two things: a **base animation** and an **influence value**.
+- A grid of colored tiles animating in a diagonal wave pattern.
+- Tiles near your cursor scale up and rotate toward you.
+- Clicking sends an expanding ring outward. Tiles briefly react as the ring passes.
+- Dragging leaves a continuous trail of disturbance.
 
-The base animation is a looping wave. Each tile is offset in time by its position in the grid, so the wave travels diagonally across the canvas like a ripple in fabric.
+## What it teaches
 
-The influence value measures how much the pointer or a ripple is affecting that tile right now. It comes from a simple rule: tiles close to the cursor or to the ripple front get a high value; tiles far away get zero. The exact shape of that dropoff (strong at the centre, fading smoothly to nothing at the edge) is called a **radial falloff**.
+- **Phase offset:** each tile gets a different start time in the animation cycle based on its grid position. This is what makes the wave travel across the grid.
+- **Radial falloff:** a function that returns 1 at distance 0 and fades to 0 at a set radius. This controls how far the cursor influence reaches.
+- **Ripple influence:** a bell-curve value that peaks when a tile sits exactly on the ring edge, and is zero inside or outside it.
+- **Refs for performance:** pointer position and ripple data are stored in refs (not React state) so the canvas does not re-render on every pointer move.
 
-When you click, a ripple ring expands outward at a fixed speed. As the ring crosses each tile, the tile briefly gets a high influence value, then returns to its base state. The result looks like a stone dropped in water, but made of geometry.
+## Try this
 
-## Why it matters
-
-This sketch brings together three patterns that come up constantly in interactive creative work:
-
-- **Phase offsets.** Giving each tile a slightly different start time in the same loop is how you get a travelling wave from identical objects with identical rules.
-- **Influence fields.** A function that maps distance to a 0-1 strength value is one of the most reusable ideas in generative code. The same pattern controls particle attraction, lighting falloff, and sound volume.
-- **Event-driven ripples.** Expanding rings are a classic way to make a click feel like it has weight and spread. The ring is not drawn on screen; its position and age are used only to decide how much each tile should react.
-
-The Tutorial tab shows the code behind each of these three ideas.
+- Move the cursor slowly across the grid and watch the influence field spread around it.
+- Click in the center of the grid and watch the ring expand outward. Count how many tile rings it passes.
+- Hold the mouse button and drag. Overlapping ripple rings from the drag trail interact with each other.

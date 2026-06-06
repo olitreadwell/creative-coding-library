@@ -1,98 +1,34 @@
-## How it works, step by step
+# Tutorial: Webcam ASCII
 
-This app draws a live text grid from your camera using plain Canvas 2D and the browser's `getUserMedia` API. No libraries handle the video or the pixel math. Here is the full chain broken into five steps.
+By the end of this tutorial you will understand how glyph ink density is measured and how brightness maps to a character index.
 
-## Step 1: measuring glyph ink density
+## Predict
 
-Before any camera work, the sketch needs to know how "dense" each character is. It draws each glyph onto a tiny 16x16 offscreen canvas and counts how many pixels have a non-zero alpha channel.
+The sketch draws each character on a 16 by 16 canvas and counts pixels with non-zero alpha. A space scores 0 filled pixels. An `@` scores close to 256.
 
-```ts
-function measureGlyphDensity(glyph: string, fontSize: number): number {
-  const ctx = canvas.getContext("2d", { willReadFrequently: true });
-  ctx.fillText(glyph, 8, 8);
-  const data = ctx.getImageData(0, 0, 16, 16).data;
-  let count = 0;
-  for (let i = 3; i < data.length; i += 4) {
-    if ((data[i] ?? 0) > 16) count++;
-  }
-  return count;
-}
-```
+After sorting from least ink to most, which end of the sorted array holds the densest characters? If a cell is very dark (brightness near 0), which end of the sorted array should it pick from?
 
-After measuring every glyph, the array is sorted from least ink to most. A space scores 0. An `@` scores close to 256. This gives us a physical ordering that matches our intuition about "density."
+## Run
 
-## Step 2: mapping brightness to a glyph index
+1. Click "Enable camera" and allow access.
+2. Hold your hand in front of a bright background. Watch the edge between your hand and the background become a sharp character boundary.
+3. Switch "Glyphs" between ASCII, Blocks, and Dots. Notice how the number of distinct density levels changes the smoothness of the gradient.
+4. Raise "Contrast" and watch dark shadow areas fill with denser characters.
 
-A pure function called `brightnessToIndex` converts a brightness value in [0, 1] to a position in the sorted glyph array. It inverts the brightness so that a dark cell (brightness near 0) picks a dense character (high index) and a bright cell picks a sparse one (low index).
+## Look closer
 
-```ts
-function brightnessToIndex(brightness: number, count: number): number {
-  const inverted = 1 - clamp(brightness, 0, 1);
-  return clamp(Math.round(inverted * (count - 1)), 0, count - 1);
-}
-```
+- The sketch samples the camera into a tiny canvas that matches the grid dimensions (for example, 80 columns by 50 rows). `getImageData` on that small canvas returns only the bytes needed, keeping the per-frame work proportional to the grid size, not the camera resolution.
+- The canvas is flipped horizontally before drawing: `ctx.scale(-1, 1)` after `ctx.translate(cols, 0)`. This mirrors the image so it reads as a selfie view.
+- Luminance is computed as `0.299 * r + 0.587 * g + 0.114 * b`. These are BT.601 coefficients, the standard weights used in video and television encoding.
+- When the component unmounts, every `MediaStreamTrack` is stopped with `track.stop()`. This turns off the camera indicator light in the browser.
 
-This function is pure and tested separately with property-based tests: it always returns an integer in range, and it is monotonically non-increasing as brightness increases.
+## Break it
 
-## Step 3: requesting camera access
+- Switch "Glyphs" to "Dots." The dots set has very few characters, so the gradient has fewer steps and looks more quantized.
+- Set "Cell size" to maximum. Each character represents a large area. The image becomes abstract and blocky.
+- Hold a uniformly lit white sheet of paper in front of the camera. Most characters should vanish because high brightness maps to sparse glyphs.
+- Try the sketch in a dim room. The contrast slider may need to be raised to see any character variation.
 
-The camera never starts on page load. The sketch shows a prompt and waits for the user to click "Enable camera."
+## Recap
 
-```ts
-const stream = await navigator.mediaDevices.getUserMedia({
-  video: { facingMode: "user" },
-});
-```
-
-`facingMode: "user"` prefers the front-facing camera on phones. If the user denies permission or if no camera exists, the error name is checked and a readable message is shown instead of letting an uncaught exception propagate.
-
-## Step 4: sampling the video into a small canvas
-
-Each animation frame draws the video into a tiny offscreen canvas that matches the grid dimensions. The canvas is flipped horizontally before drawing so the result reads as a mirror.
-
-```ts
-sample.ctx.save();
-sample.ctx.translate(cols, 0);
-sample.ctx.scale(-1, 1);
-sample.ctx.drawImage(video, 0, 0, cols, rows);
-sample.ctx.restore();
-```
-
-Working at grid resolution (for example, 80 x 50) rather than full camera resolution means `getImageData` returns only the bytes the sketch actually needs, which keeps the per-frame work small.
-
-## Step 5: drawing the glyph grid
-
-For each cell, the sketch reads the RGBA values, calculates luminance with BT.601 coefficients, applies the contrast multiplier, then picks a glyph and draws it.
-
-```ts
-const lum = clamp(luminance(r, g, b) / 255, 0, 1);
-const adjusted = clamp(lum * contrast, 0, 1);
-const glyphIdx = brightnessToIndex(adjusted, count);
-const glyph = sortedGlyphs.chars[glyphIdx];
-ctx.fillStyle = cbRamp(adjusted, theme);
-ctx.fillText(glyph, cx, cy);
-```
-
-`cbRamp` from the shared color library maps the brightness to a color on the blue-to-yellow Okabe-Ito sequential ramp. This ramp reads correctly in grayscale and for the most common forms of color vision deficiency.
-
-## Cleanup
-
-When the component unmounts, every `MediaStreamTrack` is stopped. This turns off the camera indicator light.
-
-```ts
-for (const track of stream.getTracks()) {
-  track.stop();
-}
-```
-
-## Try it yourself
-
-- Switch **Glyphs** to "Blocks" for a cleaner, geometric look with fewer characters.
-- Set **Cell size** to its minimum for a near-photographic density of text.
-- Raise **Contrast** in a well-lit room to make dark shadows fill with dense characters.
-- Hold a single finger in front of a bright background and watch the edge become a sharp character boundary.
-- Compare "ASCII" and "Dots" to see how the number of distinct density levels changes the smoothness of the gradient.
-
-## What to remember
-
-Measuring glyph ink coverage with `getImageData` on a tiny canvas is the same technique at a different scale. Whether you are sampling camera pixels or character pixels, the browser gives you RGBA byte arrays and you decide what to do with the numbers.
+Glyph ink density is measured by drawing each character and counting filled pixels. Characters are sorted lightest to densest. Each cell's brightness selects a glyph from that sorted list. The same `getUserMedia` plus `getImageData` pipeline powers this sketch and any other real-time camera effect.

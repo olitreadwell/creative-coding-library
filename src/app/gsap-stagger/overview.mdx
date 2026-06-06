@@ -1,19 +1,25 @@
-## What this is
+# Stagger Grid
 
-Stagger Grid is a 12 by 8 grid of colored tiles. When the page loads, a ripple wave spreads outward from the center. Each tile shrinks and spins, then the wave bounces back in reverse. The result looks like a stone dropped into still water, but made of squares.
+A 12 by 8 grid of tiles that animate in a ripple wave from the center, using the GSAP animation library.
 
-## The big idea in plain words
+Learners see how giving each element a slightly different start time turns one simple animation into a visible wave.
 
-"Stagger" means each tile starts its animation a tiny moment after its neighbor. The center tile goes first. The tiles just outside the center go next, a fraction of a second later. Then the next ring, then the next. By the time the outermost tiles start moving, the center is already halfway through.
+## What you see
 
-That staggered delay is the only trick. Take one simple move (shrink, spin) and spread its start time across a grid, and you get a wave for free.
+- 96 colored tiles arranged in a grid.
+- A ripple wave starts at the center and spreads outward.
+- Each tile shrinks and rotates, then the wave reverses.
+- The animation loops continuously, playing forward then backward.
 
-There is no physics math here. No particle system. Just one animation, started at different times, arranged in a grid shape.
+## What it teaches
 
-## Why it matters
+- **Stagger:** each tile starts its animation a fixed delay after its neighbor, creating a wave from a single animation.
+- **GSAP timeline:** a container that holds animations and controls their playback, including looping and reversing.
+- **Easing:** the tiles do not move at constant speed. They accelerate in and decelerate out (`sine.inOut`), which makes the motion feel natural.
+- **Scoped animation:** GSAP's `context()` keeps the animation tied to one component so it cleans up correctly when the page changes.
 
-- **Timelines.** This sketch uses a GSAP timeline: a container that holds animations and plays them in order. Timelines make it easy to sequence, repeat, and reverse complex motion.
-- **Easing.** The tiles do not move at a constant speed. They start slow, speed up, then slow down again. That curve is called an "ease." Without easing, motion looks robotic.
-- **Stagger.** Stagger is the technique of offsetting each item's start time so a group of animations sweeps across a layout instead of all firing at once.
+## Try this
 
-You do not need to know the math to use it. Once you see the stagger property in the code, you can change the number and immediately hear the rhythm change. That is a good way to learn.
+- Watch the center tile versus an outer tile. Count how many tiles start moving before the corner tiles begin.
+- Notice the wave reverses. Tiles return to their original position in the opposite order they left it.
+- Look at the color of the tiles. Center tiles are blue-purple and outer tiles shift toward pink.

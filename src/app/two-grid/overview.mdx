@@ -1,26 +1,25 @@
-## What this is
+# Vector Grid
 
-Vector Grid is a 10 by 10 grid of squares that spin, pulse, and change color. Each square is a **vector shape**: a math-described object, not a grid of pixels. The grid comes alive with a ripple wave that starts at the center and spreads outward.
+A 10 by 10 grid of squares that spin, pulse, and shift color in a ripple wave from the center, using the two.js vector graphics library.
 
-Click **Play** to watch it run. The Tutorial tab explains the code step by step.
+Learners see how a scene graph lets you update shapes by changing properties rather than redrawing from scratch.
 
-## The big idea in plain words
+## What you see
 
-Imagine a hundred spinning tops arranged in a grid. Every top spins at its own speed. The tops near the center spin faster and pulse bigger. The ones at the edges lag behind.
+- A grid of colored squares, each spinning and pulsing.
+- A ripple wave starts at the center and travels outward continuously.
+- Squares near the center rotate faster and pulse at a different time than outer squares.
+- Colors shift with the wave, from blue-purple at the center to teal at the edges.
 
-Because each top follows a slightly different timing, a wave appears. No single shape knows about the wave. It emerges from each shape following a simple rule about its **distance from the center**.
+## What it teaches
 
-Two main ideas make this work:
+- **Scene graph:** two.js keeps a list of all shapes internally. You update each shape's rotation or scale property and two.js handles redrawing.
+- **Phase offset:** each square's distance from the center delays its animation, producing the visible wave.
+- **Transforms:** rotation and scale are applied around each shape's own center. You change one number; the library handles the math.
+- **Euclidean distance:** the distance from each square to the center is computed with `sqrt(dx^2 + dy^2)` and normalized to the range [0, 1].
 
-- **Vector graphics.** Shapes are described by math (position, size, rotation, color), not pixels. You can change a shape's rotation or scale and the renderer redraws it cleanly at any size.
-- **A scene graph.** Every shape lives as an object you create once and then update each frame. The library walks the graph and draws everything. You only describe _what changed_, not _how to redraw_.
+## Try this
 
-## Why it matters
-
-This pattern shows up across creative coding, games, and UI animation:
-
-- **Transforms.** Rotating and scaling an object is a foundational skill. Every 2D and 3D engine works this way.
-- **Phase offsets.** Staggering a timing value by distance gives you waves, ripples, and cascades without any special wave code.
-- **Generative color.** Tying hue and lightness to a live variable (time, scale) creates color that feels alive, not static.
-
-You do not need to understand trigonometry to read the code. The Tutorial breaks it down line by line.
+- Watch the center square carefully. It rotates at the slowest speed but pulses first.
+- Watch a corner square. It rotates faster and its pulse lags behind the center.
+- Notice how the color of each square changes in sync with its size pulse.

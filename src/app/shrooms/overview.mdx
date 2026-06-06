@@ -1,23 +1,25 @@
-## What this is
+# Mushrooms
 
-A canvas full of procedurally generated mushrooms. Each mushroom is built from three simple shapes: a tapered rectangle for the stem, a half-ellipse for the cap, and a handful of small circles for spots. The sizes, colors, lean angles, and depths all come from a seeded random number generator, so the same seed always produces the same patch. Click anywhere on the canvas to plant a new mushroom at that spot, or hit "Regenerate" to grow a completely different patch.
+A patch of procedurally generated mushrooms, each built from three simple shapes, swaying in a gentle breeze.
 
-## The big idea in plain words
+Learners see how parameterized shapes and seeded randomness let you describe a whole scene from a short list of rules.
 
-The key insight is that even a recognizable, organic-looking object can be built from a short list of geometric primitives. You do not need hand-drawn artwork. You need rules.
+## What you see
 
-**Seeded randomness** means the random choices are reproducible. Feed the same number into the generator and you always get the same sequence of values. That is how two different computers, or the same computer run twice, can produce identical patches.
+- A field of mushrooms of varying sizes, colors, and lean angles.
+- Each mushroom sways slightly. Larger caps sway more than smaller ones.
+- Mushrooms sorted by depth: farther ones appear smaller and more transparent.
+- Clicking the canvas plants a new mushroom at that spot.
 
-**Depth layering** makes the scene feel three-dimensional without any 3D math. Mushrooms that are "further back" are drawn smaller and more transparent. The code sorts them back-to-front so nearer mushrooms paint over far ones correctly. This is called the painter's algorithm.
+## What it teaches
 
-**Sway** is just a sine wave. Each mushroom's cap shifts left and right by a tiny amount each frame. The amount is proportional to the cap width, so bigger mushrooms sway more. Each mushroom gets a slightly different phase based on its x position, so they do not all move in lockstep.
+- **Parameterized shapes:** each mushroom is a typed data object (position, stem height, cap size, lean, color, depth). Drawing is separate from the data.
+- **Painter's algorithm:** mushrooms are sorted back-to-front by depth so near ones paint over far ones correctly. No 3D math needed.
+- **Sine sway:** a sine wave with a per-mushroom phase offset makes each cap move independently rather than in lockstep.
+- **Seeded PRNG:** the same seed produces the same patch every time. "Regenerate" advances to a new seed.
 
-## Why it matters
+## Try this
 
-This sketch demonstrates three ideas that reappear constantly in generative art:
-
-- **Parameterized shapes.** Any visual thing can be described as a function that takes numbers in and produces a drawing. Change the numbers, change the thing.
-- **Seeded variation.** Pseudorandom number generators let you reproduce, share, and iterate on generative results without saving every pixel.
-- **Depth through scale and opacity.** Perceptual depth cues, not 3D transforms, are often enough to create a convincing layered scene.
-
-The Tutorial tab shows the code that builds each part.
+- Click in the foreground (lower part of the canvas) to plant a large, near mushroom.
+- Click near the top for a small, distant mushroom.
+- Press "Regenerate" several times to see the variety possible from the same short set of rules.

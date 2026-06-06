@@ -1,34 +1,25 @@
-## What this is
+# Hand Pinch
 
-Control a sketch with your hands, no mouse. Turn on the camera, then pinch your
-thumb and finger together to grab a soft blob. Move your pinch to drag it. Pinch
-with both hands and pull apart to stretch the blob between them. Your camera feed
-is shown faintly behind, with dots marking the points the tracker found on each
-hand.
+A sketch you control with your hands: pinch your thumb and index finger to grab a soft blob, move it, or stretch it between two hands.
 
-Nothing leaves your browser. The camera and the hand tracker only start after you
-press the button.
+Learners see how a hand-tracking model turns camera landmarks into gesture detection and physical interaction.
 
-## The big idea in plain words
+## What you see
 
-A hand-tracking model looks at each camera frame and returns 21 points per hand:
-the wrist, knuckles, and fingertips, each as an x/y position. With those points
-you can read gestures. The simplest is the pinch: measure the distance between
-the thumb tip and the index fingertip. When that distance is small, the fingers
-are touching, so the user is pinching. The midpoint of the two tips is the
-"grab point".
+- A camera feed showing your hands, with dots marking 21 tracked points per hand.
+- A soft, wobbly blob that follows your pinch point.
+- The blob stretches when you pinch with both hands and pull them apart.
+- Nothing runs until you click "Enable," and nothing is sent outside your browser.
 
-From there the interaction is ordinary 2D maths: one pinch sets the blob's
-position; two pinches set the two opposite edges, so the blob stretches to fit
-between your hands. A little easing each frame makes the motion feel soft instead
-of jumpy.
+## What it teaches
 
-## Why it matters
+- **Hand landmarks:** the MediaPipe model returns 21 points per hand, each as an x and y position between 0 and 1.
+- **Pinch detection:** the distance between the thumb tip (point 4) and index fingertip (point 8) determines whether the hand is pinching.
+- **Linear interpolation (lerp):** the blob follows the pinch point smoothly by moving a fraction of the way toward the target each frame.
+- **Privacy by default:** the camera and tracker only start after the user presses a button.
 
-Camera-based input opens interactions that a mouse cannot: reach out and grab,
-pull two things apart, wave. The hand model does the hard computer-vision work;
-your job is to turn its points into meaning. The pinch is the "click" of hand
-tracking, and once you can detect it you can build drawing tools, instruments,
-and games that respond to real gestures.
+## Try this
 
-The How it works tab walks through the code.
+- Pinch slowly and watch the blob center ease toward your hand rather than jumping instantly.
+- Pinch with both hands and spread them apart. The blob stretches between the two grab points.
+- Cover one hand and use just one finger. Notice the blob returns to its resting size when no pinch is detected.

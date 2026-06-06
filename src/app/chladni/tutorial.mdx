@@ -1,57 +1,34 @@
-## How it works, step by step
+# Tutorial: Chladni Figures
 
-Plain Canvas 2D. The entire pattern comes from one trigonometry formula evaluated across a grid.
+By the end of this tutorial you will understand how one formula produces every pattern you can see, and why equal mode numbers create a diagonal figure.
 
-### Step 1: the plate field
+## Predict
 
-Picture the plate as a unit square: `x` and `y` both run from 0 to 1. A single vibration mode is a product of two sine waves, one along each axis. We add two such modes, with the wave counts `a` and `b` swapped between them.
+The formula for the Chladni figure adds two products of sine functions. Each sine product creates a grid of ripples. When the two mode numbers `a` and `b` are equal, the two terms become identical.
 
-```ts
-export function chladni(x: number, y: number, a: number, b: number): number {
-  const PI = Math.PI;
-  return Math.sin(PI * a * x) * Math.sin(PI * b * y) + Math.sin(PI * b * x) * Math.sin(PI * a * y);
-}
-```
+If both mode numbers are equal, what shape do you expect the nodal lines to form? Think about whether the figure will have diagonal or horizontal symmetry.
 
-A few things fall out of this for free:
+## Run
 
-- At any edge (`x = 0`, `x = 1`, `y = 0`, `y = 1`) every sine term is zero, so the value is zero. The rim of the plate is always a node, which is physically correct for a clamped plate.
-- Swapping `x` and `y` leaves the value unchanged, so every figure is symmetric across the diagonal.
-- The value never leaves the range from -2 to 2, since it is two products of sines.
+1. Open the sketch and set `a = 2, b = 3`. Study the pattern for five seconds.
+2. Change `b` to 2 (equal to `a`). Watch the figure reorganize. Compare the shape.
+3. Now change both to `a = 4, b = 4`. The diagonal structure becomes more complex.
+4. Change `a` to 5 while keeping `b = 4`. The symmetry breaks. A new figure appears.
 
-The tests assert all three of these properties.
+## Look closer
 
-### Step 2: find the nodes
+- The plate's rim is always a bright line. The formula guarantees it: every sine term is zero at the edges, so the edge is always a node.
+- Swapping `a` and `b` produces the same figure rotated 90 degrees. That follows from the formula's structure.
+- The lines breathe slowly because the sketch lets the mode numbers drift a tiny amount around their slider values. This mimics how a real plate is never perfectly tuned.
+- The figure is computed on a 200 by 200 grid, not pixel-by-pixel. The small grid is then scaled up. That is why the rendering is fast.
 
-The plate is still wherever the field is zero. We turn "closeness to zero" into a brightness from 0 to 1, so the lines have soft, drawable thickness instead of being infinitely thin.
+## Break it
 
-```ts
-export function nodeIntensity(value: number, width: number): number {
-  const t = 1 - Math.abs(value) / width;
-  return t < 0 ? 0 : t > 1 ? 1 : t;
-}
-```
+- Try `a = 1, b = 1`. This is the simplest possible figure: two diagonal lines crossing the plate.
+- Try `a = 6, b = 7`. Count the segments inside the plate.
+- Try `a = 3, b = 5`, then swap to `a = 5, b = 3`. Compare the two figures.
+- Look at the corners of the plate. Are they always nodes? The formula predicts they should be.
 
-A value of exactly zero gives intensity 1, a glowing node. As the field grows away from zero the intensity fades to 0 over the chosen `width`.
+## Recap
 
-### Step 3: paint it efficiently
-
-Evaluating the formula for every screen pixel every frame would be slow. Instead we compute it once on a small fixed grid (200 by 200) and write the colors straight into an `ImageData` buffer, blending the line color over the background by the node intensity:
-
-```ts
-const t = nodeIntensity(chladni(x, y, a, b), NODE_WIDTH);
-data[i] = fill[0] + (line[0] - fill[0]) * t; // red, similarly green and blue
-```
-
-That small buffer is then drawn scaled up to fill the canvas, with smoothing on so the lines look crisp at any size.
-
-### Step 4: a gentle shimmer
-
-A fixed mode pair gives a frozen figure. To bring it to life we let `a` and `b` drift a tiny amount around their slider values using a slow sine of time:
-
-```ts
-const da = a + DRIFT * Math.sin(t * 0.5);
-const db = b + DRIFT * Math.sin(t * 0.37 + 1);
-```
-
-The two different speeds keep the wobble from ever repeating exactly, so the lines breathe. With reduced motion the sketch skips the drift and renders the exact integer figure as a still frame. Try `a = 4, b = 7` for a dense lattice, or `a = 1, b = 2` for the simplest cross.
+One trigonometry formula, evaluated at every point on a grid, produces every figure in this sketch. The pattern you see is exactly where that formula equals zero.

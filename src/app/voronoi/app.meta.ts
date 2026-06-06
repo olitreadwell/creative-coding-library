@@ -4,7 +4,7 @@ export const meta = defineApp({
   slug: "voronoi",
   title: "Voronoi",
   description:
-    "The plane split into cells around moving sites, each point belonging to its nearest one. Click to add a site.",
+    "Each cell owns the area closest to one site. Click to add a site and watch the cells rearrange.",
   library: "Canvas 2D",
   concepts: ["voronoi", "generative", "interaction"],
   level: 2,
@@ -15,7 +15,7 @@ export const meta = defineApp({
   builtAt: "2026-06-05T16:58:41+12:00",
   prereqs: ["circle-packing"],
   understandWhen:
-    "You can describe what the nearest-site partition means and predict how adding a site in a large cell changes the diagram.",
+    "You can explain what nearest-site means and predict how a new site inside a large cell splits the diagram.",
   predictPrompt:
-    "If you add a new site exactly at the center of the largest cell, how many new cell edges appear?",
+    "If you click the center of the largest cell to add a site, how many new edges appear?",
 });

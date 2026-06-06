@@ -4,7 +4,7 @@ export const meta = defineApp({
   slug: "phyllotaxis",
   title: "Phyllotaxis",
   description:
-    "The golden-angle spiral that nature uses for sunflowers and pinecones. Scroll to grow the bloom.",
+    "Dots placed at the same angle every time pack tightly into spirals. This is how sunflowers arrange their seeds.",
   library: "Canvas 2D",
   concepts: ["phyllotaxis", "generative", "interaction"],
   level: 1,
@@ -21,6 +21,6 @@ export const meta = defineApp({
   builtAt: "2026-06-05T16:10:39+12:00",
   prereqs: [],
   understandWhen:
-    "You can state what the golden angle is and explain why that specific angle produces gap-free packing.",
-  predictPrompt: "If you replace the golden angle with 90 degrees, what pattern appears and why?",
+    "You can state what the golden angle is and explain why that angle produces tight, gap-free packing.",
+  predictPrompt: "If you swap the golden angle for 90 degrees, what pattern do you get instead?",
 });

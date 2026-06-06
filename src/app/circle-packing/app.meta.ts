@@ -3,7 +3,8 @@ import { defineApp } from "@/lib/creative/registry";
 export const meta = defineApp({
   slug: "circle-packing",
   title: "Circle Packing",
-  description: "Circles drop in one by one and grow until they touch, filling the plane.",
+  description:
+    "Each circle grows until it touches another. Teaches a greedy space-filling strategy.",
   library: "Canvas 2D",
   concepts: ["generative", "seeded-random", "geometry", "packing"],
   level: 2,
@@ -20,7 +21,7 @@ export const meta = defineApp({
   builtAt: "2026-06-06T11:23:11+12:00",
   prereqs: ["seeded-tilings"],
   understandWhen:
-    "You can explain the grow-until-collision strategy and predict how density changes with a smaller minimum radius.",
+    "You can explain the grow-until-collision rule and predict how pack density changes with a smaller minimum size.",
   predictPrompt:
-    "If you halve the minimum circle radius, does the packing end up with more circles, fewer gaps, or both?",
+    "If you cut the minimum circle radius in half, does the canvas end up with more circles, fewer gaps, or both?",
 });

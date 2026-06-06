@@ -4,7 +4,7 @@ export const meta = defineApp({
   slug: "r3f-spheres",
   title: "Sphere Field",
   description:
-    "A lit 3D field of spheres rippling in a sine wave, built with three.js and React Three Fiber.",
+    "A grid of 3D spheres that ripple in a wave. React Three Fiber wraps three.js in React components.",
   library: "three.js / R3F",
   concepts: ["3d", "scene-graph", "lighting"],
   level: 2,
@@ -21,7 +21,7 @@ export const meta = defineApp({
   builtAt: "2026-06-05T08:44:33+12:00",
   prereqs: ["two-grid", "wireframe"],
   understandWhen:
-    "You can describe how the R3F scene graph maps to three.js objects and explain what useFrame does each tick.",
+    "You can describe how each R3F component maps to a three.js object and explain what useFrame runs each animation frame.",
   predictPrompt:
-    "If you remove the directional light and keep only ambient light, what visual change do you expect on the spheres?",
+    "If you remove the directional light and keep only ambient light, how do the spheres look different?",
 });

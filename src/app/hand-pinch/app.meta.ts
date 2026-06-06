@@ -4,7 +4,7 @@ export const meta = defineApp({
   slug: "hand-pinch",
   title: "Hand Pinch",
   description:
-    "Pinch your fingers in front of the camera to grab and stretch a blob. Hand tracking, no mouse.",
+    "Pinch your fingers in front of the camera to grab a blob. No mouse needed. Hand tracking only.",
   library: "MediaPipe + Canvas 2D",
   concepts: ["hand-tracking", "webcam", "interaction"],
   level: 3,
@@ -21,7 +21,7 @@ export const meta = defineApp({
   builtAt: "2026-06-05T17:22:59+12:00",
   prereqs: ["webcam-mosaic", "squish"],
   understandWhen:
-    "You can describe how the pinch gesture is detected from landmark coordinates and predict what breaks if the hand is partially offscreen.",
+    "You can describe how a pinch is detected from two landmark points and predict what fails when the hand is partly off screen.",
   predictPrompt:
-    "If the thumb and index finger cross without a real pinch, does the blob respond? Why or why not?",
+    "If your thumb and index finger cross but do not touch, does the blob respond? Why or why not?",
 });

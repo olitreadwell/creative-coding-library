@@ -3,7 +3,8 @@ import { defineApp } from "@/lib/creative/registry";
 export const meta = defineApp({
   slug: "physics-drops",
   title: "Physics Drops",
-  description: "Colorful bodies fall and stack under gravity with matter.js.",
+  description:
+    "Colored shapes fall, bounce, and stack under gravity. A physics engine handles the collisions.",
   library: "matter.js",
   concepts: ["physics", "rigid-body", "simulation"],
   level: 2,
@@ -20,7 +21,7 @@ export const meta = defineApp({
   builtAt: "2026-06-05T08:44:33+12:00",
   prereqs: ["pointer-flow"],
   understandWhen:
-    "You can describe the difference between rigid-body and particle physics and predict how changing restitution changes the bounce.",
+    "You can explain what restitution controls and predict how the bounce changes when you set it to 0 versus 1.",
   predictPrompt:
-    "If you set restitution to 1.0 (perfectly elastic), do the bodies eventually come to rest or keep bouncing indefinitely?",
+    "If you set restitution to 1.0 (perfectly elastic bounce), do shapes eventually settle or keep bouncing forever?",
 });

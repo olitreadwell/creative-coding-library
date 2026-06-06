@@ -4,7 +4,7 @@ export const meta = defineApp({
   slug: "sphere-spectrum",
   title: "Sphere Spectrum",
   description:
-    "A sphere whose surface erupts into colored peaks driven by your microphone, with log-frequency banding.",
+    "A 3D sphere that spikes outward in response to your mic. Each spike maps to a frequency band from your audio.",
   library: "React Three Fiber + Web Audio",
   concepts: ["audio-reactive", "3d", "vertex-displacement", "microphone"],
   level: 3,
@@ -15,7 +15,7 @@ export const meta = defineApp({
   builtAt: "2026-06-05T18:23:05+12:00",
   prereqs: ["mic-spectrum", "r3f-spheres"],
   understandWhen:
-    "You can explain what vertex displacement does in 3D and predict which frequency bands affect which part of the sphere surface.",
+    "You can explain what vertex displacement is and predict which part of the sphere spikes for a low note versus a high one.",
   predictPrompt:
-    "If you sing a high note, does the top of the sphere, the equator, or the whole surface spike, and why?",
+    "If you sing a high note, does the top, equator, or whole surface of the sphere spike?",
 });

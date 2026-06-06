@@ -3,7 +3,8 @@ import { defineApp } from "@/lib/creative/registry";
 export const meta = defineApp({
   slug: "metaballs",
   title: "Metaballs",
-  description: "Organic blobs that merge and split, drawn from a scalar field.",
+  description:
+    "Blobs that merge when they get close and split when they move apart. Drawn from a shared energy field.",
   library: "Canvas 2D",
   concepts: ["metaballs", "implicit-surface", "marching-squares", "fields"],
   level: 2,
@@ -20,7 +21,6 @@ export const meta = defineApp({
   builtAt: "2026-06-05T10:08:06+12:00",
   prereqs: ["voronoi"],
   understandWhen:
-    "You can explain the threshold value's role and predict what happens to the blobs when you raise it.",
-  predictPrompt:
-    "If you raise the iso-contour threshold, do the blobs grow, shrink, or merge, and why?",
+    "You can explain what the threshold value does and predict what happens to blob size when you raise it.",
+  predictPrompt: "If you raise the threshold, do the blobs grow, shrink, or pull together?",
 });

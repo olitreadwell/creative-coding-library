@@ -4,7 +4,7 @@ export const meta = defineApp({
   slug: "strange-attractor",
   title: "Strange Attractor",
   description:
-    "Millions of points settle into an intricate shape from a simple chaotic rule. Use the arrow keys to morph it.",
+    "Millions of points follow a chaotic rule and settle into a detailed shape. Arrow keys shift the four parameters.",
   library: "Canvas 2D",
   concepts: ["chaos", "attractor", "interaction"],
   level: 2,
@@ -21,7 +21,7 @@ export const meta = defineApp({
   builtAt: "2026-06-05T15:37:57+12:00",
   prereqs: ["noise-field"],
   understandWhen:
-    "You can explain why small parameter changes produce radically different shapes and predict whether nearby parameters look similar.",
+    "You can explain why a tiny parameter change can produce a completely different shape in a chaotic system.",
   predictPrompt:
-    "If you nudge one parameter by 0.01, does the attractor shape change gradually or jump to a completely different form?",
+    "If you nudge one parameter by 0.01, does the shape change gradually or jump to something unrelated?",
 });

@@ -4,7 +4,7 @@ export const meta = defineApp({
   slug: "wireframe",
   title: "Wireframe",
   description:
-    "A rotating 3D solid drawn in fake 3D with perspective and depth shading. Drag to spin it.",
+    "A 3D shape drawn on a flat canvas using rotation matrices and perspective math. Drag to spin it.",
   library: "Canvas 2D",
   concepts: ["3d-projection", "geometry", "generative"],
   level: 2,
@@ -15,7 +15,7 @@ export const meta = defineApp({
   builtAt: "2026-06-05T14:44:40+12:00",
   prereqs: ["two-grid"],
   understandWhen:
-    "You can apply a rotation matrix to a 3D point by hand and explain what the perspective divide does to depth.",
+    "You can apply a rotation matrix to a 3D point by hand and explain what dividing by depth does to the projection.",
   predictPrompt:
-    "If you remove the perspective divide and use an orthographic projection, does the model look flatter, wider, or without foreshortening?",
+    "If you remove the perspective divide and use orthographic projection, does the shape look flat, stretched, or just less deep?",
 });

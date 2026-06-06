@@ -24,4 +24,18 @@ export const meta = defineApp({
     "You can explain what restitution controls and predict how the bounce changes when you set it to 0 versus 1.",
   predictPrompt:
     "If you set restitution to 1.0 (perfectly elastic bounce), do shapes eventually settle or keep bouncing forever?",
+  recallChecks: [
+    {
+      q: "What does restitution control in a physics engine?",
+      a: "It sets how elastic a collision is. At 0 the object stops dead on impact; at 1 it bounces back at full speed.",
+    },
+    {
+      q: "Why does matter.js use a separate render step instead of drawing directly in your code?",
+      a: "The engine updates positions and the built-in renderer draws from those positions, keeping physics logic and rendering decoupled.",
+    },
+    {
+      q: "What happens to stacked shapes when you lower gravity?",
+      a: "They take longer to fall and land more gently, so stacks build higher before collapsing.",
+    },
+  ],
 });

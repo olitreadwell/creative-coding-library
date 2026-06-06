@@ -24,4 +24,18 @@ export const meta = defineApp({
     "You can predict whether two seeds produce the same pattern and explain what makes the result repeat exactly.",
   predictPrompt:
     "Same seed, double the tile size: does the pattern look the same, just bigger, or completely different?",
+  recallChecks: [
+    {
+      q: "What is a seeded random number generator?",
+      a: "A PRNG that produces the same sequence of numbers every time you give it the same starting value, making random results reproducible.",
+    },
+    {
+      q: "What choice does each Truchet tile make?",
+      a: "Each tile draws one of two possible arc orientations. The seed determines which orientation lands in each cell.",
+    },
+    {
+      q: "How do you get a completely different pattern without changing the tile logic?",
+      a: "Change the seed. The same arc rules run, but a different sequence of orientations produces a different visual result.",
+    },
+  ],
 });

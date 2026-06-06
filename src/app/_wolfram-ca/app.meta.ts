@@ -18,4 +18,9 @@ export const meta = defineApp({
   commercialUse: "paid-gig-safe",
   kind: "creative",
   builtAt: "2026-06-05",
+  prereqs: ["seeded-tilings"],
+  understandWhen:
+    "Given a 3-cell neighborhood pattern, you can compute the next state for rule 30 by hand.",
+  predictPrompt:
+    "Rule 110 is Turing-complete. Does changing the initial seed change the long-term pattern structure, or only the starting position?",
 });

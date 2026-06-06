@@ -18,4 +18,9 @@ export const meta = defineApp({
   commercialUse: "paid-gig-safe",
   kind: "creative",
   builtAt: "2026-06-05",
+  prereqs: ["hsl-palette"],
+  understandWhen:
+    "You can read a GLSL color expression and predict the resulting hue without running the shader.",
+  predictPrompt:
+    "If you change the time uniform to move twice as fast, does the gradient animate faster, change color, or both?",
 });

@@ -18,4 +18,9 @@ export const meta = defineApp({
   commercialUse: "paid-gig-safe",
   kind: "creative",
   builtAt: "2026-06-05",
+  prereqs: [],
+  understandWhen:
+    "You can predict whether two seeds will produce the same pattern and explain what makes the tiling deterministic.",
+  predictPrompt:
+    "If you use the same seed but double the tile size, does the pattern look identical, scaled, or different?",
 });

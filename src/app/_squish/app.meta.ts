@@ -12,4 +12,9 @@ export const meta = defineApp({
   commercialUse: "paid-gig-safe",
   kind: "creative",
   builtAt: "2026-06-05",
+  prereqs: ["physics-drops", "metaballs"],
+  understandWhen:
+    "You can explain how Verlet integration differs from Euler and predict what happens to a blob when spring stiffness is very high.",
+  predictPrompt:
+    "If you set spring stiffness near its maximum, does the blob become more rigid, more jiggly, or does it explode?",
 });

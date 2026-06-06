@@ -19,4 +19,9 @@ export const meta = defineApp({
   commercialUse: "paid-gig-safe",
   kind: "creative",
   builtAt: "2026-06-05",
+  prereqs: ["noise-field"],
+  understandWhen:
+    "You can explain why small parameter changes produce radically different shapes and predict whether nearby parameters look similar.",
+  predictPrompt:
+    "If you nudge one parameter by 0.01, does the attractor shape change gradually or jump to a completely different form?",
 });

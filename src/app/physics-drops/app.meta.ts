@@ -18,4 +18,9 @@ export const meta = defineApp({
   commercialUse: "paid-gig-safe",
   kind: "creative",
   builtAt: "2026-06-05",
+  prereqs: ["pointer-flow"],
+  understandWhen:
+    "You can describe the difference between rigid-body and particle physics and predict how changing restitution changes the bounce.",
+  predictPrompt:
+    "If you set restitution to 1.0 (perfectly elastic), do the bodies eventually come to rest or keep bouncing indefinitely?",
 });

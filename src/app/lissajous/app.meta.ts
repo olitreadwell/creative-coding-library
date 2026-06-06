@@ -18,4 +18,9 @@ export const meta = defineApp({
   commercialUse: "paid-gig-safe",
   kind: "creative",
   builtAt: "2026-06-05",
+  prereqs: ["gsap-stagger"],
+  understandWhen:
+    "You can predict the shape of the curve for any integer frequency ratio and explain why non-integer ratios produce open paths.",
+  predictPrompt:
+    "If the x-frequency and y-frequency are both 3, what does the curve look like compared to 1:1?",
 });

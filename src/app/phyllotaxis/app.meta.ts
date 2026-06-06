@@ -19,4 +19,8 @@ export const meta = defineApp({
   commercialUse: "paid-gig-safe",
   kind: "creative",
   builtAt: "2026-06-05",
+  prereqs: [],
+  understandWhen:
+    "You can state what the golden angle is and explain why that specific angle produces gap-free packing.",
+  predictPrompt: "If you replace the golden angle with 90 degrees, what pattern appears and why?",
 });

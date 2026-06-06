@@ -18,4 +18,9 @@ export const meta = defineApp({
   commercialUse: "paid-gig-safe",
   kind: "creative",
   builtAt: "2026-06-05",
+  prereqs: ["pointer-flow"],
+  understandWhen:
+    "You can predict which of the three rules breaks the flock if disabled alone, and explain why.",
+  predictPrompt:
+    "If you disable separation but keep alignment and cohesion, what happens to the flock over time?",
 });

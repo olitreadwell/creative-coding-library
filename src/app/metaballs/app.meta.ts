@@ -18,4 +18,9 @@ export const meta = defineApp({
   commercialUse: "paid-gig-safe",
   kind: "creative",
   builtAt: "2026-06-05",
+  prereqs: ["voronoi"],
+  understandWhen:
+    "You can explain the threshold value's role and predict what happens to the blobs when you raise it.",
+  predictPrompt:
+    "If you raise the iso-contour threshold, do the blobs grow, shrink, or merge, and why?",
 });

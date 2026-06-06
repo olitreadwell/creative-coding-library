@@ -18,4 +18,9 @@ export const meta = defineApp({
   commercialUse: "paid-gig-safe",
   kind: "creative",
   builtAt: "2026-06-05",
+  prereqs: ["seeded-tilings"],
+  understandWhen:
+    "You can explain the grow-until-collision strategy and predict how density changes with a smaller minimum radius.",
+  predictPrompt:
+    "If you halve the minimum circle radius, does the packing end up with more circles, fewer gaps, or both?",
 });

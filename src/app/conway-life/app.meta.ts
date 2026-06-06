@@ -18,4 +18,9 @@ export const meta = defineApp({
   commercialUse: "paid-gig-safe",
   kind: "creative",
   builtAt: "2026-06-05",
+  prereqs: ["wolfram-ca"],
+  understandWhen:
+    "You can apply the four Conway rules to a 3x3 grid by hand and compute the next generation for the center cell.",
+  predictPrompt:
+    "A lone live cell with no live neighbors dies. What happens to a 2x2 block of live cells after ten steps?",
 });

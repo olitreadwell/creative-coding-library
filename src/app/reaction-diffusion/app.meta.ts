@@ -18,4 +18,9 @@ export const meta = defineApp({
   commercialUse: "paid-gig-safe",
   kind: "creative",
   builtAt: "2026-06-05",
+  prereqs: ["conway-life"],
+  understandWhen:
+    "You can explain the role of the feed and kill rates and predict which parameter change turns spots into stripes.",
+  predictPrompt:
+    "If you raise the kill rate close to the feed rate, does the pattern become more sparse, more dense, or does it die out?",
 });

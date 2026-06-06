@@ -18,4 +18,9 @@ export const meta = defineApp({
   commercialUse: "paid-gig-safe",
   kind: "creative",
   builtAt: "2026-06-05",
+  prereqs: ["seeded-tilings"],
+  understandWhen:
+    "You can predict how seed changes the field direction and explain why scale affects the smoothness of flow.",
+  predictPrompt:
+    "If you double the noise scale, what changes: the smoothness of flow, the speed of particles, or the color distribution?",
 });

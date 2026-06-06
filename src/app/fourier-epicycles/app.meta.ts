@@ -18,4 +18,9 @@ export const meta = defineApp({
   commercialUse: "paid-gig-safe",
   kind: "creative",
   builtAt: "2026-06-05",
+  prereqs: ["lissajous"],
+  understandWhen:
+    "You can explain what removing the smallest epicycles does to the traced path and why higher terms add detail.",
+  predictPrompt:
+    "If you keep only the first (largest) epicycle, what shape does the tip trace and why?",
 });

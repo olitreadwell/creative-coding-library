@@ -13,4 +13,9 @@ export const meta = defineApp({
   commercialUse: "paid-gig-safe",
   kind: "creative",
   builtAt: "2026-06-05",
+  prereqs: ["gsap-stagger"],
+  understandWhen:
+    "You can explain why easing makes the ripple feel organic and predict how a linear ease changes the feel.",
+  predictPrompt:
+    "If you replace the easing curve with a linear one, does the tile ripple feel faster, snappier, or more mechanical?",
 });

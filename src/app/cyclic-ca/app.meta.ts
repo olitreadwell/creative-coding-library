@@ -13,4 +13,9 @@ export const meta = defineApp({
   commercialUse: "paid-gig-safe",
   kind: "creative",
   builtAt: "2026-06-05",
+  prereqs: ["conway-life"],
+  understandWhen:
+    "You can explain why spirals emerge from a cyclic eat-or-be-eaten rule and predict what happens with two states instead of many.",
+  predictPrompt:
+    "If you reduce the number of states to two, does the automaton converge to a fixed state, oscillate, or continue spiraling?",
 });

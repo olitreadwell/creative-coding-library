@@ -18,4 +18,9 @@ export const meta = defineApp({
   commercialUse: "paid-gig-safe",
   kind: "creative",
   builtAt: "2026-06-05",
+  prereqs: ["hsl-palette"],
+  understandWhen:
+    "You can explain what the escape count measures and predict how changing max iterations affects boundary detail.",
+  predictPrompt:
+    "If you double the max iteration count, what changes: the colors inside the set, the colors outside, or the sharpness of the boundary?",
 });

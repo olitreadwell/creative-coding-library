@@ -19,4 +19,9 @@ export const meta = defineApp({
   commercialUse: "paid-gig-safe",
   kind: "creative",
   builtAt: "2026-06-05",
+  prereqs: ["maurer-rose"],
+  understandWhen:
+    "You can predict how many petals a given n value produces and describe what m controls separately from n.",
+  predictPrompt:
+    "If you set n to 4 and raise m from 1 to 8, does the shape add petals, sharpen corners, or change symmetry?",
 });

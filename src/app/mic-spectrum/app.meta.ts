@@ -12,4 +12,9 @@ export const meta = defineApp({
   commercialUse: "paid-gig-safe",
   kind: "creative",
   builtAt: "2026-06-05",
+  prereqs: ["noise-field"],
+  understandWhen:
+    "You can explain what each frequency bin in the FFT output represents and predict which bins spike for a low hum versus a whistle.",
+  predictPrompt:
+    "If you hum and then whistle, which end of the spectrum bar chart lights up for each sound?",
 });

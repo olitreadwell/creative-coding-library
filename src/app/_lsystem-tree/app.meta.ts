@@ -18,4 +18,9 @@ export const meta = defineApp({
   commercialUse: "paid-gig-safe",
   kind: "creative",
   builtAt: "2026-06-05",
+  prereqs: ["shrooms"],
+  understandWhen:
+    "You can trace a 3-step L-system expansion by hand and predict the resulting turtle path.",
+  predictPrompt:
+    "If you add one more rewrite iteration, does the tree get taller, wider, or both, and by roughly how much?",
 });

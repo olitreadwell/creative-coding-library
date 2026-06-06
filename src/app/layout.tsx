@@ -7,8 +7,21 @@ import { ThemeProvider } from "@/components/theme-provider";
 const geist = Geist({ subsets: ["latin"], variable: "--font-sans" });
 
 export const metadata: Metadata = {
-  title: "creative-coding-library",
-  description: "A scheduled creative-coding learning lab.",
+  title: "creative-coding-library — built to be broken",
+  description:
+    "30 generative-art sketches ordered by prereqs. Predict what runs, break it, fix it, understand it.",
+  openGraph: {
+    title: "creative-coding-library — built to be broken",
+    description:
+      "30 generative-art sketches ordered by prereqs. Predict what runs, break it, fix it, understand it.",
+    type: "website",
+  },
+  twitter: {
+    card: "summary",
+    title: "creative-coding-library — built to be broken",
+    description:
+      "30 generative-art sketches ordered by prereqs. Predict what runs, break it, fix it, understand it.",
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

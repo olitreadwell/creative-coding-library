@@ -1,0 +1,49 @@
+## How it works, step by step
+
+This app has two moving parts: a trail map (a flat grid of floating-point numbers) and a list of agents (each with an x position, a y position, and a heading angle). Every animation frame, those two parts update each other and the result is painted to the canvas.
+
+## Step 1: the trail map
+
+The trail map is a `Float32Array` with one entry per grid cell, sized at 260 x 195 cells. Values sit between 0 (no trail) and 1 (maximum trail). The grid is at a fixed internal resolution, independent of the canvas display size, so the simulation budget stays constant on any screen.
+
+## Step 2: sensing
+
+Each agent has a heading (an angle in radians). Before moving, it samples the trail at three points ahead of it: one straight ahead, one angled to the left by the sense angle, and one angled to the right. The `senseDirection` helper computes each sample position as:
+
+```ts
+const sx = ax + Math.cos(angle) * senseDist;
+const sy = ay + Math.sin(angle) * senseDist;
+```
+
+The trail value at that cell is the signal the agent reads.
+
+## Step 3: turning and moving
+
+After sensing, the agent turns:
+
+- If the center reading is strongest, keep heading.
+- If the left reading is strongest, rotate left by the turn angle.
+- If the right reading is strongest, rotate right by the turn angle.
+
+Then the agent moves forward by `stepSize` cells, wrapping at the grid edges (toroidal boundary, same as in the Gray-Scott simulation). After moving, it deposits a fixed `depositAmount` into the trail map at its new position.
+
+## Step 4: diffuse and decay
+
+After all agents have moved, the trail map is blurred with a 3x3 box average (nine neighbors, equal weights) and then multiplied by a decay factor slightly below 1 (here, 0.95). This means strong paths stay visible for a while but quiet areas fade quickly. Without this step, the trail would accumulate everywhere and the image would turn solid white.
+
+## Step 5: the text mask
+
+Before each animation frame, a small amount of additional trail (the `MASK_INJECT` constant) is added to every cell that falls inside the current word. The mask is built by drawing the word in a large bold font on a temporary canvas and reading its pixel data. Cells where the alpha value is above 128 are treated as "in the mask". Because agents turn toward stronger trail, they gather inside the letters, reinforcing those paths while peripheral trails fade.
+
+When the word changes, the existing trail is faded to 25%, new agents are spawned inside the new word's mask, and the mask injection switches to the new word. The slime gradually reforms.
+
+## Step 6: painting
+
+The trail map is mapped to color using a per-word palette from the Okabe-Ito colorblind-safe set: sky blue for wind, deeper blue for water, vermillion for fire, and bluish green for grass. A lookup table (`Uint8ClampedArray` of 256 \* 4 bytes) is precomputed once per word or theme change. Each cell's value is mapped to an index in that table, and the result is written into an `ImageData` buffer. That buffer goes to a small offscreen canvas, which is then scaled up to fill the screen with `drawImage`. The CSS property `imageRendering: pixelated` keeps cell edges crisp rather than blurred.
+
+## Try this yourself
+
+- Change the sense angle slider: narrow angles make agents run in tight parallel lines; wide angles make them swirl and branch more.
+- Lower the agent count: with fewer agents the trails become sparse and threadlike rather than solid letter fills.
+- Switch the word manually before auto-cycle kicks in: the slime reforms, leaving ghost traces of the previous word.
+- Open `physarum.ts` and raise `DECAY_RATE` toward 1.0: trails accumulate faster and the image brightens. Lower it toward 0.9 and trails vanish quickly, making only the heavily reinforced letter cores visible.

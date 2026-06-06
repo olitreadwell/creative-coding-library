@@ -1,19 +1,25 @@
-import Link from "next/link";
 import { apps } from "@/lib/creative/registry.generated";
+import { Catalog } from "@/components/catalog";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 export default function HomePage() {
   return (
-    <main className="mx-auto max-w-3xl px-6 py-16">
-      <h1 className="text-3xl font-semibold">creative-coding-library</h1>
-      <p className="mt-4 text-foreground/80">
-        A scheduled creative-coding learning lab. Apps land here as the curator/builder loops run.
-      </p>
-      <p className="mt-2 text-sm text-foreground/60">{apps.length} app(s) in catalog.</p>
-      <div className="mt-8 flex gap-4">
-        <Link className="underline" href="/creative">
-          Browse catalog
-        </Link>
-      </div>
-    </main>
+    <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-16">
+      <header className="mb-8 flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
+            creative-coding-library
+          </h1>
+          <p className="mt-3 max-w-2xl text-sm text-foreground/70 sm:text-base">
+            A scheduled creative-coding learning lab. Each app is a small, self-contained sketch
+            that teaches one technique. Open a card for a plain-language synopsis, a tutorial, and
+            the live demo.
+          </p>
+        </div>
+        <ThemeToggle />
+      </header>
+
+      <Catalog apps={apps} />
+    </div>
   );
 }

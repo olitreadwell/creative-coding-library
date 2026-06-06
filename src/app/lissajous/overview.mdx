@@ -1,0 +1,28 @@
+## What this is
+
+A Lissajous curve is a shape traced by a point that moves in two directions at once. Both directions follow a sine wave. The resulting path loops and crosses itself in ways that look almost musical. This sketch draws that shape as a glowing line that slowly morphs over time.
+
+## The big idea in plain words
+
+Think of two pendulums. One swings left and right. The other swings forward and back. Attach a pen to the point where they meet, and the pen draws a Lissajous curve.
+
+In code, we replace each pendulum with a sine wave:
+
+- **x position**: `A * sin(a * t + phase)`
+- **y position**: `B * sin(b * t)`
+
+Here `a` and `b` are the **frequencies** of the two waves. Their ratio is the key. A ratio of 3:2 means one wave completes three cycles while the other completes two. That ratio sets the basic shape.
+
+The **phase** is a time offset between the two waves. When the phase is zero the curve is a stable, symmetric figure. As the phase changes, the shape rotates and stretches. The sketch advances the phase a tiny amount each frame, so the curve never stops moving.
+
+A **decay** factor makes the curve fade toward the center over many cycles, which gives it the look of a harmonograph drawing.
+
+## Why it matters
+
+Lissajous curves show up in:
+
+- **Music and signal processing.** Oscilloscopes display them when you feed two audio signals into the X and Y inputs. Musicians and engineers use them to check whether two signals are in tune or in phase.
+- **Math education.** They are one of the clearest examples of a **parametric curve**: a shape where both x and y are defined by a shared variable `t`, not by a single equation `y = f(x)`.
+- **Art and design.** The shapes are naturally pleasing. They appear in logos, visualizations, and generative art.
+
+You do not need to know the math to enjoy the sketch. Press the ratio buttons in the top bar and watch the shape change. The Tutorial tab explains exactly how the code draws it.

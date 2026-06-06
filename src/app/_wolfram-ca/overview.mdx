@@ -1,0 +1,27 @@
+## What this is
+
+A Wolfram elementary cellular automaton is one of the simplest systems that can produce complex behavior. Start with a single row of cells. Apply one short rule. Repeat. The rows stack up into a pattern, and some of those patterns are breathtaking.
+
+The famous example is rule 30: a rule you can write on a napkin, yet it produces output so unpredictable that Mathematica used it to generate random numbers for years.
+
+## The big idea in plain words
+
+The grid has two things: cells and a rule.
+
+Each cell is either **on** or **off** (1 or 0). The rule says: look at a cell and its two neighbors. Those three cells make a tiny pattern. The rule tells you what the center cell will be in the next row.
+
+There are only eight possible 3-cell patterns: 111, 110, 101, 100, 011, 010, 001, 000. Each pattern gets its own answer (1 or 0) in the rule. Eight answers, one bit each, give you a number from 0 to 255. That number is the rule name.
+
+So rule 90 is just: if you see 111 -> 0, 110 -> 1, 101 -> 0, 100 -> 1, and so on down the line.
+
+Apply that lookup to every cell in the row, and you get the next row. Keep going. Rows pile up and fill the screen with whatever pattern the rule has inside it.
+
+## Why it matters
+
+Three ideas show up here that appear everywhere in computing and math:
+
+- **Local rules, global structure.** Each cell only looks one step left and right, yet the whole grid develops long-range order (or disorder) across thousands of cells.
+- **Class of rules.** Most rules produce simple patterns: stripes or nothing. A few produce chaos (rule 30). One rule (110) is Turing-complete, meaning it can simulate any computation.
+- **Emergence.** The rule does not "know" about the triangle or the fractal. It just applies a lookup. The shape appears because of how the rule interacts with itself across rows.
+
+You do not need any of that to enjoy this. Pick a rule and watch it go. The Tutorial tab explains exactly how the code builds each row.

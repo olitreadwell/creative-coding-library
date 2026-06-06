@@ -1,0 +1,58 @@
+## How it works, step by step
+
+This app uses two modules: `lsystem.ts` (the math) and the play page (the drawing). No external graphics library. Just Canvas 2D and plain TypeScript.
+
+### Step 1: expand the string
+
+We start with the axiom `"X"` and a table of substitution rules. The `expand` function loops through every character in the current string and replaces it with the rule for that character (or leaves it alone if there is no rule).
+
+```ts
+function expand(axiom: string, rules: Record<string, string>, iterations: number): string {
+  let current = axiom;
+  for (let i = 0; i < iterations; i++) {
+    let next = "";
+    for (const ch of current) {
+      next += rules[ch] ?? ch; // replace if rule exists, keep otherwise
+    }
+    current = next;
+  }
+  return current;
+}
+```
+
+After 5 iterations the output string has tens of thousands of characters. Each `F` represents one branch segment to draw.
+
+### Step 2: walk the turtle
+
+The `turtleSegments` function reads the expanded string one character at a time. It keeps track of the turtle's current position `(x, y)`, its heading (the angle it faces), and a **stack** of saved states.
+
+- `F`: move forward by `stepLen` pixels; record a line segment.
+- `+` / `-`: rotate left or right by `turnDeg` degrees.
+- `[`: push the current state onto the stack (start a branch).
+- `]`: pop the last state off the stack (return to the branch point).
+
+The stack is what makes branches possible. When the turtle enters `[`, it remembers where it is. When it hits `]`, it jumps back there and continues in a new direction.
+
+A small random **jitter** is added to each `F` step to make the branches look natural rather than perfectly geometric.
+
+### Step 3: color by depth
+
+Each segment carries a `depth` number: how deep inside the bracket nesting it was drawn. Depth 0 is the trunk. Higher depths are thinner, farther-out branches.
+
+We use `depth` to blend two colors: a warm brown for the trunk and a bright green for the tips. Thicker segments get drawn at lower depths; thin wisps get drawn at higher depths.
+
+### Step 4: render to canvas
+
+All segments are drawn in one pass over the `segments` array. Each segment gets its own `strokeStyle` and `lineWidth`. Using `lineCap = "round"` and `lineJoin = "round"` smooths the joints between segments.
+
+The canvas scales with the window. A `ResizeObserver` watches the canvas element and updates the pixel dimensions when the layout changes, then triggers a redraw.
+
+## Try this
+
+- Move the **Iterations** slider from 1 to 6 and watch the string rewriting happen visually.
+- Click **Re-roll** several times. The rules are deterministic, but a seeded jitter randomizes each branch angle slightly. Same rules, different tree.
+- Set Iterations to 1 and look at the raw shape. Then raise it to 6 and see how that same shape repeats at every scale.
+
+## What to remember
+
+An L-system turns a short rewriting rule into a long string. A turtle turns that string into geometry. Bracket pairs `[ ]` are the only thing needed to create branching. Depth tracks nesting level, and nesting level drives both color and thickness. That is the whole algorithm.

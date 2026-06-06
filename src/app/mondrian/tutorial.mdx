@@ -1,0 +1,122 @@
+## How it works, step by step
+
+The sketch has three layers: the subdivision function that builds each panel, the perspective and depth-of-field math that places panels in 3D space, and the animation loop that moves everything forward each frame.
+
+### Step 1: represent a rectangle
+
+Every panel is a grid of leaf rectangles. Each rectangle is a plain object:
+
+```ts
+type Rect = { x: number; y: number; w: number; h: number };
+```
+
+Rects are stored in normalised coordinates (0 to 1 in both axes) so the same layout can be scaled to any viewport size or perspective scale.
+
+### Step 2: subdivide recursively
+
+`subdivide(rect, depth, rng)` builds the grid:
+
+```ts
+export function subdivide(rect: Rect, depth: number, rng: Rng): Rect[] {
+  if (depth <= 0) return [rect];
+
+  const splitHorizontal = rng() < 0.5;
+
+  if (splitHorizontal) {
+    const split = rect.h * (0.25 + rng() * 0.5);
+    const top = { x: rect.x, y: rect.y, w: rect.w, h: split };
+    const bottom = { x: rect.x, y: rect.y + split, w: rect.w, h: rect.h - split };
+    return [...subdivide(top, depth - 1, rng), ...subdivide(bottom, depth - 1, rng)];
+  } else {
+    const split = rect.w * (0.25 + rng() * 0.5);
+    const left = { x: rect.x, y: rect.y, w: split, h: rect.h };
+    const right = { x: rect.x + split, y: rect.y, w: rect.w - split, h: rect.h };
+    return [...subdivide(left, depth - 1, rng), ...subdivide(right, depth - 1, rng)];
+  }
+}
+```
+
+The base case (`depth <= 0`) stops the recursion and returns the current rectangle as a leaf. The recursive case flips a coin for direction, picks a random split position, and calls itself on both halves with `depth - 1`.
+
+### Step 3: assign each layer a z depth
+
+The tunnel holds multiple layers (panel sets). Each layer has a `z` value: the distance from the camera in z-units. Layer 0 starts near; layer N starts far.
+
+```ts
+const spacing = (Z_FAR - 0) / layerCount;
+for (let i = 0; i < layerCount; i++) {
+  const z = i * spacing;
+  layers.push(makeLayer(z, seed, subdivisionDepth, theme));
+}
+```
+
+### Step 4: perspective projection
+
+To draw a layer on the 2D canvas, convert its z into a scale factor:
+
+```ts
+function perspectiveScale(z: number): number {
+  return FOCAL / (FOCAL + z);
+}
+```
+
+This makes far panels small and near panels large. The panel is then centered on the canvas and scaled:
+
+```ts
+const panelW = cssW * scale;
+const panelH = cssH * scale;
+const panelX = cx - panelW / 2;
+const panelY = cy - panelH / 2;
+```
+
+Each leaf rect is drawn at `panelX + r.x * panelW`, scaling from normalised coordinates into CSS pixels.
+
+### Step 5: depth of field
+
+Each layer also gets an alpha value based on how far its z is from the focus depth:
+
+```ts
+function dofAlpha(z: number, focusDepth: number): number {
+  const dist = Math.abs(z - focusDepth);
+  const alpha = 1 - Math.min(1, dist / DOF_HALF_RANGE);
+  return 0.1 + alpha * 0.9;
+}
+```
+
+A panel at the exact focus depth gets alpha 1.0. A panel `DOF_HALF_RANGE` z-units away from focus gets alpha 0.1 (just barely visible). Values in between interpolate linearly.
+
+### Step 6: the animation loop
+
+`useAnimationFrame` calls the draw callback each frame with `dt` (seconds since the last frame). Each layer's z decreases by `fallSpeed * dt`:
+
+```ts
+layer.z -= fallSpeed * dt;
+if (layer.z < Z_NEAR) {
+  // Recycle: send the layer back to Z_FAR with a fresh layout.
+  layers[i] = makeLayer(Z_FAR, newSeed, depth, theme);
+}
+```
+
+Because `dt` is measured in seconds and `fallSpeed` is in z-units per second, the motion is frame-rate independent. The tunnel looks the same at 30 fps and 120 fps.
+
+### Step 7: paint the canvas
+
+Layers are sorted back-to-front so near panels overdraw far ones:
+
+```ts
+const sorted = [...layers].sort((a, b) => b.z - a.z);
+```
+
+Each layer is drawn with `ctx.globalAlpha` set to its DoF alpha. The fill pass colors every leaf; the stroke pass draws the grid lines with a perspective-scaled line weight.
+
+## Try this
+
+- Set **speed** to maximum and watch the tunnel blur into a pattern.
+- Drop **density** to 2: three or four huge blocks per layer, very geometric.
+- Move **focus** from 0 to 2000 and watch the sharpness window sweep through the tunnel.
+- Set **layers** to 3 and **speed** slow: meditative and spare.
+- Click the canvas to scramble all layers at once with new random layouts.
+
+## What to remember
+
+Perspective projection collapses a 3D z-coordinate into a 2D scale factor. Depth of field is simulated with alpha. Recycling panels when they pass the camera creates an endless loop from a finite pool. The seeded PRNG ensures each panel is reproducible and that recycled panels are always fresh, because the recycle seed advances each time.

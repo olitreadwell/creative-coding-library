@@ -1,0 +1,80 @@
+## How it works
+
+### 1. Place one seed
+
+The whole pattern comes from a single pure function. Given a seed index, the
+angle to turn by, and a scale, it returns an x/y point.
+
+```ts
+function seedPosition(i, angleRad, scale) {
+  const a = i * angleRad; // total turn for this seed
+  const r = scale * Math.sqrt(i); // distance from center
+  return { x: Math.cos(a) * r, y: Math.sin(a) * r };
+}
+```
+
+`sqrt(i)` is the key to even packing: area grows with the square of the radius,
+so stepping out by the square root keeps each ring holding about the same number
+of seeds.
+
+### 2. The golden angle
+
+```ts
+const GOLDEN_ANGLE_DEG = 137.50776; // 360 * (1 - 1/phi)
+```
+
+This angle never repeats as a simple fraction of a turn, so seed after seed lands
+in the largest remaining gap. That is why the sunflower fills so evenly. The angle
+slider lets you leave this value and watch the spirals collapse into spokes.
+
+### 3. Draw the bloom
+
+Each frame we clear the canvas, work out a scale so the outermost seed reaches
+the edge, then draw every seed as a dot colored by its position in the sequence.
+
+```ts
+const scale = (Math.min(w, h) * 0.47) / Math.sqrt(count);
+for (let i = 0; i < count; i++) {
+  const s = seedPosition(i, angleRad, scale);
+  ctx.fillStyle = cbRamp(i / count, theme);
+  ctx.beginPath();
+  ctx.arc(centerX + s.x, centerY + s.y, dotRadius, 0, Math.PI * 2);
+  ctx.fill();
+}
+```
+
+A slow rotation each frame (from `useAnimationFrame`) keeps it gently alive, and
+honors the global Play/Pause and reduced-motion setting.
+
+### 4. Scroll interactivity
+
+This is the new idea in this sketch: the mouse wheel grows or shrinks the bloom.
+We add a native wheel listener so we can call `preventDefault`, which stops the
+page from scrolling instead.
+
+```ts
+canvas.addEventListener(
+  "wheel",
+  (e) => {
+    e.preventDefault();
+    const dir = e.deltaY > 0 ? -1 : 1;
+    setCount((c) => clamp(c + dir * 40, 50, 3000));
+  },
+  { passive: false },
+);
+```
+
+Two details matter:
+
+- The listener is added with `{ passive: false }`. Browsers treat wheel
+  listeners as passive by default, and a passive listener is not allowed to call
+  `preventDefault`.
+- We clean the listener up when the component unmounts, so it never leaks or
+  fires twice.
+
+### Make it yours
+
+- Scroll fast to sweep the bloom from a handful of seeds to thousands.
+- Set the angle to exactly 137.5, then nudge it by 0.1 and watch the spirals flip
+  direction.
+- Try 99.5 or 77.9 degrees for completely different, still-organic patterns.

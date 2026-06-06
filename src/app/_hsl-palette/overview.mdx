@@ -1,0 +1,33 @@
+## What this is
+
+HSL Palette is an interactive color tool. You pick a base color, choose a harmony scheme, and the tool generates a matching set of colors. Click any swatch to copy its hex code.
+
+It runs entirely in the browser. No server, no installs.
+
+## The big idea in plain words
+
+Color has three channels. RGB (red, green, blue) is one way to describe them, but it is hard to think in. "I want a less saturated, slightly darker version of this color" is hard to express in RGB.
+
+HSL is a friendlier model:
+
+- **Hue** — the color's position around a 360-degree wheel. 0 is red, 120 is green, 240 is blue.
+- **Saturation** — how vivid the color is. 0% is grey. 100% is fully vivid.
+- **Lightness** — how light or dark. 0% is black. 100% is white. 50% gives the pure color.
+
+Because hue is a circle, arithmetic works on it. Add 180 and you land on the opposite side. Add 120 twice and you land at three evenly spaced points. These relationships are called **color harmonies**.
+
+This app uses five built-in harmonies:
+
+| Scheme        | Hue offsets                 | What it looks like                     |
+| ------------- | --------------------------- | -------------------------------------- |
+| Complementary | 0°, 180°                    | Two opposite colors — high contrast    |
+| Analogous     | -30°, 0°, 30°               | Three neighbors — calm, similar        |
+| Triadic       | 0°, 120°, 240°              | Three evenly spaced — balanced, lively |
+| Tetradic      | 0°, 90°, 180°, 270°         | Four corners — complex, rich           |
+| Monochromatic | same hue, 5 lightness steps | One color, shaded from dark to light   |
+
+## Why it matters
+
+Picking colors by feel takes practice. Harmony math gives you a starting point that already works, because it is based on geometry, not guesswork. You can take any swatch as a starting color in another tool, or build a full design system from a single hue choice.
+
+This is also a clear example of why HSL is easier than RGB for generative work. One number (hue) controls the entire palette shift. You would need to touch all three channels in RGB to get the same effect.

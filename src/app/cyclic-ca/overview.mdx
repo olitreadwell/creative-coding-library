@@ -1,0 +1,21 @@
+## What this is
+
+The Cyclic Automaton is a grid simulation where every cell holds one of N colors. Each color eats the next one in a cycle, like rock-paper-scissors with N players. Over time, the grid stops looking random and starts showing rotating spirals.
+
+## The big idea in plain words
+
+Think of N colors arranged in a circle. Color 0 is eaten by color 1. Color 1 is eaten by color 2. The last color wraps back around and is eaten by color 0. Nobody wins forever.
+
+Each tick, every cell looks at its eight surrounding neighbors. If enough neighbors hold the color that eats this cell, the cell changes to that color. Otherwise it stays.
+
+That simple rule is all it takes. From a random start, clusters of similar colors form. Those clusters spread. They start curving. Eventually you see spirals slowly rotating across the whole grid, each one chasing the one ahead of it.
+
+## Why it matters
+
+The Cyclic Automaton shows three ideas clearly:
+
+- **Local rules, global patterns.** Each cell only sees its eight neighbors. It has no idea a spiral exists. Yet spirals appear across the whole grid.
+- **Emergent order from noise.** The starting grid is random. No spirals are put there. They grow on their own because the cyclic eating rule creates a feedback loop that amplifies tiny initial differences.
+- **Rock-paper-scissors dynamics.** In any population where A beats B, B beats C, and C beats A, the strongest player does not take over. Instead the three keep cycling. Add more players and the cycling becomes richer. That is what you are watching.
+
+Hit Play and watch the chaos settle into structure. The Tutorial tab shows how the code drives this.

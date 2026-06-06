@@ -1,0 +1,62 @@
+## How it works
+
+### 1. Ask for the microphone (only on click)
+
+For privacy the sketch never opens the mic on load. A button calls
+`getUserMedia`, which prompts the browser permission dialog. If the user denies
+it, we catch the error and show a friendly message instead of crashing.
+
+```ts
+const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+```
+
+### 2. Build a tiny audio graph
+
+We wrap the stream in an `AudioContext`, feed it into an `AnalyserNode`, and set
+how many frequency bins we want with `fftSize`.
+
+```ts
+const ctx = new AudioContext();
+const source = ctx.createMediaStreamSource(stream);
+const analyser = ctx.createAnalyser();
+analyser.fftSize = 2048;
+source.connect(analyser);
+```
+
+### 3. Read the spectrum each frame
+
+`useAnimationFrame` from the shared library runs the loop (and pauses it when the
+tab is hidden or the global Play control is off). Each frame we copy the current
+frequencies into a byte array, where every value is 0 to 255.
+
+```ts
+const data = new Uint8Array(analyser.frequencyBinCount);
+analyser.getByteFrequencyData(data);
+```
+
+### 4. Draw the bars
+
+We pick how many bars to show, sample that many bins out of the array, and draw
+a rectangle for each one. Height comes from the bin value times the gain slider.
+Colour comes from the bar's position along a colorblind-safe ramp.
+
+```ts
+for (let i = 0; i < bars; i++) {
+  const value = data[i * step] * gain;
+  const barHeight = (value / 255) * canvasHeight;
+  ctx.fillStyle = cbRamp(i / (bars - 1), theme);
+  ctx.fillRect(x, canvasHeight - barHeight, barWidth, barHeight);
+}
+```
+
+### 5. Clean up
+
+When you turn the mic off or leave the page, we stop every audio track and close
+the `AudioContext`, so the browser's microphone indicator switches off.
+
+### Make it yours
+
+- Gain scales the input, so quiet rooms can still move the bars.
+- Smoothing controls how quickly bars settle. Low values feel twitchy, high
+  values feel smooth.
+- More bars show finer detail across the frequency range.

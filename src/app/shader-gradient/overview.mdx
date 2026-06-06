@@ -1,0 +1,25 @@
+## What this is
+
+Shader Gradient is a fullscreen, animated color field. It runs entirely on the GPU. Open it and you see smooth, slowly morphing blobs of color that never repeat. There are no images and no pre-made animations. Every frame, a tiny program runs on the GPU to compute the color of every pixel at the same time.
+
+You can switch between three color palettes: **calm**, **warm**, and **wild**.
+
+## The big idea in plain words
+
+Your screen has millions of pixels. Normally the CPU handles one thing at a time. The GPU is different. It can run the same small program for thousands of pixels in parallel, all at once.
+
+That small program is called a **fragment shader**. It is a function. You give it a pixel position and a clock time. It returns a color. The GPU calls that function for every single pixel on screen, at the same time, every frame. That is why the animation is smooth even at full screen.
+
+This demo uses a technique from the open-source guide [The Book of Shaders](https://thebookofshaders.com/) called a **cosine palette**. The palette is a short math formula. It takes a number between 0 and 1 and outputs an RGB color that cycles smoothly through hues. Feed it a slowly changing number and you get a slowly changing color.
+
+The number we feed it comes from a **domain warp**: we distort the UV coordinates (the pixel's position on screen) using several overlapping sine waves. That warping creates the organic blob shapes. Two warp passes, blended together, give the gradient its depth.
+
+A **uniform** called `uTime` carries the current time in seconds into the shader. Every frame, the JavaScript side updates `uTime`. The GPU reads it and uses it to drive the animation. That one value is the only thing connecting your CPU clock to the on-screen motion.
+
+## Why it matters
+
+- **GPU parallelism.** A fragment shader shows you the simplest form of GPU programming. The same function, running on a million pixels at once, is the foundation of all real-time graphics.
+- **Procedural color.** The cosine palette trick lets you generate an unlimited range of smooth color schemes from four short vectors. No texture files, no palette arrays.
+- **Domain warping.** Bending the input coordinates before sampling a function is a general technique. It appears in noise generation, terrain rendering, and artistic effects across all of computer graphics.
+
+The Tutorial tab walks through how the shader code is structured, step by step.

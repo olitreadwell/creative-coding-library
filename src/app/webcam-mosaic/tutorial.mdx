@@ -1,0 +1,72 @@
+## How it works
+
+### 1. Start the camera (on a click)
+
+Nothing runs until you press Enable, then we ask for the camera and play the
+stream into an off-screen `<video>`.
+
+```ts
+const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
+video.srcObject = stream;
+await video.play();
+```
+
+We catch the common errors (denied, no camera) and paint a message instead of
+crashing.
+
+### 2. Sample the frame small
+
+The expensive trick is to draw the full video into a tiny canvas, one pixel per
+cell, then read those pixels back. Drawing mirrored gives a selfie view.
+
+```ts
+sample.ctx.translate(cols, 0);
+sample.ctx.scale(-1, 1); // mirror
+sample.ctx.drawImage(video, 0, 0, cols, rows);
+const data = sample.ctx.getImageData(0, 0, cols, rows).data;
+```
+
+`cols` and `rows` come from the cell-size slider: a bigger cell means fewer, so
+the grid stays cheap to draw no matter the window size.
+
+### 3. Brightness per cell
+
+For each cell we read its one pixel and turn RGB into a single brightness using
+the standard luminance weights, then apply the contrast slider.
+
+```ts
+const lum = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+const adjusted = clamp(lum * contrast, 0, 1);
+```
+
+### 4. Choose a mark
+
+This is the only part that differs between styles.
+
+**Glyphs (ASCII / Blocks).** Each character is ranked once by how much ink it
+uses (drawn to a 16x16 canvas, count the opaque pixels, sort). Then a dark cell
+picks a heavy character.
+
+```ts
+const glyph = sorted.chars[brightnessToIndex(adjusted, sorted.chars.length)];
+```
+
+`brightnessToIndex` inverts brightness, so 0 brightness maps to the densest glyph.
+
+**Circles.** No ranking needed: brightness becomes a radius.
+
+```ts
+const radius = adjusted * maxRadius;
+ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+```
+
+Either way the mark is colored from a colorblind-safe ramp so the result reads in
+any palette.
+
+### Make it yours
+
+- Drop the cell size for fine detail, raise it for a chunky poster look.
+- Swap the glyph string for your initials or a custom set, and the density sort
+  still orders them correctly.
+- Try mapping brightness to rotation or a second image instead of size, and you
+  have a different mosaic for free.

@@ -1,0 +1,103 @@
+## How it works, step by step
+
+This app draws a perfect maze using plain Canvas 2D. No library. The algorithm lives in `maze.ts`; the animation lives in `play/page.tsx`. Here is how the pieces fit together.
+
+## Step 1: the grid is a graph
+
+The grid starts as a rectangular array of cells. Every cell has four walls: north, east, south, west. Walls are stored as a four-bit bitmask on each cell: a set bit means "wall present", a clear bit means "open passage".
+
+```ts
+export const WALL_N = 0b0001;
+export const WALL_E = 0b0010;
+export const WALL_S = 0b0100;
+export const WALL_W = 0b1000;
+```
+
+All four walls start set (`0b1111`). Carving is just clearing bits.
+
+## Step 2: depth-first carving with a stack
+
+The algorithm uses an explicit stack instead of recursion, so it never hits a call-stack limit on large grids.
+
+```ts
+// Start at cell 0 (top-left). Mark it visited, push it.
+visited[0] = 1;
+stack.push(0);
+
+while (stack.length > 0) {
+  const current = stack[stack.length - 1]; // peek
+
+  // Find unvisited neighbours in random order.
+  const dirs = shuffled(DIRECTIONS, rng);
+  let carved = false;
+
+  for (const dir of dirs) {
+    const neighbour = /* cell in direction dir */;
+    if (visited[neighbour]) continue;
+
+    // Carve: clear the wall on both sides of the shared edge.
+    cells[current].walls &= ~dir.wall;
+    cells[neighbour].walls &= ~dir.opposite;
+
+    visited[neighbour] = 1;
+    stack.push(neighbour);
+    carved = true;
+    break; // go deeper before trying other neighbours
+  }
+
+  if (!carved) stack.pop(); // dead end: backtrack
+}
+```
+
+Each loop iteration either goes deeper (carving a new passage) or pops back (backtracking). The loop ends when the stack empties, which happens exactly when every cell has been visited.
+
+## Step 3: a perfect maze is a spanning tree
+
+After the loop, the grid has `cols * rows - 1` open passages. That number is not a coincidence: it is the exact count needed to connect `N` nodes in a tree with no cycles. A tree with `N` nodes has `N - 1` edges. Every cell is reachable from every other cell through exactly one path. That is what "perfect" means for a maze.
+
+The test suite checks this directly:
+
+```ts
+// Count all cleared wall bits, divide by 2 (each passage appears
+// on both sides), and verify the result is total - 1.
+const edges = removedCount / 2;
+expect(edges).toBe(total - 1);
+```
+
+## Step 4: separating generation from animation
+
+`generateMaze` returns the finished grid. `carveSteps` returns the same maze but also the ordered list of every carve event, so the play page can replay them frame by frame.
+
+Both functions call the same internal backtracker with the same rng, so given the same seed they produce identical mazes. The animation is not re-running the algorithm; it is replaying a recorded script of moves.
+
+## Step 5: drawing walls
+
+The canvas draws each cell as a filled rectangle (the passage floor), then strokes lines on whichever sides still have their wall bit set.
+
+```ts
+if (cell.walls & WALL_N) {
+  ctx.beginPath();
+  ctx.moveTo(x, y);
+  ctx.lineTo(x + cellPx, y);
+  ctx.stroke();
+}
+// ... same for E, S, W
+```
+
+The frontier cell gets a hue tint so you can follow the algorithm's current position. When carving is done, all tints clear and only wall/passage colors remain.
+
+## Step 6: theming and a11y
+
+The canvas colors are driven by `resolvedTheme` from `next-themes`. Dark mode uses a near-black background with light walls; light mode flips the contrast. Both pass AA contrast ratios (wall color vs. passage color).
+
+The header uses a focus ring on every interactive element. The canvas carries an `aria-label` explaining what it shows. The "Done" state is announced with `aria-live="polite"`.
+
+## Try this yourself
+
+- Click "New maze" to generate a fresh layout. The seed changes, the algorithm restarts, and you watch a completely different carving path.
+- Notice that passages never cross: the frontier always explores forward or backs up along its own thread.
+- The maze always solves: any two cells are connected by exactly one path. Pick a corner and trace your way to the opposite corner.
+
+## What to remember
+
+A perfect maze is a spanning tree of a grid graph. The recursive backtracker builds that tree by doing a randomized depth-first search, using backtracking to escape dead ends. The wall-bitmask representation keeps the data compact: four booleans per cell packed into four bits.

@@ -1,0 +1,37 @@
+## What this is
+
+Your webcam, redrawn live as a coarse grid. Each cell looks at one patch of the
+picture and replaces it with a mark whose weight matches that patch's brightness.
+Pick the mark with the style control:
+
+- **ASCII**: dense characters (`@`, `#`) for dark patches, light ones (`.`, `'`)
+  for bright patches.
+- **Blocks**: the same idea with block characters, for a chunkier look.
+- **Circles**: a dot per cell, sized by brightness, for a halftone feel.
+
+Nothing leaves your browser. The camera only starts after you press the button.
+
+## The big idea in plain words
+
+A camera frame is just a grid of pixels. If you shrink that grid down to one
+pixel per cell, each pixel becomes the average brightness of a patch. Map that
+brightness to something you can draw, a character or a circle, and you have
+turned a photo into a mosaic.
+
+The trick for text is ranking the characters by how much ink they use. A space is
+empty, a period is light, an `@` is heavy. Sort them, then a dark patch picks a
+heavy character and a bright patch picks a light one. For circles it is simpler:
+brighter patch, bigger dot.
+
+This is one sketch made from two earlier ones, an ASCII camera and a dot mirror,
+because they share almost everything: grab the camera, sample it small, draw one
+mark per cell. Only the final mark differs, so it is a single style switch.
+
+## Why it matters
+
+Image-to-symbol mapping is the heart of a lot of generative art: halftone,
+stippling, pixel-sorting, ASCII film. Once you can sample an image into a small
+grid and decide what to draw per cell, you can swap the "what to draw" for
+anything: letters, shapes, your own glyphs, even other images.
+
+The How it works tab walks through the code.

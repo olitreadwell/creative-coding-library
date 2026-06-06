@@ -1,0 +1,25 @@
+## What this is
+
+Tile Pulse fills the screen with a grid of geometric shapes. Each tile animates on its own looping cycle, and a travelling wave ripples across the grid so the motion looks alive even before you touch it.
+
+Move your cursor near a tile and it reacts: nearby tiles scale up and rotate toward you. Click anywhere to send a ring of animation spreading outward from that point. Hold the mouse down and drag to leave a continuous trail of disturbance.
+
+## The big idea in plain words
+
+Every tile has two things: a **base animation** and an **influence value**.
+
+The base animation is a looping wave. Each tile is offset in time by its position in the grid, so the wave travels diagonally across the canvas like a ripple in fabric.
+
+The influence value measures how much the pointer or a ripple is affecting that tile right now. It comes from a simple rule: tiles close to the cursor or to the ripple front get a high value; tiles far away get zero. The exact shape of that dropoff (strong at the centre, fading smoothly to nothing at the edge) is called a **radial falloff**.
+
+When you click, a ripple ring expands outward at a fixed speed. As the ring crosses each tile, the tile briefly gets a high influence value, then returns to its base state. The result looks like a stone dropped in water, but made of geometry.
+
+## Why it matters
+
+This sketch brings together three patterns that come up constantly in interactive creative work:
+
+- **Phase offsets.** Giving each tile a slightly different start time in the same loop is how you get a travelling wave from identical objects with identical rules.
+- **Influence fields.** A function that maps distance to a 0-1 strength value is one of the most reusable ideas in generative code. The same pattern controls particle attraction, lighting falloff, and sound volume.
+- **Event-driven ripples.** Expanding rings are a classic way to make a click feel like it has weight and spread. The ring is not drawn on screen; its position and age are used only to decide how much each tile should react.
+
+The Tutorial tab shows the code behind each of these three ideas.

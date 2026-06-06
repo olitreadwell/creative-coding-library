@@ -1,0 +1,34 @@
+## What this is
+
+Control a sketch with your hands, no mouse. Turn on the camera, then pinch your
+thumb and finger together to grab a soft blob. Move your pinch to drag it. Pinch
+with both hands and pull apart to stretch the blob between them. Your camera feed
+is shown faintly behind, with dots marking the points the tracker found on each
+hand.
+
+Nothing leaves your browser. The camera and the hand tracker only start after you
+press the button.
+
+## The big idea in plain words
+
+A hand-tracking model looks at each camera frame and returns 21 points per hand:
+the wrist, knuckles, and fingertips, each as an x/y position. With those points
+you can read gestures. The simplest is the pinch: measure the distance between
+the thumb tip and the index fingertip. When that distance is small, the fingers
+are touching, so the user is pinching. The midpoint of the two tips is the
+"grab point".
+
+From there the interaction is ordinary 2D maths: one pinch sets the blob's
+position; two pinches set the two opposite edges, so the blob stretches to fit
+between your hands. A little easing each frame makes the motion feel soft instead
+of jumpy.
+
+## Why it matters
+
+Camera-based input opens interactions that a mouse cannot: reach out and grab,
+pull two things apart, wave. The hand model does the hard computer-vision work;
+your job is to turn its points into meaning. The pinch is the "click" of hand
+tracking, and once you can detect it you can build drawing tools, instruments,
+and games that respond to real gestures.
+
+The How it works tab walks through the code.

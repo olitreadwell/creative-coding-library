@@ -18,4 +18,9 @@ export const meta = defineApp({
   commercialUse: "paid-gig-safe",
   kind: "creative",
   builtAt: "2026-06-05",
+  prereqs: ["lsystem-tree"],
+  understandWhen:
+    "You can trace the depth-first backtracking steps on a 3x3 grid by hand and explain why it always produces a perfect maze.",
+  predictPrompt:
+    "If you change backtracking to breadth-first search, does the maze look different, and is it still perfect?",
 });

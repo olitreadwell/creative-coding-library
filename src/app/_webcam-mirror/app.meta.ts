@@ -12,4 +12,9 @@ export const meta = defineApp({
   commercialUse: "paid-gig-safe",
   kind: "creative",
   builtAt: "2026-06-05",
+  prereqs: ["seeded-tilings"],
+  understandWhen:
+    "You can explain how pixel brightness maps to dot radius and predict what a finer cell grid does to frame rate.",
+  predictPrompt:
+    "If you halve the cell size and double the grid dimensions, what happens to the dot resolution and performance?",
 });

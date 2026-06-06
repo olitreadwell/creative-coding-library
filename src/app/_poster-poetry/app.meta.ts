@@ -13,4 +13,9 @@ export const meta = defineApp({
   commercialUse: "paid-gig-safe",
   kind: "creative",
   builtAt: "2026-06-05",
+  prereqs: ["hsl-palette"],
+  understandWhen:
+    "You can describe the grid layout rules and explain how the API response maps onto the canvas typography.",
+  predictPrompt:
+    "If the quote is much longer than expected, what part of the layout breaks first: the font size, the line breaks, or the margins?",
 });

@@ -13,4 +13,9 @@ export const meta = defineApp({
   commercialUse: "paid-gig-safe",
   kind: "creative",
   builtAt: "2026-06-05",
+  prereqs: ["two-grid"],
+  understandWhen:
+    "You can apply a rotation matrix to a 3D point by hand and explain what the perspective divide does to depth.",
+  predictPrompt:
+    "If you remove the perspective divide and use an orthographic projection, does the model look flatter, wider, or without foreshortening?",
 });

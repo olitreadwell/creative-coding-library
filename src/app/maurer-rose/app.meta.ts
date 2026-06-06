@@ -18,4 +18,9 @@ export const meta = defineApp({
   commercialUse: "paid-gig-safe",
   kind: "creative",
   builtAt: "2026-06-05",
+  prereqs: ["lissajous"],
+  understandWhen:
+    "You can predict the rough shape of the web for any combination of petal count n and step angle d.",
+  predictPrompt:
+    "If d is a divisor of 360, what happens to the chord web, and why does the step angle matter so much?",
 });

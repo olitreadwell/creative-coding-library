@@ -13,4 +13,9 @@ export const meta = defineApp({
   commercialUse: "paid-gig-safe",
   kind: "creative",
   builtAt: "2026-06-05",
+  prereqs: ["mic-spectrum", "r3f-spheres"],
+  understandWhen:
+    "You can explain what vertex displacement does in 3D and predict which frequency bands affect which part of the sphere surface.",
+  predictPrompt:
+    "If you sing a high note, does the top of the sphere, the equator, or the whole surface spike, and why?",
 });

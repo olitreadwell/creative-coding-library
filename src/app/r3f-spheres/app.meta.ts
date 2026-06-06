@@ -19,4 +19,9 @@ export const meta = defineApp({
   commercialUse: "paid-gig-safe",
   kind: "creative",
   builtAt: "2026-06-05",
+  prereqs: ["two-grid", "wireframe"],
+  understandWhen:
+    "You can describe how the R3F scene graph maps to three.js objects and explain what useFrame does each tick.",
+  predictPrompt:
+    "If you remove the directional light and keep only ambient light, what visual change do you expect on the spheres?",
 });

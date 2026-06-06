@@ -12,4 +12,9 @@ export const meta = defineApp({
   commercialUse: "paid-gig-safe",
   kind: "creative",
   builtAt: "2026-06-05",
+  prereqs: ["webcam-mirror"],
+  understandWhen:
+    "You can predict which character appears for a very bright region versus a very dark one and explain the glyph density ordering.",
+  predictPrompt:
+    "If you reverse the glyph density order, does a bright face appear as dark characters or as the same characters?",
 });

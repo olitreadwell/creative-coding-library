@@ -12,4 +12,9 @@ export const meta = defineApp({
   commercialUse: "paid-gig-safe",
   kind: "creative",
   builtAt: "2026-06-05",
+  prereqs: ["hsl-palette"],
+  understandWhen:
+    "You can describe how palette interpolation produces the color transition between seasons without inspecting the code.",
+  predictPrompt:
+    "If you remove the interpolation step and snap directly between palettes, what would the visual change look like?",
 });

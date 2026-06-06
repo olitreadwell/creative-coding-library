@@ -19,4 +19,9 @@ export const meta = defineApp({
   commercialUse: "paid-gig-safe",
   kind: "creative",
   builtAt: "2026-06-05",
+  prereqs: ["boids", "reaction-diffusion"],
+  understandWhen:
+    "You can describe the sense-rotate-move-deposit loop and predict what raising the sensor angle does to trail shape.",
+  predictPrompt:
+    "If you increase the sensor angle from narrow to wide, do the trails become broader, thinner, or more tangled?",
 });

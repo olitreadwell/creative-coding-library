@@ -13,4 +13,9 @@ export const meta = defineApp({
   commercialUse: "paid-gig-safe",
   kind: "creative",
   builtAt: "2026-06-05",
+  prereqs: ["lsystem-tree", "wireframe"],
+  understandWhen:
+    "You can trace how perspective scaling and recursive subdivision combine to create the tunnel illusion.",
+  predictPrompt:
+    "If you stop the panels from scaling with depth and keep them the same size, what does the tunnel illusion look like?",
 });

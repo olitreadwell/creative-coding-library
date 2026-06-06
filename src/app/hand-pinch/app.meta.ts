@@ -19,4 +19,9 @@ export const meta = defineApp({
   commercialUse: "paid-gig-safe",
   kind: "creative",
   builtAt: "2026-06-05",
+  prereqs: ["webcam-mosaic", "squish"],
+  understandWhen:
+    "You can describe how the pinch gesture is detected from landmark coordinates and predict what breaks if the hand is partially offscreen.",
+  predictPrompt:
+    "If the thumb and index finger cross without a real pinch, does the blob respond? Why or why not?",
 });

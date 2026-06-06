@@ -18,4 +18,9 @@ export const meta = defineApp({
   commercialUse: "paid-gig-safe",
   kind: "creative",
   builtAt: "2026-06-05",
+  prereqs: [],
+  understandWhen:
+    "You can predict the animation order for any starting cell and explain what the stagger amount controls.",
+  predictPrompt:
+    "If you change the stagger origin from center to top-left, how does the wave pattern change?",
 });

@@ -13,4 +13,9 @@ export const meta = defineApp({
   commercialUse: "paid-gig-safe",
   kind: "creative",
   builtAt: "2026-06-05",
+  prereqs: ["webcam-ascii", "webcam-mirror"],
+  understandWhen:
+    "You can explain when each mode (glyph vs dot) is better and predict how switching modes affects the perceived detail.",
+  predictPrompt:
+    "If you use the glyph mode on a very dark scene, do you see fewer characters, smaller characters, or mostly spaces?",
 });

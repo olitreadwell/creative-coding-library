@@ -3,7 +3,8 @@ import { defineApp } from "@/lib/creative/registry";
 export const meta = defineApp({
   slug: "maze",
   title: "Maze",
-  description: "A perfect maze carved live by depth-first backtracking.",
+  description:
+    "Watch a maze carve itself. It drills deep, backs up when stuck, and never leaves a loop.",
   library: "Canvas 2D",
   concepts: ["maze", "graph", "recursion", "generative"],
   level: 2,
@@ -20,7 +21,7 @@ export const meta = defineApp({
   builtAt: "2026-06-05T10:08:06+12:00",
   prereqs: ["lsystem-tree"],
   understandWhen:
-    "You can trace the depth-first backtracking steps on a 3x3 grid by hand and explain why it always produces a perfect maze.",
+    "You can trace the depth-first backtracking steps on a 3x3 grid by hand and say why the result has no loops.",
   predictPrompt:
-    "If you change backtracking to breadth-first search, does the maze look different, and is it still perfect?",
+    "If you switch from depth-first to breadth-first search, does the maze look different?",
 });

@@ -3,8 +3,7 @@ import { defineApp } from "@/lib/creative/registry";
 export const meta = defineApp({
   slug: "tile-pulse",
   title: "Tile Pulse",
-  description:
-    "A grid of geometric tiles that ripple under your cursor. Hover, click, and drag to stir them.",
+  description: "Tiles ripple outward from your cursor. Hover, click, or drag to set off new waves.",
   library: "Canvas 2D",
   concepts: ["interaction", "animation", "generative"],
   level: 2,
@@ -15,7 +14,7 @@ export const meta = defineApp({
   builtAt: "2026-06-05T16:58:41+12:00",
   prereqs: ["gsap-stagger"],
   understandWhen:
-    "You can explain why easing makes the ripple feel organic and predict how a linear ease changes the feel.",
+    "You can explain why easing makes the ripple feel natural and predict how swapping to a linear curve changes the feel.",
   predictPrompt:
-    "If you replace the easing curve with a linear one, does the tile ripple feel faster, snappier, or more mechanical?",
+    "If you use a linear easing curve instead, does the ripple feel faster, snappier, or more mechanical?",
 });

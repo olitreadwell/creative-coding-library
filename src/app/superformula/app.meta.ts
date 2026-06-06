@@ -4,7 +4,7 @@ export const meta = defineApp({
   slug: "superformula",
   title: "Superformula",
   description:
-    "One equation that morphs into flowers, stars, and polygons as you change four numbers.",
+    "One polar equation draws flowers, stars, and polygons. Change four numbers to morph between shapes.",
   library: "Canvas 2D",
   concepts: ["parametric", "geometry", "generative"],
   level: 2,
@@ -21,7 +21,7 @@ export const meta = defineApp({
   builtAt: "2026-06-05T16:58:41+12:00",
   prereqs: ["maurer-rose"],
   understandWhen:
-    "You can predict how many petals a given n value produces and describe what m controls separately from n.",
+    "You can predict the petal count from the n value and describe what m controls independent of n.",
   predictPrompt:
-    "If you set n to 4 and raise m from 1 to 8, does the shape add petals, sharpen corners, or change symmetry?",
+    "If you keep n at 4 and raise m from 1 to 8, does the shape add petals, sharpen corners, or shift symmetry?",
 });

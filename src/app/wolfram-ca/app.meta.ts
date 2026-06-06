@@ -3,7 +3,8 @@ import { defineApp } from "@/lib/creative/registry";
 export const meta = defineApp({
   slug: "wolfram-ca",
   title: "Elementary CA",
-  description: "One-dimensional cellular automata that grow fractal patterns from a single cell.",
+  description:
+    "A row of cells. Each step, a rule number decides each cell's next state. Simple rules make fractal patterns.",
   library: "Canvas 2D",
   concepts: ["cellular-automata", "rules", "generative", "emergence"],
   level: 2,
@@ -20,7 +21,7 @@ export const meta = defineApp({
   builtAt: "2026-06-05T10:08:06+12:00",
   prereqs: ["seeded-tilings"],
   understandWhen:
-    "Given a 3-cell neighborhood pattern, you can compute the next state for rule 30 by hand.",
+    "You can look up any 3-cell neighborhood in rule 30's table and compute the next state by hand.",
   predictPrompt:
-    "Rule 110 is Turing-complete. Does changing the initial seed change the long-term pattern structure, or only the starting position?",
+    "If you change the starting seed for rule 110, does the long-term pattern structure change, or just where it starts?",
 });

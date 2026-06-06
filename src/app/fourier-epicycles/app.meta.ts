@@ -3,7 +3,8 @@ import { defineApp } from "@/lib/creative/registry";
 export const meta = defineApp({
   slug: "fourier-epicycles",
   title: "Fourier Epicycles",
-  description: "A chain of rotating circles that together trace a shape.",
+  description:
+    "Spinning circles stacked on each other. The tip of the last one draws any shape you want.",
   library: "Canvas 2D",
   concepts: ["fourier", "epicycles", "trigonometry", "parametric"],
   level: 2,
@@ -20,7 +21,6 @@ export const meta = defineApp({
   builtAt: "2026-06-05T10:08:06+12:00",
   prereqs: ["lissajous"],
   understandWhen:
-    "You can explain what removing the smallest epicycles does to the traced path and why higher terms add detail.",
-  predictPrompt:
-    "If you keep only the first (largest) epicycle, what shape does the tip trace and why?",
+    "You can explain what removing the smallest circles does to the drawn path and why more circles add detail.",
+  predictPrompt: "If you keep only the largest circle, what shape does the tip draw?",
 });

@@ -3,7 +3,8 @@ import { defineApp } from "@/lib/creative/registry";
 export const meta = defineApp({
   slug: "conway-life",
   title: "Game of Life",
-  description: "Conway's cellular automaton evolving from a random seed.",
+  description:
+    "A grid of cells that live or die each step. Four rules produce complex, emergent patterns.",
   library: "Canvas 2D",
   concepts: ["cellular-automata", "generative", "simulation"],
   level: 2,
@@ -20,7 +21,7 @@ export const meta = defineApp({
   builtAt: "2026-06-05T08:44:33+12:00",
   prereqs: ["wolfram-ca"],
   understandWhen:
-    "You can apply the four Conway rules to a 3x3 grid by hand and compute the next generation for the center cell.",
+    "You can apply all four Conway rules to a small grid by hand and get the next generation right.",
   predictPrompt:
-    "A lone live cell with no live neighbors dies. What happens to a 2x2 block of live cells after ten steps?",
+    "A 2x2 block of live cells: does it stay alive, die, or keep changing after ten steps?",
 });

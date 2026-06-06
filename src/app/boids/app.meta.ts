@@ -3,7 +3,7 @@ import { defineApp } from "@/lib/creative/registry";
 export const meta = defineApp({
   slug: "boids",
   title: "Boids",
-  description: "A flock that emerges from three simple steering rules.",
+  description: "A flock of dots that moves like birds. No leader. Three rules do all the work.",
   library: "Canvas 2D",
   concepts: ["flocking", "steering", "simulation", "vectors"],
   level: 2,
@@ -20,7 +20,7 @@ export const meta = defineApp({
   builtAt: "2026-06-05T10:08:06+12:00",
   prereqs: ["pointer-flow"],
   understandWhen:
-    "You can predict which of the three rules breaks the flock if disabled alone, and explain why.",
+    "You can name all three rules and predict which one breaks the flock if you turn it off.",
   predictPrompt:
-    "If you disable separation but keep alignment and cohesion, what happens to the flock over time?",
+    "If you turn off separation but keep alignment and cohesion, what happens to the flock over time?",
 });

@@ -4,7 +4,7 @@ export const meta = defineApp({
   slug: "physarum",
   title: "Physarum Letters",
   description:
-    "A slime-mold simulation whose trails grow into words, drifting through wind, water, fire, and grass.",
+    "Tiny agents follow and leave trails, forming words out of slime-mold paths. Each environment changes the texture.",
   library: "Canvas 2D",
   concepts: ["agents", "simulation", "generative"],
   level: 3,
@@ -21,7 +21,7 @@ export const meta = defineApp({
   builtAt: "2026-06-05T16:58:41+12:00",
   prereqs: ["boids", "reaction-diffusion"],
   understandWhen:
-    "You can describe the sense-rotate-move-deposit loop and predict what raising the sensor angle does to trail shape.",
+    "You can describe the sense-turn-move-deposit loop each agent follows and predict what a wider sensor angle does to the trails.",
   predictPrompt:
-    "If you increase the sensor angle from narrow to wide, do the trails become broader, thinner, or more tangled?",
+    "If you widen the sensor angle, do the trails get broader, thinner, or more tangled?",
 });

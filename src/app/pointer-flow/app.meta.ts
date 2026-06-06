@@ -4,7 +4,7 @@ export const meta = defineApp({
   slug: "pointer-flow",
   title: "Pointer Flow",
   description:
-    "Soft blobby balloons that drift toward your cursor and get hit by a shockwave when you click.",
+    "Balloons drift toward your cursor. Click to send a shockwave that pushes them away.",
   library: "Canvas 2D",
   concepts: ["interaction", "physics", "generative"],
   level: 1,
@@ -15,7 +15,7 @@ export const meta = defineApp({
   builtAt: "2026-06-05T14:51:46+12:00",
   prereqs: [],
   understandWhen:
-    "You can explain why each balloon drifts toward the cursor and predict how changing the shockwave radius affects the response.",
+    "You can explain why each balloon drifts toward the cursor and predict how a wider shockwave radius changes the response.",
   predictPrompt:
-    "If you double the shockwave force, what changes: the number of balloons affected, how far they travel, or both?",
+    "If you double the shockwave force, what changes: how many balloons move, how far they go, or both?",
 });

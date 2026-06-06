@@ -4,7 +4,7 @@ export const meta = defineApp({
   slug: "mondrian",
   title: "Mondrian",
   description:
-    "De Stijl panels at multiple depths fall toward the camera. Perspective scaling and depth-of-field alpha create an endless 3D tunnel from pure Canvas 2D math.",
+    "Colored panels fall toward you in an endless tunnel. All 3D depth is faked with math on a flat canvas.",
   library: "Canvas 2D",
   concepts: ["recursion", "generative", "animation", "perspective", "depth-of-field"],
   level: 2,
@@ -15,7 +15,7 @@ export const meta = defineApp({
   builtAt: "2026-06-05T16:58:41+12:00",
   prereqs: ["lsystem-tree", "wireframe"],
   understandWhen:
-    "You can trace how perspective scaling and recursive subdivision combine to create the tunnel illusion.",
+    "You can trace how perspective scaling and recursive splitting work together to create the tunnel illusion.",
   predictPrompt:
-    "If you stop the panels from scaling with depth and keep them the same size, what does the tunnel illusion look like?",
+    "If panels stop shrinking with distance and stay the same size, what does the tunnel look like?",
 });

@@ -3,7 +3,8 @@ import { defineApp } from "@/lib/creative/registry";
 export const meta = defineApp({
   slug: "lsystem-tree",
   title: "L-System Tree",
-  description: "A fractal plant grown from an L-system with turtle graphics.",
+  description:
+    "A plant grown from rewrite rules. Each letter maps to a draw command. Add iterations to add branches.",
   library: "Canvas 2D",
   concepts: ["recursion", "l-system", "generative"],
   level: 2,
@@ -20,7 +21,6 @@ export const meta = defineApp({
   builtAt: "2026-06-05T08:44:33+12:00",
   prereqs: ["shrooms"],
   understandWhen:
-    "You can trace a 3-step L-system expansion by hand and predict the resulting turtle path.",
-  predictPrompt:
-    "If you add one more rewrite iteration, does the tree get taller, wider, or both, and by roughly how much?",
+    "You can expand a 3-step L-system by hand and predict the sequence of draw commands it produces.",
+  predictPrompt: "If you add one more rewrite step, does the tree get taller, wider, or both?",
 });

@@ -3,7 +3,8 @@ import { defineApp } from "@/lib/creative/registry";
 export const meta = defineApp({
   slug: "maurer-rose",
   title: "Maurer Rose",
-  description: "Hundreds of straight chords across a rose curve weave a glowing web.",
+  description:
+    "A rose curve sampled at regular degree steps. Straight lines connect the samples into a glowing web.",
   library: "Canvas 2D",
   concepts: ["trigonometry", "polar", "parametric", "generative"],
   level: 2,
@@ -19,8 +20,7 @@ export const meta = defineApp({
   kind: "creative",
   builtAt: "2026-06-06T11:23:11+12:00",
   prereqs: ["lissajous"],
-  understandWhen:
-    "You can predict the rough shape of the web for any combination of petal count n and step angle d.",
+  understandWhen: "You can predict the rough web shape for a given petal count n and step angle d.",
   predictPrompt:
-    "If d is a divisor of 360, what happens to the chord web, and why does the step angle matter so much?",
+    "If d divides evenly into 360, what does the chord web look like, and why does the step angle change things so much?",
 });

@@ -3,7 +3,8 @@ import { defineApp } from "@/lib/creative/registry";
 export const meta = defineApp({
   slug: "gsap-stagger",
   title: "Stagger Grid",
-  description: "A grid that animates in a staggered wave from the center.",
+  description:
+    "Tiles animate one after another in a wave. Teaches stagger: how to delay each item in a sequence.",
   library: "GSAP",
   concepts: ["animation", "easing", "stagger"],
   level: 1,
@@ -20,7 +21,7 @@ export const meta = defineApp({
   builtAt: "2026-06-05T07:50:36+12:00",
   prereqs: [],
   understandWhen:
-    "You can predict the animation order for any starting cell and explain what the stagger amount controls.",
+    "You can predict which tile animates first and explain what the stagger delay amount controls.",
   predictPrompt:
-    "If you change the stagger origin from center to top-left, how does the wave pattern change?",
+    "If you move the wave origin from center to top-left, how does the tile order change?",
 });

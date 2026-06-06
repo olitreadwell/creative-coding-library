@@ -24,4 +24,18 @@ export const meta = defineApp({
     "You can look up any 3-cell neighborhood in rule 30's table and compute the next state by hand.",
   predictPrompt:
     "If you change the starting seed for rule 110, does the long-term pattern structure change, or just where it starts?",
+  recallChecks: [
+    {
+      q: "How does a rule number like 30 or 90 map to cell update decisions?",
+      a: "A rule number is an 8-bit integer. Each of the 8 possible 3-cell neighborhoods maps to one bit. The bit at position (neighborhood) in the rule number tells you whether the next cell should be alive (1) or dead (0).",
+    },
+    {
+      q: "How is the 3-cell neighborhood encoded as a number to look up the rule?",
+      a: "The left cell is the most significant bit, the right cell is the least significant bit. For example, neighborhood 110 encodes as (1 << 2) | (1 << 1) | 0 = 6. The rule bit is then (rule >> 6) & 1.",
+    },
+    {
+      q: "Why does the sketch use ImageData instead of drawing one rectangle per cell?",
+      a: "ImageData lets you write all cell colors into a pixel byte array in one pass and paint everything with a single putImageData call. Drawing one rectangle per cell would make thousands of draw calls per frame, which is much slower.",
+    },
+  ],
 });

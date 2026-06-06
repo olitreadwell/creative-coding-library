@@ -12,9 +12,11 @@ type AppDetailProps = {
   meta: AppMeta;
   synopsis: ReactNode;
   tutorial: ReactNode;
+  predict?: ReactNode;
+  recall?: ReactNode;
 };
 
-export function AppDetail({ meta, synopsis, tutorial }: AppDetailProps) {
+export function AppDetail({ meta, synopsis, tutorial, predict, recall }: AppDetailProps) {
   const [fullScreen, setFullScreen] = useState(false);
   // Bumped on every view switch so the iframe remounts and the animation
   // restarts when entering either Info or Full screen.
@@ -101,14 +103,18 @@ export function AppDetail({ meta, synopsis, tutorial }: AppDetailProps) {
             </Tabs>
           </div>
 
-          <div className="order-1 h-[67svh] shrink-0 border-b border-border lg:order-2 lg:h-auto lg:min-h-0 lg:shrink lg:flex-1 lg:border-b-0 lg:border-l">
-            <iframe
-              key={`info-${viewKey}`}
-              src={`${playHref}?embed=controls`}
-              title={`Live preview of ${meta.title}`}
-              allow="camera; microphone"
-              className="h-full w-full border-0 bg-background"
-            />
+          <div className="order-1 flex shrink-0 flex-col border-b border-border lg:order-2 lg:min-h-0 lg:shrink lg:flex-1 lg:border-b-0 lg:border-l">
+            {predict && <div className="shrink-0 p-4">{predict}</div>}
+            <div className="h-[67svh] min-h-0 flex-1">
+              <iframe
+                key={`info-${viewKey}`}
+                src={`${playHref}?embed=controls`}
+                title={`Live preview of ${meta.title}`}
+                allow="camera; microphone"
+                className="h-full w-full border-0 bg-background"
+              />
+            </div>
+            {recall && <div className="shrink-0 p-4">{recall}</div>}
           </div>
         </div>
       )}

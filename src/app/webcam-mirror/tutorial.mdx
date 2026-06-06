@@ -1,78 +1,34 @@
-## How it works, step by step
+# Tutorial: Webcam Mirror
 
-This app draws a live dot grid from your camera using plain Canvas 2D and the browser's `getUserMedia` API. No libraries handle the video or the pixel math. Here is the whole chain broken into four steps.
+By the end of this tutorial you will understand how each dot's radius is computed from camera pixel values and why the small sampling canvas keeps the animation fast.
 
-## Step 1: requesting camera access
+## Predict
 
-The camera is never started on page load. The sketch renders a prompt and waits for the user to click "Enable camera." Only then does the browser ask for permission.
+Luminance is `0.299 * r + 0.587 * g + 0.114 * b`, divided by 255 to normalize to [0, 1]. The result is then multiplied by the contrast slider before becoming the dot radius.
 
-```ts
-const stream = await navigator.mediaDevices.getUserMedia({
-  video: { facingMode: "user" },
-});
-```
+If a pixel has `r = 200, g = 200, b = 200` (a medium grey), what is its luminance before contrast? (Substitute the values and compute the weighted sum, then divide by 255.)
 
-`facingMode: "user"` prefers the front-facing camera on phones. If the user denies permission, or if no camera is found, the error is caught and a readable message is shown instead of throwing an uncaught exception.
+## Run
 
-## Step 2: mirroring the video into a small canvas
+1. Click "Enable camera" and allow access.
+2. Cover the lens briefly with your hand. All dots should become very small or invisible.
+3. Uncover and point the camera at a bright light source (or a bright window). Watch the dots in that region grow large.
+4. Drag "Dot size" from minimum to maximum. At minimum, the grid has many small dots showing detail. At maximum, it has few large dots showing abstraction.
 
-Each animation frame we draw the video into a tiny offscreen canvas that matches the dot grid dimensions (for example, 60 columns x 40 rows). Before drawing we flip the canvas horizontally so the image reads as a mirror.
+## Look closer
 
-```ts
-sample.ctx.save();
-sample.ctx.translate(cols, 0);
-sample.ctx.scale(-1, 1);
-sample.ctx.drawImage(video, 0, 0, cols, rows);
-sample.ctx.restore();
-```
+- The camera is sampled into an offscreen canvas that matches the dot grid (for example, 60 columns by 40 rows). `getImageData` on that small canvas returns only the needed bytes. This is much faster than reading the full camera resolution.
+- The horizontal flip is done before sampling: `ctx.scale(-1, 1)` after `ctx.translate(cols, 0)`. The dot grid itself is never flipped; the video is drawn flipped into the sample canvas.
+- `cbRamp(adjusted, theme)` from the shared color library returns a color on the Okabe-Ito sequential ramp. That ramp avoids the red-green axis, so it reads correctly for the most common forms of color vision difference.
+- When the component unmounts, `track.stop()` is called for every MediaStreamTrack. This turns off the camera indicator light.
 
-This small canvas makes reading pixels fast because `getImageData` returns only as many bytes as there are dots, not the full camera resolution.
+## Break it
 
-## Step 3: sampling brightness per cell
+- Set "Contrast" to maximum and move in front of a uniformly lit wall. The dots should reach maximum radius even in areas that are not very bright.
+- Set "Dot size" to minimum in a bright environment. The grid has so many tiny dots it approaches a photographic look.
+- Try holding a piece of plain white paper. The dots in that area should all be maximum size (highest luminance).
+- Point the camera at something with both very dark and very bright areas simultaneously. The contrast between dot sizes should be dramatic.
 
-We call `getImageData` on the small canvas to get every pixel's RGBA values. For each cell we calculate luminance using the BT.601 coefficients, which weight green more than red or blue because human eyes are most sensitive to green.
+## Recap
 
-```ts
-function luminance(r: number, g: number, b: number): number {
-  return 0.299 * r + 0.587 * g + 0.114 * b;
-}
-```
-
-Dividing by 255 normalises the result to [0, 1]. Multiplying by the contrast (intensity) slider then scales the result. Values are clamped so they never overflow.
-
-## Step 4: drawing the dots
-
-For each cell we map its [0, 1] brightness to a dot radius and a color.
-
-```ts
-const radius = adjusted * maxRadius;
-ctx.beginPath();
-ctx.arc(cx, cy, radius, 0, Math.PI * 2);
-ctx.fillStyle = cbRamp(adjusted, theme);
-ctx.fill();
-```
-
-`cbRamp` returns a color from the Okabe-Ito sequential ramp: deep blue at 0, bright yellow at 1. This ramp reads correctly in grayscale and for the most common forms of color vision deficiency.
-
-The whole draw runs inside `useAnimationFrame`, which pauses when the page is hidden and when the user has requested reduced motion.
-
-## Cleanup
-
-When the component unmounts, every `MediaStreamTrack` is stopped so the camera indicator light turns off. This also happens if the user leaves the sketch and returns.
-
-```ts
-for (const track of stream.getTracks()) {
-  track.stop();
-}
-```
-
-## Try it yourself
-
-- Drag the **dot size** slider to minimum for a near-photographic look, or maximum for bold abstract shapes.
-- Raise **contrast** and watch dark background areas vanish while bright areas saturate.
-- Hold a colored object close to the camera and notice how the ramp maps different brightnesses to different hues.
-- Try the sketch in a dark room with a single light source to see the gradient clearly.
-
-## What to remember
-
-`getUserMedia` + `drawImage` + `getImageData` is the three-step recipe for any real-time camera effect in the browser. You sample the video, read the pixels, and draw whatever you want based on the values. The browser handles permission, privacy, and hardware access; your code just works with numbers.
+`getUserMedia` requests the camera. Each frame, the video is drawn into a small canvas and pixel values are read back. Luminance converts RGB to one brightness number. Dot radius maps that brightness to a circle size. Three steps, any effect.

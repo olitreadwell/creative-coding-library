@@ -1,68 +1,35 @@
-## How it works
+# Tutorial: Hand Pinch
 
-### 1. Start the camera and the model (on a click)
+By the end of this tutorial you will understand how the sketch turns 21 hand landmarks into a grab gesture and drives the blob's position with linear interpolation.
 
-For privacy nothing runs until you press Enable. The button asks for the camera,
-then loads Google's MediaPipe hand model. The model files come from a CDN, so the
-first start takes a moment.
+## Predict
 
-```ts
-const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
-const vision = await import("@mediapipe/tasks-vision");
-const fileset = await vision.FilesetResolver.forVisionTasks(WASM_URL);
-const handLandmarker = await vision.HandLandmarker.createFromOptions(fileset, {
-  baseOptions: { modelAssetPath: MODEL_URL },
-  runningMode: "VIDEO",
-  numHands: 2,
-});
-```
+The pinch is detected by measuring the distance between two fingertip points. When that distance is below a threshold, the fingers are touching.
 
-We try the GPU first and fall back to CPU if that is not available, and we catch
-errors (denied camera, offline) and show a message instead of crashing.
+The threshold is adjustable with the sensitivity slider. If you raise the sensitivity, do you think pinches register more easily or less easily? Think about what "more sensitive" means for a distance threshold.
 
-### 2. Read the hands each frame
+## Run
 
-When a new camera frame is ready, we ask the model for landmarks. Each hand comes
-back as 21 points with x/y in the range 0 to 1.
+1. Click "Enable" and allow camera access. Wait a moment for the model to load.
+2. Hold one hand in front of the camera. You should see 21 dots appear on your hand.
+3. Slowly bring your thumb and index finger together until you see the blob start moving.
+4. Drag your pinched fingers across the camera frame. Watch the blob ease toward your hand.
+5. Pinch with both hands and slowly pull them apart.
 
-```ts
-const result = handLandmarker.detectForVideo(video, performance.now());
-const hands = result.landmarks; // array of hands, each an array of 21 points
-```
+## Look closer
 
-Because the camera is shown mirrored (like a selfie), we flip x when drawing:
-`canvasX = (1 - point.x) * width`.
+- The model uses GPU acceleration if available and falls back to CPU if not. The first load takes a moment because the model files come from a CDN.
+- The camera is shown mirrored (like a selfie). To match this, the sketch flips the x coordinate: `canvasX = (1 - point.x) * width`.
+- The blob uses `lerp` (linear interpolation): `newPos = old + (target - old) * 0.25`. Each frame it moves 25% of the remaining distance. This creates the smooth follow behavior.
+- The blob is drawn as a ring of points with a small sine wobble per point. The wobble frequency differs per blob so it looks alive rather than mechanical.
 
-### 3. Detect the pinch
+## Break it
 
-The pinch is just the distance between the thumb tip (point 4) and the index
-fingertip (point 8). Below a threshold, the fingers are touching.
+- Try the sensitivity slider at maximum. The pinch should register even when your fingers are still slightly apart.
+- Try the sensitivity slider at minimum. You may need to press your fingers firmly together before the blob responds.
+- Try a two-hand stretch in a small space. Notice how the blob's size and shape change proportionally to the distance between your hands.
+- Hold your hand very close to the camera lens. The tracking points may drift or lose accuracy.
 
-```ts
-const d = pinchDistance(hand[4], hand[8]);
-if (isPinching(d, sensitivity)) {
-  const grab = midpoint(hand[4], hand[8]); // the grab point
-}
-```
+## Recap
 
-The sensitivity slider is that threshold.
-
-### 4. Drive the blob
-
-- No pinch: the blob eases back to its resting size.
-- One pinch: the blob's center eases toward that grab point (drag).
-- Two pinches: the blob stretches so opposite edges sit at the two grab points.
-
-```ts
-jelly.cx = lerp(jelly.cx, targetCx, 0.25); // smooth follow
-```
-
-The blob is drawn as a ring of points with a small sine wobble so it looks soft
-and alive.
-
-### Make it yours
-
-- Lower the sensitivity if pinches register too easily, raise it if they do not.
-- Pinch with both hands and pull apart to stretch the blob wide or tall.
-- The same 21 points let you detect other gestures: an open palm, a point, a
-  fist. Try mapping one of those to a new action.
+The model returns 21 landmarks per hand as x/y positions. A simple distance check between two fingertips detects the pinch. Linear interpolation moves the blob smoothly toward the grab point each frame. That is the entire interaction layer.

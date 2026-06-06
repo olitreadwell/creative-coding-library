@@ -1,21 +1,25 @@
-## What this is
+# Cyclic Automaton
 
-The Cyclic Automaton is a grid simulation where every cell holds one of N colors. Each color eats the next one in a cycle, like rock-paper-scissors with N players. Over time, the grid stops looking random and starts showing rotating spirals.
+A grid simulation where each color "eats" the next one in a cycle, like rock-paper-scissors, until spirals form across the whole canvas.
 
-## The big idea in plain words
+Learners see how a simple eating rule, applied to a random grid, produces rotating spiral structures that no individual cell planned.
 
-Think of N colors arranged in a circle. Color 0 is eaten by color 1. Color 1 is eaten by color 2. The last color wraps back around and is eaten by color 0. Nobody wins forever.
+## What you see
 
-Each tick, every cell looks at its eight surrounding neighbors. If enough neighbors hold the color that eats this cell, the cell changes to that color. Otherwise it stays.
+- A grid that starts as random patches of color.
+- Clusters form, spread, and start to curve within a few seconds.
+- Rotating spirals grow and fill the canvas.
+- The spirals keep rotating indefinitely, with no cell ever "winning."
 
-That simple rule is all it takes. From a random start, clusters of similar colors form. Those clusters spread. They start curving. Eventually you see spirals slowly rotating across the whole grid, each one chasing the one ahead of it.
+## What it teaches
 
-## Why it matters
+- **Cyclic dynamics:** in a loop where each state beats one other and loses to one, no state takes over. The system cycles endlessly.
+- **Local rules, global patterns:** each cell only looks at its eight neighbors, yet spirals appear across the whole grid.
+- **Threshold:** a cell only changes if enough neighbors already hold the next state. Changing the threshold changes the character of the spirals.
+- **Flat array indexing:** the grid is stored as a single array with a formula to convert row and column to an index.
 
-The Cyclic Automaton shows three ideas clearly:
+## Try this
 
-- **Local rules, global patterns.** Each cell only sees its eight neighbors. It has no idea a spiral exists. Yet spirals appear across the whole grid.
-- **Emergent order from noise.** The starting grid is random. No spirals are put there. They grow on their own because the cyclic eating rule creates a feedback loop that amplifies tiny initial differences.
-- **Rock-paper-scissors dynamics.** In any population where A beats B, B beats C, and C beats A, the strongest player does not take over. Instead the three keep cycling. Add more players and the cycling becomes richer. That is what you are watching.
-
-Hit Play and watch the chaos settle into structure. The Tutorial tab shows how the code drives this.
+- Drag "threshold" to 1 and watch how quickly and sharply the spirals form.
+- Increase "states" to 7 or 8 for more colors and more complex spiral arms.
+- Click "Randomize" and watch the random noise organize itself into spirals within a few seconds.

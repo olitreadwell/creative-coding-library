@@ -1,28 +1,25 @@
-## What this is
+# Conway's Game of Life
 
-Conway's Game of Life is a simulation that runs on a grid of cells. Each cell is either **alive** or **dead**. Every tick, the grid updates based on four simple rules. Those rules decide which cells survive, which die, and which are born.
+A grid simulation where cells live or die each tick based on how many neighbors they have.
 
-The result looks alive. Patterns glide across the screen. Clusters pulse and shift. Some shapes repeat forever. All of it comes from four rules and a starting arrangement of cells.
+Learners see that four short rules can produce moving patterns, stable shapes, and structures that repeat indefinitely.
 
-## The big idea in plain words
+## What you see
 
-Think of the grid like a neighbourhood. Each cell has eight neighbours: up, down, left, right, and the four diagonals.
+- A grid of colored cells that changes each tick.
+- Some clusters pulse and repeat. Others grow outward. Some vanish.
+- The grid wraps around: cells at the right edge neighbor cells at the left edge.
+- Pressing "Randomize" generates a new starting grid with the same rules.
 
-Each tick, the grid checks every cell and applies four rules:
+## What it teaches
 
-- A live cell with **fewer than 2** live neighbours dies. (Too lonely.)
-- A live cell with **2 or 3** live neighbours survives. (Just right.)
-- A live cell with **more than 3** live neighbours dies. (Too crowded.)
-- A dead cell with **exactly 3** live neighbours comes alive. (Born.)
+- **Cellular automata:** a grid where every cell updates based on its neighbors, one generation at a time.
+- **Emergence:** no one codes "gliders" or "oscillators." Those patterns appear because the rules allow them.
+- **Flat array indexing:** the grid is stored as a one-dimensional array. A formula converts row and column into an index.
+- **Toroidal grid:** edges wrap around, so every cell always has exactly eight neighbors.
 
-That is everything. Count the neighbours, apply the rule, move to the next generation.
+## Try this
 
-## Why it matters
-
-Conway's Game of Life introduced several ideas that matter in programming and science:
-
-- **Cellular automata.** A system where simple local rules produce complex global behaviour. Many natural processes (crystal growth, traffic flow, biological patterns) follow this shape.
-- **Emergence.** The rules say nothing about "gliders" or "oscillators". Those patterns emerge on their own. Nobody designed them. They appear because the rules allow them.
-- **Turing completeness.** The Game of Life can simulate a full computer. You can build logic gates, memory, and loops out of nothing but cells.
-
-You do not need to understand any of that to enjoy watching it run. Hit Play and see what the rules create. The Tutorial tab shows how the code works, step by step.
+- Click "Pause" and find a small cluster of two or three live cells. Predict whether it will survive the next tick.
+- Look for a repeating pattern. Count how many ticks it takes to return to the same shape.
+- Click "Randomize" and compare how different starting arrangements produce different long-term behavior.

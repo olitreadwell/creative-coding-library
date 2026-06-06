@@ -1,114 +1,34 @@
-## How it works, step by step
+# Tutorial: Sphere Field
 
-This sketch has two parts: the **field math** (pure functions, no React) and the **R3F component** (React + three.js). Here is how each part works.
+By the end of this tutorial you will understand how instancing draws thousands of spheres efficiently and how `useFrame` drives the wave animation.
 
-## Step 1: generate grid positions
+## Predict
 
-Before anything renders, we compute where every sphere sits in 3D space.
+The wave formula is `y = sin((col + row) * spatialFreq - time * temporalFreq) * amplitude`. Two spheres at the same diagonal (`col + row = constant`) have the same phase value and therefore the same height at any given time.
 
-```ts
-export function spherePositions(cols, rows, spacing) {
-  const halfW = ((cols - 1) * spacing) / 2;
-  const halfD = ((rows - 1) * spacing) / 2;
-  const positions = [];
+If two spheres are at positions (0, 5) and (5, 0), do they rise and fall together or at different times? Work out what `col + row` equals for each.
 
-  for (let row = 0; row < rows; row++) {
-    for (let col = 0; col < cols; col++) {
-      positions.push({
-        x: col * spacing - halfW, // left-right
-        z: row * spacing - halfD, // front-back (3D uses Z, not Y, for depth)
-        col,
-        row,
-      });
-    }
-  }
-  return positions;
-}
-```
+## Run
 
-`halfW` and `halfD` shift the grid so its center lands at the origin (0, 0, 0). The field is built much larger than the screen so it spills past every edge, and the camera sits above it tilted down about forty degrees, so the field reads as an ocean running to the horizon.
+1. Open the sketch and watch the diagonal wave pattern. Identify which direction the wave travels.
+2. Drag "amplitude" from 0 to 1 and back. Notice the spheres scale slightly as they rise (taller spheres are a bit wider too).
+3. Find a row of spheres that is currently at the top of the wave. Count how many columns of spheres are at that peak simultaneously.
+4. Let it run for 30 seconds without touching anything. Notice the wave never pauses or loops back.
 
-Note that we do not set `y` here. `y` is up/down, and that changes every frame. Only the fixed `x` and `z` positions belong in this pre-computed list.
+## Look closer
 
-## Step 2: compute the wave height
+- `tempObject` and `tempColor` are created once outside the render loop. Allocating new objects every frame stresses the garbage collector, which causes hitches. Reusing objects avoids that.
+- `setMatrixAt(i, matrix)` writes the position, rotation, and scale for sphere `i` into the instance buffer. After the loop, `instanceMatrix.needsUpdate = true` tells the GPU to re-read the buffer.
+- Three light sources illuminate the spheres: ambient fill, two directional beams, and one warm point light. Without lights, `meshStandardMaterial` is completely black.
+- Fog uses `args={[backgroundColor, 18, 66]}`. Objects closer than 18 units are fully visible. Objects past 66 units blend into the background. The grid extends past 66 units in all directions, so the far edge is never visible.
 
-`bob` returns the up/down position for one sphere at one point in time.
+## Break it
 
-```ts
-export function bob(col, row, t) {
-  const phase = (col + row) * WAVE_SPATIAL_FREQ;
-  return Math.sin(phase - t * WAVE_TEMPORAL_FREQ) * WAVE_AMPLITUDE;
-}
-```
+- Try dragging "amplitude" to 0. All spheres flatten to the same y level. The scene looks like a flat disc field.
+- Try a very high amplitude. The wave peaks become tall spikes rather than smooth swell.
+- Imagine removing the fog. The scene would show a hard edge where the grid ends, breaking the "ocean" illusion.
+- Change the wave speed slider. At very low speed the wave appears almost still; at very high speed it becomes a blur.
 
-- `phase` offsets spheres diagonally across the grid. Spheres at different positions on the diagonal peak at different times, which creates a travelling wave instead of every sphere moving together.
-- Subtracting `t * WAVE_TEMPORAL_FREQ` makes the wave travel forward in time.
-- Multiplying by `WAVE_AMPLITUDE` sets the maximum height.
+## Recap
 
-## Step 3: update all spheres in the render loop
-
-The `SphereField` component uses `useFrame` to run code every frame. Inside it, we iterate over every sphere position and push three things into the instanced mesh: position + scale, rotation, and color.
-
-```tsx
-useFrame((state) => {
-  const t = state.clock.getElapsedTime(); // seconds since start
-
-  for (let i = 0; i < COUNT; i++) {
-    const cell = CELLS[i];
-    const range = WAVE_AMPLITUDE * amplitude; // amplitude comes from the slider
-    const y = bob(cell.col, cell.row, t) * amplitude;
-
-    tempObject.position.set(cell.x, y, cell.z);
-    tempObject.scale.setScalar(map(y, -range, range, 0.82, 1.15));
-    tempObject.rotation.y = t * 0.15 + cell.col * 0.3;
-    tempObject.updateMatrix(); // bake into a 4x4 matrix
-
-    mesh.setMatrixAt(i, tempObject.matrix); // write to GPU buffer
-
-    const hue = map(y, -range, range, HUE_RANGE[0], HUE_RANGE[1]);
-    tempColor.setHSL(hue / 360, 0.85, 0.58);
-    mesh.setColorAt(i, tempColor); // write color to GPU buffer
-  }
-
-  mesh.instanceMatrix.needsUpdate = true; // tell the GPU to re-read the buffers
-  if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
-});
-```
-
-`tempObject` and `tempColor` are created once outside the component and reused. Allocating new objects every frame would stress the garbage collector and cause hitches.
-
-## Step 4: lights make the spheres visible
-
-Without light, a `meshStandardMaterial` is completely black. Three light sources give the spheres their look:
-
-- **Ambient light** (intensity 0.7): a soft base fill so no part of any sphere is fully dark.
-- **Two directional lights**: one white from above-right, one blue-tinted from below-left. This creates the bright highlight and subtle color on the shadow side.
-- **One point light** (warm orange, above center): adds a warm glow that shifts across each sphere as it bobs.
-
-The material's metalness and roughness come from sliders, so you can take the spheres from soft matte to wet and reflective.
-
-## The endless horizon
-
-One line does most of the "ocean" work:
-
-```tsx
-<fog attach="fog" args={[backgroundColor, 18, 66]} />
-```
-
-Fog blends anything past the far distance into the background color. Because the
-grid extends well beyond that distance, its real edge is always hidden inside the
-fog, so the field looks like it carries on forever.
-
-## Try this
-
-- Change `COLS` or `ROWS` at the top of `play/page.tsx` to grow or shrink the field.
-- Change `HUE_RANGE` from `[180, 320]` to `[0, 60]` for a red/yellow palette.
-- Drag the amplitude slider to 0 to flatten the ocean, or up for heavy swell.
-- Lower the fog `far` value to pull the horizon closer; raise it to push it back.
-
-## What to remember
-
-- three.js organizes a 3D scene as a tree of objects, lights, and a camera. React Three Fiber lets you write that tree with JSX.
-- `useFrame` is the animation loop. Everything time-based lives there.
-- Instancing (`instancedMesh`) draws many copies of one mesh in a single GPU call. You update each copy by writing a matrix (transform) and a color into the instance buffers, then flagging them as dirty.
-- Lights are not decoration. `meshStandardMaterial` needs at least one light source to show any surface detail.
+three.js organizes 3D scenes as a tree of objects, lights, and a camera. React Three Fiber lets you write that tree with JSX. `useFrame` runs the animation loop. Instancing draws thousands of spheres in one GPU call by writing transform and color data into buffers.

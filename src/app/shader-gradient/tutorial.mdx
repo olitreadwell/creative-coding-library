@@ -1,95 +1,34 @@
-## How it works, step by step
+# Tutorial: Shader Gradient
 
-This app draws an animated color field using a GLSL fragment shader running on the GPU. The JavaScript side sets things up and keeps time. The GPU side runs the math. Here is each part, in order.
+By the end of this tutorial you will understand how a uniform connects JavaScript time to the GPU shader, and how domain warping produces blob shapes from sine functions.
 
-### Step 1: set up a fullscreen triangle
+## Predict
 
-A normal 3D scene has many triangles. This app uses exactly one: a single large triangle that covers the whole screen. There is no camera, no 3D transform. We just want the GPU to run our color function for every pixel.
+The shader receives `uTime` (seconds since the sketch started) as a uniform. A uniform is the same value for every pixel in a given frame, but it changes between frames.
 
-The library `ogl` creates a `Triangle` geometry and a `Renderer`. The renderer sets up a WebGL context, which is the browser's gateway to the GPU.
+The warp function adds `sin` terms that include `uTime`. As `uTime` grows, the sine values change. Does the animation speed up, slow down, or stay constant as time increases? Think about the range of the sine function.
 
-### Step 2: the fragment shader decides each pixel's color
+## Run
 
-A fragment shader is a small GLSL program. GLSL is a C-like language that runs on the GPU. This shader has one job: given a pixel position and a time value, return an RGBA color.
+1. Open the sketch and watch for ten seconds. Try to identify two or three blob boundaries that move.
+2. Switch from "calm" to "wild." The blob shapes shift immediately because `uSeed` changes, which shifts the palette hue region.
+3. Switch back to "calm" and continue watching. The shapes are different from when you first opened it because time has advanced.
+4. Look at the animation near the edges of the canvas. Are the blobs continuous or do they cut off sharply at the edges?
 
-```glsl
-precision highp float;
+## Look closer
 
-uniform float uTime;       // seconds since the sketch started
-uniform vec2  uResolution; // canvas size in pixels
-uniform float uSpeed;      // how fast time moves
-uniform float uSeed;       // shifts the palette hue region
+- The sketch uses exactly one triangle covering the whole screen, not a rectangle made of two triangles. This is slightly more efficient because one triangle has no diagonal seam.
+- The `ogl` library creates a WebGL context (the browser's gateway to the GPU). WebGL is a lower-level API than Canvas 2D.
+- `useAnimationFrame` from the shared library calls the render callback each frame. Each call updates `uTime` with the current elapsed seconds, then calls `renderer.render()`.
+- The three palette presets change `uSeed`, which shifts the `d` coefficient in the cosine palette formula. This rotates which part of the color cycle the output passes through.
 
-// cosine palette: color = a + b * cos(TAU * (c * t + d))
-vec3 palette(float t, vec3 a, vec3 b, vec3 c, vec3 d) {
-  return a + b * cos(6.28318 * (c * t + d));
-}
+## Break it
 
-// domain warp: distort the UV coordinates with sine waves
-float warp(vec2 p, float t) {
-  float a = sin(p.x * 1.2 + t * 0.7 + uSeed)
-          + sin(p.y * 0.9 - t * 0.5);
-  float b = sin(p.y * 1.1 + t * 0.6 + uSeed * 1.3)
-          + sin(p.x * 0.8 + t * 0.4);
-  return sin(a + b + t * 0.3) * 0.5 + 0.5;
-}
+- Switch between palettes rapidly five times. The transition is instant because only one uniform value changes.
+- Let it run for five minutes. The animation is still smooth because the GPU recomputes every pixel every frame from scratch.
+- Imagine reducing the screen to one pixel. The GPU still runs the shader once for that pixel, returning a color based on its position and time.
+- Think about what would change if `uTime` were frozen at 0. The image would be a single, static frame with no movement.
 
-void main() {
-  // normalize pixel to [-1, 1] range
-  vec2 uv = (gl_FragCoord.xy * 2.0 - uResolution) / min(uResolution.x, uResolution.y);
-  float driven = uTime * uSpeed;
-  float w1 = warp(uv, driven);
-  float w2 = warp(uv * 1.7 + 0.4, driven * 0.8);
-  float t  = mix(w1, w2, 0.5);
-  vec3 col = palette(t, vec3(0.5), vec3(0.5), vec3(1.0, 1.0, 0.5),
-                     vec3(0.80, 0.53, 0.22));
-  gl_FragColor = vec4(col, 1.0);
-}
-```
+## Recap
 
-Every pixel runs this independently and simultaneously on the GPU. That is what makes it fast.
-
-### Step 3: uniforms connect JavaScript to the shader
-
-A **uniform** is a value you pass from JavaScript into the shader. It is the same for every pixel in a given frame, but you can change it between frames.
-
-This sketch uses four uniforms:
-
-| Uniform       | Type  | Purpose                                                    |
-| ------------- | ----- | ---------------------------------------------------------- |
-| `uTime`       | float | Current time in seconds. Drives the animation.             |
-| `uResolution` | vec2  | Canvas width and height. Used to normalize pixel position. |
-| `uSpeed`      | float | How fast time flows. Faster = faster animation.            |
-| `uSeed`       | float | Shifts which hue region the palette uses.                  |
-
-Every animation frame, JavaScript updates `uTime` with the elapsed seconds. The GPU reads the new value and the colors shift.
-
-### Step 4: domain warping creates the blob shapes
-
-Plain UV coordinates would give a flat, boring gradient. Domain warping bends the coordinates before we sample the palette. We add overlapping sine waves to the `(x, y)` position. The result is an organic, swirling displacement.
-
-The shader runs two warp passes at different scales, then blends them with `mix`. Two passes give more visual depth than one.
-
-### Step 5: the cosine palette maps a number to a color
-
-The `palette` function takes a number `t` in [0, 1] and four `vec3` coefficients. It returns a smooth RGB color. Because cosine oscillates smoothly, the output color cycles without jumps. Changing the `d` coefficient (via `uSeed`) shifts which hue region the cycle passes through. That is how the three palette presets work.
-
-### Step 6: the animation loop
-
-`useAnimationFrame` calls a callback every frame via `requestAnimationFrame`. Each call:
-
-1. Reads the current time `t` in seconds.
-2. Sets `prog.uniforms["uTime"] = { value: t }`.
-3. Calls `renderer.render({ scene: mesh })`.
-
-The GPU then re-runs the fragment shader for every pixel with the updated `uTime`.
-
-## Try this
-
-- Switch between **calm**, **warm**, and **wild** using the palette button. Watch how the hue shifts while the blob shapes stay the same.
-- Notice that the animation never stops or loops. The sine waves never fully repeat because the frequencies are irrational multiples of each other.
-- Open the browser dev tools and look at the Network tab. You will see no image or video files loaded. All color is computed on the fly.
-
-## What to remember
-
-A fragment shader is a function that the GPU runs once per pixel, in parallel. A uniform is how JavaScript passes values into that function. Domain warping bends the input before sampling, creating organic shapes from simple math. Those three ideas are the whole demo.
+A fragment shader runs once per pixel on the GPU. A uniform (here `uTime`) passes a value from JavaScript into the shader each frame. Domain warping bends the pixel's position with sine waves before sampling a cosine color palette. Those three ideas are the whole sketch.

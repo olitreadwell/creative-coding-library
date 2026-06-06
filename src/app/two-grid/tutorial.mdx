@@ -1,81 +1,34 @@
-## How it works, step by step
+# Tutorial: Vector Grid
 
-This app uses [two.js](https://two.js.org/) to create and animate vector shapes. No canvas pixel-writing. Each shape is an object you update by changing properties.
+By the end of this tutorial you will understand how distance from the center produces the wave effect and how two.js avoids the need for manual redrawing.
 
-### Step 1: build the grid
+## Predict
 
-`gridPositions` returns an array of `{x, y, row, col}` objects. Each entry is the pixel-center of one cell. We create one `Two.Rectangle` for each entry and place it at that position.
+Each square rotates at `0.008 + distance * 0.014` radians per frame. Squares at `distance = 0` (center) rotate at 0.008. Squares at `distance = 1` (corners) rotate at `0.008 + 0.014 = 0.022`.
 
-```ts
-const cells = gridPositions(COLS, ROWS, CELL_SIZE, CELL_SIZE);
-// cells[0] → { x: 24, y: 24, row: 0, col: 0 }
-```
+How many times faster do the corner squares rotate compared to the center squares? (Divide 0.022 by 0.008 and round to one decimal place.)
 
-A **scene graph** means two.js keeps a list of all shapes internally. When you call `two.play()`, it calls your `update` callback every animation frame, then redraws the graph. You do not write draw calls yourself.
+## Run
 
-### Step 2: measure distance from center
+1. Open the sketch and watch the center square rotate. Then watch a corner square. Confirm the corners rotate faster.
+2. Watch the scale pulse travel from the center outward. Time how long it takes for the pulse to reach the corner after leaving the center.
+3. Find a square that is midway between center and corner. Its rotation speed and pulse timing should be between the two extremes.
+4. Let the animation run for one minute. The wave continues without any noticeable drift or loop.
 
-Every shape gets a `distance` value: how far it sits from the grid center, normalized between `0` (center) and `1` (corner). This single number drives everything else.
+## Look closer
 
-```ts
-export function centerDistance(row, col, cols, rows): number {
-  const cx = (cols - 1) / 2;
-  const cy = (rows - 1) / 2;
-  const dx = col - cx;
-  const dy = row - cy;
-  const raw = Math.sqrt(dx * dx + dy * dy);
-  const maxRaw = Math.sqrt(cx * cx + cy * cy);
-  return maxRaw === 0 ? 0 : raw / maxRaw;
-}
-```
+- `two.play()` calls the `update` function every animation frame. Inside `update`, you change properties (`rotation`, `scale`, `fill`) on each shape object. two.js reads those changes and redraws the scene.
+- `centerDistance` normalizes the distance to the range [0, 1] by dividing by the maximum possible distance (the corner distance). This makes it easy to drive all effects from one consistent number.
+- `pulseScale` uses `sin(time - distance * spread)`. The subtraction delays the sine wave for shapes farther from center, which is what creates the travelling wave.
+- Hue and lightness both change with the wave. Lightness is tied to scale: a larger square is also brighter.
 
-`Math.sqrt(dx * dx + dy * dy)` is Euclidean distance: the length of the straight line between two points on a grid.
+## Break it
 
-### Step 3: rotate each frame
+- Imagine setting `spread` to 0 in `pulseScale`. All squares would pulse together at the same time rather than in a wave.
+- Try imagining what happens if distance drove scale as a fixed value instead of a wave. Every square would hold a constant size based on its position.
+- Think about what would happen if rotation used `rect.rotation = t` instead of `rect.rotation += rate`. Each frame would set a fixed angle based on time, so all squares would turn at the same angular rate.
+- Find the `baseHue` range in the source code. Try changing it to `[0, 120]` to shift from blue to a red-green palette.
 
-Inside the `update` callback, we add a small angle to each shape's `rotation` property every frame:
+## Recap
 
-```ts
-rect.rotation += 0.008 + distance * 0.014;
-```
-
-Shapes closer to the center (`distance` near 0) rotate at `0.008` radians per frame. Shapes at the edge rotate faster. **Radians** are just another way to measure angles: one full turn is `TAU` (about 6.28) radians.
-
-### Step 4: pulse the scale
-
-`pulseScale` returns a number between `0.5` and `1.2`. It uses `Math.sin` to oscillate smoothly. The key part is the **phase offset**: each shape's distance delays it in time, so the pulse appears to travel outward.
-
-```ts
-export function pulseScale(distance, time, spread, minScale, maxScale): number {
-  const phase = time - distance * spread; // each shape lags behind the center
-  const t = (Math.sin(phase) + 1) / 2; // convert -1..1 to 0..1
-  return map(t, 0, 1, minScale, maxScale);
-}
-```
-
-Setting `rect.scale = s` makes two.js scale the shape around its own center. No position math needed.
-
-### Step 5: shift the color
-
-Hue starts at blue-purple (center) and shifts toward teal (edges). Each frame we add a `hueShift` based on `Math.sin(t - distance * TAU * 0.5)`. This ties color change to the same wave as the scale, so the colors pulse with the shapes.
-
-```ts
-const hueShift = Math.sin(t - distance * TAU * 0.5) * 20;
-const lightness = map(s, 0.5, 1.2, 0.4, 0.7);
-rect.fill = hslString(hsl(baseHue + hueShift, 0.75, lightness));
-```
-
-`hsl(hue, saturation, lightness)` is a color model. Hue is the color name (0-360). Saturation is how vivid. Lightness is how bright. Tying lightness to scale means big shapes look brighter.
-
-## Try this
-
-- Change `COLS` or `ROWS` to `20` to make the grid denser.
-- Set `spread` in `pulseScale` to `0` to make all shapes pulse together instead of in a wave.
-- Swap `rect.rotation +=` for `rect.rotation = t + distance` to get a frozen angle that depends only on position.
-- Change the `baseHue` range from `260, 180` to `0, 120` to shift from blue to a red-green palette.
-
-## What to remember
-
-- A **scene graph** lets you describe shapes once and update them by property, not by redrawing.
-- **Transforms** (rotation, scale) happen around a shape's local center, making math simple.
-- A **phase offset** by distance turns per-shape timing into a visible wave. This pattern works for any oscillating value.
+A scene graph lets you update shapes by changing properties. Distance from the center drives rotation speed, pulse timing, and color. Subtracting distance from the wave phase creates the travelling ripple effect.

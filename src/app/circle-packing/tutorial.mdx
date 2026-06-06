@@ -1,54 +1,34 @@
-## How it works, step by step
+# Tutorial: Circle Packing
 
-Plain Canvas 2D, plus the lab's seeded random helper. The packing is built by one short loop, and the no-overlap rule lives in a single function.
+By the end of this tutorial you will understand how the packing algorithm guarantees no two circles overlap and why early circles grow larger than later ones.
 
-### Step 1: how big can a circle here be?
+## Predict
 
-Given a candidate center, the largest safe radius is the distance to whatever is closest: a wall, or the edge of an existing circle. We start from the four wall distances, then shrink toward any circle that is nearer.
+The algorithm places each new circle at a random position and grows it until it touches something. The first circle placed on an empty canvas has the whole space available.
 
-```ts
-export function maxRadiusAt(x, y, width, height, circles, maxRadius): number {
-  let r = Math.min(x, y, width - x, height - y); // nearest wall
-  for (const c of circles) {
-    const gap = Math.hypot(x - c.x, y - c.y) - c.r; // distance to that circle's edge
-    if (gap < r) r = gap;
-  }
-  return Math.min(r, maxRadius);
-}
-```
+What happens to the maximum possible radius of circles as more circles are already placed? Think about how much open space is left as the canvas fills.
 
-`Math.hypot(x - c.x, y - c.y)` is the straight-line distance between centers. Subtracting the other circle's radius leaves the gap to its _edge_. The smallest gap across all circles and walls is the most we can grow.
+## Run
 
-### Step 2: try, grow, keep or discard
+1. Open the sketch with the default settings and watch the first several circles appear. Notice that the first circles are the largest.
+2. Pause when the canvas is about half full. Find the largest open gap. That is where the next large circle will likely appear.
+3. Let the animation finish. Count how many small circles appear near the edges.
+4. Click "Shuffle" and compare the final pattern to the previous one.
 
-Now the main loop. Each attempt drops a random point, grows it, and keeps it only if it cleared the minimum size after a small padding gap is removed.
+## Look closer
 
-```ts
-export function packCircles(rng, opts): Circle[] {
-  const circles: Circle[] = [];
-  for (let i = 0; i < attempts; i++) {
-    const x = randRange(rng, 0, width);
-    const y = randRange(rng, 0, height);
-    const r = maxRadiusAt(x, y, width, height, circles, maxRadius) - padding;
-    if (r >= minRadius) circles.push({ x, y, r });
-  }
-  return circles;
-}
-```
+- The algorithm checks the distance from the candidate center to every existing circle and to all four walls. The minimum of those distances is the maximum safe radius.
+- Each new circle leaves a small padding gap between itself and its neighbors. That gap is why circles appear to touch but not fuse.
+- The circles are computed all at once before any animation starts. The growing animation is purely visual, replaying a pre-computed list.
+- Colors map to size using a colorblind-safe ramp. This makes large and small circles visually distinct even in grayscale.
 
-The `rng` comes from `makeRng(seed)`, the lab's seeded generator. Same seed, same sequence of random points, same packing every time. That is what makes the **shuffle** button reproducible: it just feeds the next seed.
+## Break it
 
-The `padding` leaves a hairline gap between neighbors so circles kiss rather than fuse. Because each new circle is grown to _avoid_ every earlier one, no two can ever overlap. The tests assert exactly that: for every pair, the distance between centers is at least the sum of their radii.
+- Try dragging "density" to 1 (minimum). Very few positions are tried, so the packing is sparse and uneven.
+- Try "min size" at maximum. Only large circles survive, and the canvas stays mostly empty.
+- Shuffle several times with "density" at maximum. Notice how much more complete the packing looks.
+- Watch the animation at full speed. Each circle scales from zero using a smooth curve called smoothstep. Try to catch the moment a circle starts growing.
 
-### Step 3: reveal them in order
+## Recap
 
-The packing is computed all at once, but drawing it instantly would be dull. Each frame we advance a `reveal` counter, and each circle scales up from zero as the counter passes its index:
-
-```ts
-const grow = smoothstep(0, 1, clamp(reveal - i, 0, 1));
-const r = c.r * grow;
-```
-
-`smoothstep` eases the growth so circles pop in softly instead of snapping. The reveal speed is measured in circles per second times `dt`, so it looks the same on any screen, and the reduced-motion path draws the finished packing in one still frame.
-
-Colors come from the lab's colorblind-safe ramp, mapped by radius: small circles cool, large circles warm. Try the **density** slider high with a low **min size** to pack thousands of tiny discs into the gaps.
+The packing algorithm grows each circle to the largest safe size, checks one rule (no overlap), and discards circles that are too small. Repeating this for hundreds of candidate positions fills the space with circles of varying sizes, with no two ever touching.

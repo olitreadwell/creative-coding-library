@@ -1,41 +1,34 @@
-## How it works, step by step
+# Tutorial: Reaction Diffusion
 
-This app simulates two virtual chemicals on a grid and paints the result onto a canvas in real time. No external physics library, just a loop, some math, and `ImageData`. Here is the full idea in small pieces.
+By the end of this tutorial you will understand what the feed and kill rates control and why A diffuses faster than B.
 
-## Step 1: the grid
+## Predict
 
-We create a flat array of numbers, one entry per grid cell, for each chemical (A and B). A starts at 1 everywhere (maximum). B starts at 0 everywhere. Then we scatter a handful of small square patches where A = 0 and B = 1. Those patches are the seeds: they kick off the reaction.
+Chemical A starts everywhere at 1.0 (maximum). Chemical B starts at 0 everywhere, except in a few seeded patches. The reaction converts A into B wherever A and B are both present.
 
-## Step 2: the Laplacian (diffusion)
+If A diffuses much faster than B, which chemical do you expect to spread further from a seeded patch: A or B? Think about which one has more mobility.
 
-Diffusion means a chemical flows from where it is concentrated toward where it is sparse. We approximate that with a 3x3 weighted average called the discrete Laplacian. The center cell subtracts its own value, and the eight surrounding cells add a weighted share. Cardinal neighbours (up, down, left, right) count twice as much as diagonal neighbours. The grid wraps around at the edges (toroidal boundary), so there are no corners to worry about.
+## Run
 
-## Step 3: the reaction and update
+1. Open the sketch and watch for ten seconds. Note what shape the first patterns take.
+2. Press "Reset" and watch again. The shapes start from different seed positions but follow the same rules.
+3. Wait two minutes without resetting. The pattern continues to evolve and fill the canvas.
+4. Open the source file `grayscott.ts` and change `feed` from 0.055 to 0.04. Reset and compare.
 
-Each cell updates using these two equations, where `lap` means the Laplacian result and `abb` means `A * B * B` (the reaction term):
+## Look closer
 
-```ts
-nextA = A + (dA * lapA - abb + feed * (1 - A)) * dt;
-nextB = B + (dB * lapB + abb - (kill + feed) * B) * dt;
-```
+- The simulation runs on a 200 by 150 grid, not at full screen resolution. This small grid is scaled up with `drawImage` to fill the screen. The CSS property `imageRendering: pixelated` keeps cell edges crisp rather than blurred.
+- Each update step clamps both A and B to the range [0, 1]. This prevents floating-point drift from accumulating across thousands of frames.
+- The Laplacian for a cell is computed as a weighted sum: the center cell subtracts its own value, and the eight neighbors add a weighted share. Cardinal neighbors (up, down, left, right) count twice as much as diagonals.
+- Multiple steps run per frame. Running the simulation several times before drawing gives the impression of faster development without changing the frame rate.
 
-Reading them out loud:
+## Break it
 
-- **A gets:** a diffusion push (`dA * lapA`), loses some when it reacts with B (`-abb`), and gains a trickle of fresh supply from outside (`feed * (1 - A)`).
-- **B gets:** a slower diffusion push (`dB * lapB`), gains some from the reaction (`+abb`), and loses some that is killed off (`-(kill + feed) * B`).
+- Change `feed` from 0.055 to 0.04 in the source. The spots should grow into stripes.
+- Change `kill` from 0.062 to 0.055. The pattern becomes broader and more maze-like.
+- Lower `STEPS_PER_FRAME` to 1. The pattern develops much more slowly, and you can watch individual cells change.
+- Change the starting density of seeded patches. More seeds means the pattern meets itself sooner and produces finer detail.
 
-Both results are clamped to `[0, 1]` so floating-point drift cannot accumulate. This pure function runs many times per frame, advancing the simulation forward.
+## Recap
 
-## Step 4: painting to canvas
-
-After stepping the simulation we paint the B array into an `ImageData` pixel buffer. Low B gets the background color (near-black on dark, near-white on light). High B gets a bright hue from the shared `hsl` and `hslToRgb` helpers. We write that buffer to an offscreen canvas at simulation resolution (200x150), then scale it up with `drawImage` to fill the screen. The `imageRendering: pixelated` CSS property keeps the cells crisp rather than blurred.
-
-## Try this yourself
-
-- Open `grayscott.ts` and change `feed` from `0.055` to `0.04`. The spots grow into stripes.
-- Change `kill` from `0.062` to `0.055`. The pattern becomes broader, more maze-like.
-- Increase `STEPS_PER_FRAME` in `play/page.tsx` to make the animation run faster. Decrease it to slow down and watch the reaction form in slow motion.
-
-## What to remember
-
-Three ideas together produce everything you see: diffusion (spreading out), reaction (A turns into B on contact), and imbalanced rates (A diffuses faster than B). The interplay of those three things is enough to grow stripes, spots, spirals, and forms that look biological, from a rule short enough to write on a napkin.
+Three ideas together produce everything you see: diffusion (spreading), reaction (A converts to B on contact), and imbalanced rates (A spreads faster than B). That is enough to grow the biological-looking patterns in this sketch.

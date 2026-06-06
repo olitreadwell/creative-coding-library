@@ -1,65 +1,34 @@
-## How it works, step by step
+# Tutorial: Boids
 
-This app simulates a flock using plain TypeScript and a Canvas 2D draw loop. No physics engine. No special library. Here is the full idea, broken into small pieces.
+By the end of this tutorial you will be able to explain what each of the three boid rules does and predict what happens when one is removed.
 
-### Step 1: create the flock
+## Predict
 
-Each boid starts at a random position with a random velocity. Velocity is a 2D vector: `vx` is speed left-right, `vy` is speed up-down. We seed the random number generator so the same seed always produces the same starting flock.
+Each boid follows three rules: move away from neighbors that are too close, steer toward the average direction of nearby neighbors, and steer toward the average position of nearby neighbors. The flock has no leader.
 
-```ts
-type Boid = { x: number; y: number; vx: number; vy: number };
+If you removed the separation rule but kept the other two, what would happen to the flock over time? Think about it before reading on.
 
-function makeBoids(rng, count, width, height): Boid[] {
-  // ...
-  const angle = randRange(rng, 0, TAU); // random heading
-  const speed = randRange(rng, minSpeed, maxSpeed);
-  boids.push({
-    x: randRange(rng, 0, width),
-    y: randRange(rng, 0, height),
-    vx: Math.cos(angle) * speed,
-    vy: Math.sin(angle) * speed,
-  });
-}
-```
+## Run
 
-### Step 2: look at neighbours
+1. Press Play and watch for about ten seconds. Notice that the triangles form groups without being told to.
+2. Click "New flock" to start with a different seed. Same rules, different starting positions, different result.
+3. Watch one triangle near the edge of a flock. Watch it turn as the group turns. That turn came from alignment.
+4. Watch two groups collide. Some triangles separate from the group for a moment before being drawn back. That is separation and cohesion working at the same time.
 
-Every frame, each boid scans all other boids. It only cares about boids inside its **perception radius**, a circle around itself. Boids outside that radius are invisible to it.
+## Look closer
 
-### Step 3: apply three steering rules
+- The edges of the canvas are toroidal, meaning a boid that exits the right side enters from the left. Boids near the boundary treat boids on the opposite edge as neighbors.
+- Color comes from heading and speed. A boid traveling fast in one direction looks different from one hovering slowly.
+- Each boid scans all other boids every frame, but only responds to those inside its perception radius. Boids outside that radius are invisible to it.
+- The three force weights (separation, alignment, cohesion) use small multipliers. If one weight were too large it would overpower the others and break the flock.
 
-For each boid, we gather information from its visible neighbours, then apply three forces.
+## Break it
 
-```ts
-// Separation: neighbours that are TOO close push this boid away.
-//   Weight: inversely proportional to distance, so closer = stronger push.
-sepX -= dx / dist;
+- Try disabling cohesion in the source code: set the cohesion weight to 0. The flock should scatter and never regroup.
+- Try setting the perception radius very small: boids become nearly blind and the flock dissolves into independent wanderers.
+- Try setting separation weight to 0: boids should collapse into a dense clump.
+- Try `New flock` ten times in a row. Count how many distinct sub-flocks you see in each run.
 
-// Alignment: steer toward the average velocity of neighbours.
-newVx += (avgNeighbourVx - b.vx) * alignmentWeight * 0.05;
+## Recap
 
-// Cohesion: steer toward the average position of neighbours.
-newVx += avgNeighbourDx * cohesionWeight * 0.001;
-```
-
-The small multipliers (0.05, 0.001) stop any one rule from overpowering the others. Tuning these numbers changes how the flock behaves.
-
-### Step 4: limit speed and wrap the edges
-
-After applying all three forces, the new velocity might be too fast or too slow. We clamp it to `[minSpeed, maxSpeed]`. Then we move the boid by its velocity and wrap it at the canvas edge: a boid that flies off the right side reappears on the left.
-
-### Step 5: draw each boid as an oriented triangle
-
-The boid's heading angle comes from `Math.atan2(vy, vx)`. We rotate a small triangle to point in that direction and color it by heading plus speed using the `hsl` helper from the shared library.
-
-The draw loop runs every animation frame via `useAnimationFrame`, which handles visibility pausing and respects `prefers-reduced-motion`.
-
-## Try this
-
-- Click **New flock** to reseed with a different starting arrangement. Same rules, different starting point, different personality.
-- Notice how the flock splits and rejoins when it encounters a tight cluster. No one decided to split; it falls out of the separation rule.
-- The edges are toroidal: boids wrapping off one side see boids near the opposite edge as neighbours, so the flock stays coherent across the boundary.
-
-## What to remember
-
-Three local rules (separate, align, cohere) applied to every agent at every frame produce global flock behaviour with no central controller. That is emergence. The same principle explains how real birds and fish school, and it is used in production film, game AI, and swarm robotics.
+Three local rules, applied independently by each boid every frame, produce a flock with no central controller. That is emergence: the whole is more organized than any single rule.

@@ -1,23 +1,25 @@
-## What this is
+# Webcam ASCII
 
-Webcam ASCII takes the live feed from your camera and redraws it as a grid of text characters. Each cell gets a single character chosen by how dark or bright that area of the image is. Dark areas fill with dense, ink-heavy characters. Bright areas get light, open characters, or nothing at all.
+Your live camera feed redrawn as a grid of text characters, where each character is chosen by how bright that area of the image is.
 
-You stay in control. The camera does not start until you click "Enable camera." You can close the tab at any time to stop the feed.
+Learners see the three-step camera pipeline (request, sample, draw) and how measuring ink coverage ranks characters by visual density.
 
-## The big idea in plain words
+## What you see
 
-Every image is just a grid of pixels, each with a brightness value. ASCII art works by finding a set of characters that have different amounts of ink. A period `.` covers almost no area. An `@` sign is packed with strokes. A space covers none.
+- A grid of characters replacing your camera image in real time.
+- Dark areas of your face or background fill with dense characters like `@` or `#`.
+- Bright areas fill with light characters like `.` or nothing.
+- Nothing runs until you click "Enable camera."
 
-The sketch measures the actual ink coverage of every character by drawing each one onto a tiny hidden canvas and counting the filled pixels. It then sorts the characters from least ink to most. When drawing your face, it reads the brightness of each cell from the camera and picks the matching character from that sorted list.
+## What it teaches
 
-The result looks like the ASCII art in early computer demos, but it is calculated from real pixel data rather than typed by hand.
+- **getUserMedia:** the browser API that requests camera access. It always prompts the user for permission.
+- **Glyph density:** each character is measured by drawing it on a tiny canvas and counting the filled pixels. That measurement ranks characters from lightest to heaviest.
+- **Luminance:** a weighted combination of red, green, and blue that matches how bright the human eye perceives a color. Green is weighted most heavily.
+- **Mirroring:** the camera is flipped horizontally so the image reads as a mirror, not as a camera facing you.
 
-## Controls
+## Try this
 
-- **Glyphs** lets you switch between three character sets: a full ASCII ramp with ~70 characters, a small block-shading set using Unicode box characters, and a minimal dots set. Each has a different visual feel.
-- **Cell size** controls how many columns and rows fit on the canvas. Larger cells give fewer, bolder characters. Smaller cells show more detail.
-- **Contrast** multiplies the brightness of each cell before picking a glyph. Raising it pushes mid-tones toward darker characters and makes the image pop.
-
-## Why it matters
-
-This sketch shows how image data becomes something other than pixels. Every real-time filter, face effect, and motion detector in the browser uses the same three steps: request the camera with `getUserMedia`, draw a frame onto a canvas with `drawImage`, and read the pixel values back with `getImageData`. What you do with those pixel values is up to you. Here we map them to characters. The same pipeline could drive a color filter, a mosaic, or a brightness threshold detector.
+- Switch "Glyphs" to "Blocks" for a chunkier, more geometric look.
+- Set "Cell size" to minimum for near-photographic character density.
+- Raise "Contrast" in a well-lit room to push mid-tones toward darker characters and make the image pop.

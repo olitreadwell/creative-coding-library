@@ -1,62 +1,34 @@
-## How it works
+# Tutorial: Mic Spectrum
 
-### 1. Ask for the microphone (only on click)
+By the end of this tutorial you will understand how the Web Audio API splits sound into frequency bins and how the sketch reads those bins to draw each bar.
 
-For privacy the sketch never opens the mic on load. A button calls
-`getUserMedia`, which prompts the browser permission dialog. If the user denies
-it, we catch the error and show a friendly message instead of crashing.
+## Predict
 
-```ts
-const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-```
+The analyser node uses `fftSize = 2048`, which produces `2048 / 2 = 1024` frequency bins. The sketch draws fewer bars than that by sampling every Nth bin.
 
-### 2. Build a tiny audio graph
+If you increase the number of bars shown, do you expect more detail in the high frequencies or the low frequencies? Think about which end of the frequency range has more bins.
 
-We wrap the stream in an `AudioContext`, feed it into an `AnalyserNode`, and set
-how many frequency bins we want with `fftSize`.
+## Run
 
-```ts
-const ctx = new AudioContext();
-const source = ctx.createMediaStreamSource(stream);
-const analyser = ctx.createAnalyser();
-analyser.fftSize = 2048;
-source.connect(analyser);
-```
+1. Click "Enable microphone" and allow access. You should see bars appear immediately, even in a quiet room.
+2. Hum a steady note. Watch which bars respond most. Hum a higher note and compare.
+3. Clap once near the microphone and watch the bars spike across all frequencies momentarily.
+4. Adjust "Smoothing" to a high value. The bars now decay slowly after a sound ends. Lower it and they snap back quickly.
 
-### 3. Read the spectrum each frame
+## Look closer
 
-`useAnimationFrame` from the shared library runs the loop (and pauses it when the
-tab is hidden or the global Play control is off). Each frame we copy the current
-frequencies into a byte array, where every value is 0 to 255.
+- The audio graph connects three nodes: a `MediaStreamSource` (the microphone), an `AnalyserNode` (which computes the FFT), and nothing at the output end. No sound plays through your speakers.
+- `getByteFrequencyData` fills a `Uint8Array` where each value is 0 to 255. The sketch maps those values to bar heights.
+- Each bar's color comes from a colorblind-safe ramp. The ramp maps position (left to right) to a hue that reads correctly across common forms of color vision difference.
+- On cleanup, every `MediaStreamTrack` is explicitly stopped. This turns off the microphone indicator light in your browser.
 
-```ts
-const data = new Uint8Array(analyser.frequencyBinCount);
-analyser.getByteFrequencyData(data);
-```
+## Break it
 
-### 4. Draw the bars
+- Try the "Bars" slider at minimum. Very few bars appear, each representing a wide frequency range.
+- Try "Bars" at maximum. More bars show, but the high-frequency bars may stay nearly silent in a quiet room.
+- Speak in a quiet room with "Gain" at maximum. You should see the bars move even for soft speech.
+- Change "Smoothing" to 0. The bars should flicker rapidly with no memory of the previous frame.
 
-We pick how many bars to show, sample that many bins out of the array, and draw
-a rectangle for each one. Height comes from the bin value times the gain slider.
-Colour comes from the bar's position along a colorblind-safe ramp.
+## Recap
 
-```ts
-for (let i = 0; i < bars; i++) {
-  const value = data[i * step] * gain;
-  const barHeight = (value / 255) * canvasHeight;
-  ctx.fillStyle = cbRamp(i / (bars - 1), theme);
-  ctx.fillRect(x, canvasHeight - barHeight, barWidth, barHeight);
-}
-```
-
-### 5. Clean up
-
-When you turn the mic off or leave the page, we stop every audio track and close
-the `AudioContext`, so the browser's microphone indicator switches off.
-
-### Make it yours
-
-- Gain scales the input, so quiet rooms can still move the bars.
-- Smoothing controls how quickly bars settle. Low values feel twitchy, high
-  values feel smooth.
-- More bars show finer detail across the frequency range.
+Four steps power any audio-reactive sketch: ask for microphone access, build a tiny audio graph with an analyser node, read the FFT data each frame, and draw based on those values. This sketch does all four.

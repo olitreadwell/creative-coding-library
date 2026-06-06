@@ -1,25 +1,25 @@
-## What this is
+# Fourier Epicycles
 
-A chain of rotating circles, each spinning at a different speed, whose combined tip traces out a shape. The shape shown here is a square wave, a signal that jumps sharply between two values. The circles alone are smooth and round. Together they draw something with corners. That gap between the simple pieces and the complex result is the whole point.
+A chain of rotating circles whose combined tip traces a square wave, showing how smooth rotation produces sharp corners.
 
-## The big idea in plain words
+Learners see the Fourier series (a way to break any repeating shape into rotating circles) made visible in real time.
 
-Imagine attaching a stick to a spinning wheel. The end of the stick draws a circle. Now attach another stick to the end of that first stick, spinning at a different speed and size. The end of the second stick draws a more complicated loop. Keep adding sticks and the shape gets more intricate.
+## What you see
 
-That is an epicycle. Do it with enough sticks and the right speeds, and you can trace any closed shape you like.
+- A chain of circles, each spinning inside the previous one, with the tip of the last arm drawing a path.
+- The traced path slowly fills in to form a square wave shape.
+- Smaller, faster circles add detail at the corners.
+- After one full cycle, the path closes on itself.
 
-The trick for choosing the speeds and sizes is the Fourier series. It tells you exactly which circles to use for any shape you want to draw:
+## What it teaches
 
-- **Frequency** is how fast a circle spins. The fundamental circle completes one rotation per full cycle. The next adds three rotations. Then five, then seven. Only odd-numbered frequencies appear in a square wave.
-- **Amplitude** is the radius of each circle. Bigger radius means that circle contributes more to the shape. The fundamental circle has the biggest radius. Each higher harmonic is smaller by the same factor it is faster.
-- **Phase** sets where on the circle each arm starts at time zero.
+- **Fourier series:** any repeating shape can be described as a sum of rotating circles of different sizes and speeds.
+- **Frequency and amplitude:** the speed of each circle (frequency) and its size (amplitude) together determine its contribution.
+- **Parametric curves:** both x and y are computed from a shared variable `t`, not from a single equation `y = f(x)`.
+- **Convergence:** adding more circles brings the approximation closer to the target shape.
 
-## Why it matters
+## Try this
 
-This is one of the most useful ideas in all of math and engineering:
-
-- **Signal processing.** Sound, radio, images: all analyzed and reconstructed by breaking them into frequency components, exactly as shown here.
-- **Convergence.** Adding more circles brings the approximation closer to the target shape. You can see the sharp corners of the square wave becoming crisper as the higher-frequency, smaller circles kick in.
-- **Any shape.** The result is not just for square waves. Given enough terms you can draw a circle, a star, a letter, or a face. The mathematics is the same.
-
-Watch the animation long enough to see the path close on itself after one full cycle. Each circle is doing its own simple rotation; the complexity emerges from all of them working together at once.
+- Watch the first few seconds. The large, slow circle alone draws a rough circle. As more circles join in, the shape approaches a square.
+- Count the sharp bumps in the traced path. Each bump corresponds to one additional circle completing a rotation.
+- Press "Reset" and watch the path rebuild from the tip of the chain outward.

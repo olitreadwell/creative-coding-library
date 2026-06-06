@@ -1,84 +1,34 @@
-## How it works, step by step
+# Tutorial: Seeded Tilings
 
-This app draws Truchet tiles using plain Canvas 2D. No external graphics library. Here is the whole process, broken into small pieces.
+By the end of this tutorial you will understand why the same seed always produces the same pattern and how two arc orientations create continuous flowing curves.
 
-### Step 1: decide how many tiles fit
+## Predict
 
-The canvas has a width and a height in pixels. We also have a tile size (in pixels). We divide and round up so tiles fill the whole canvas, even if the canvas size is not a perfect multiple.
+Each tile calls the PRNG once. If the result is below 0.5 the tile uses orientation 0; if at or above 0.5 it uses orientation 1. The PRNG is deterministic: given the same seed, it produces the same sequence of calls.
 
-```ts
-function gridDimensions(width: number, height: number, tileSize: number) {
-  return {
-    cols: Math.ceil(width / tileSize),
-    rows: Math.ceil(height / tileSize),
-  };
-}
-```
+If you change the seed from "hello" to "hello1" do you expect the pattern to change completely or change only in a few tiles? Think about what changing the seed does to the full sequence of random numbers.
 
-`Math.ceil` rounds up. If 7.2 tiles would fit, we use 8. That way the edge of the canvas is always covered.
+## Run
 
-### Step 2: seed the random number generator
+1. Open the sketch with any seed. Note the overall flow direction (does the pattern lean horizontal or vertical?).
+2. Click "Re-roll" ten times. Watch for patterns where the curves flow strongly in one direction versus patterns where they swirl.
+3. Type the same seed twice by re-rolling and then typing it back. The pattern should be identical.
+4. Change the tile size slider from large to small. The number of tiles increases but each tile still makes the same arc connection to its neighbors.
 
-We pass the seed string to `makeRng`. That function returns a function you can call to get the next number in the sequence. The numbers are between 0 and 1, just like `Math.random()`. The difference is they depend on the seed, so you get the same sequence every time.
+## Look closer
 
-```ts
-const rng = makeRng(seed);
-```
+- `Math.ceil` is used when computing the grid dimensions. If 7.2 tiles would fit, the grid uses 8, so the canvas edge is always covered.
+- The arc radius is exactly half the tile size. This is why arcs from adjacent tiles meet precisely at the edge midpoints, creating continuous curves without gaps or overlaps.
+- Two PRNGs are created: one for tile orientations (seeded with the seed string) and one for colors (seeded with the seed string plus "-palette"). This keeps color and pattern linked to the same seed without interfering with each other's sequence.
+- Orientation 0 places arcs through the top-left and bottom-right corners. Orientation 1 places them through the top-right and bottom-left corners.
 
-Every time `rng()` is called, it returns the next number in that seeded sequence. Two tiles that are neighbors use two consecutive calls to `rng`. Because the order is fixed, the same seed always produces the same neighbor order, and so the same grid.
+## Break it
 
-### Step 3: fill the grid with orientations
+- Type a single character as the seed: "a." Then try "b." Are the patterns similar or completely different?
+- Set tile size to its maximum and count how many tiles fit on the canvas. Each one shows its arcs clearly.
+- Re-roll ten times and look for a pattern where all curves seem to run mostly vertically. What percentage of tiles would need orientation 0 to produce that effect?
+- Try a long seed like a full sentence. The pattern is just as deterministic; the sentence is just a different starting number for the PRNG.
 
-For each cell in the grid, we call `rng()`. If the result is less than 0.5, the tile goes in orientation 0. Otherwise it goes in orientation 1.
+## Recap
 
-```ts
-function tileGrid(rng: Rng, cols: number, rows: number): Orientation[][] {
-  const grid: Orientation[][] = [];
-  for (let r = 0; r < rows; r++) {
-    const row: Orientation[] = [];
-    for (let c = 0; c < cols; c++) {
-      row.push(rng() < 0.5 ? 0 : 1);
-    }
-    grid.push(row);
-  }
-  return grid;
-}
-```
-
-`Orientation` is either `0` or `1`. That is the only data stored per tile.
-
-### Step 4: draw each tile as two arcs
-
-A Truchet tile draws two quarter-circle arcs. Each arc connects two midpoints on adjacent edges of the square. In orientation 0 the arcs curve through the top-left and bottom-right corners. In orientation 1 they curve through the top-right and bottom-left corners.
-
-```ts
-// Orientation 0: arcs through top-left and bottom-right corners.
-ctx.beginPath();
-ctx.strokeStyle = colorA;
-ctx.arc(x, y, half, 0, Math.PI / 2);
-ctx.stroke();
-
-ctx.beginPath();
-ctx.strokeStyle = colorB;
-ctx.arc(x + size, y + size, half, Math.PI, Math.PI * 1.5);
-ctx.stroke();
-```
-
-`half` is `tileSize / 2`. The arc radius is half the tile size. That is why the arcs from adjacent tiles meet exactly at the edge midpoints, creating continuous flowing curves.
-
-### Step 5: build a color palette from the seed
-
-The two arc colors (`colorA` and `colorB`) also come from the seed. A second PRNG seeded with `seed + "-palette"` picks a base hue and a complement hue. Using the seed for color too means the palette changes when you Re-roll, keeping the overall look consistent within one pattern.
-
-## Try this
-
-- Type a word into the seed field and press enter. Notice the pattern is always the same for that word.
-- Drag the size slider to very small values. The curves become very detailed. At large values, each arc is bold and easy to see.
-- Re-roll a few times and watch whether the curves look horizontal, vertical, or diagonal. That global direction is emergent: it was never explicitly set.
-
-## What to remember
-
-- A Truchet tile is a square with two quarter-circle arcs.
-- Randomly flipping orientation per tile creates continuous curves across the whole grid.
-- A seed makes that randomness reproducible: same seed, same pattern, every time.
-- The entire image is the result of one binary choice per tile. Nothing more.
+A Truchet tile is a square with two quarter-circle arcs. Random orientation choices, driven by a seeded PRNG, create continuous curves across the whole grid. Same seed, same pattern, every time.

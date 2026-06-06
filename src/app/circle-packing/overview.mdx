@@ -1,26 +1,25 @@
-## What this is
+# Circle Packing
 
-This sketch fills the canvas with circles that never overlap. They appear one at a time, each growing outward until it bumps into a neighbor or the edge, then freezing in place. The result is a tight mosaic of big and small discs, like soap bubbles pressed flat or pebbles settled in a riverbed.
+Circles grow one at a time until they touch a neighbor or the edge, filling a canvas without overlapping.
 
-## The big idea in plain words
+Learners see how a simple greedy rule, applied repeatedly, produces a structured result that looks designed.
 
-The rule is short:
+## What you see
 
-1. Pick a random spot on the canvas.
-2. Grow a circle there until its edge just touches the nearest circle or wall.
-3. If the circle ended up big enough to bother keeping, keep it. Otherwise throw it away.
-4. Repeat hundreds of times.
+- Circles appear one by one and grow outward until they stop.
+- Early circles are large because they have more open space. Later circles are small because they squeeze into gaps.
+- Each circle is colored by size: small circles are cool, large circles are warm.
+- Pressing "Shuffle" clears the canvas and starts again with a different seed.
 
-Early circles have the whole canvas to themselves, so they grow large. Later ones must squeeze into the leftover gaps, so they stay small. That is why the packing naturally mixes a few large discs with many tiny ones, without anyone deciding the sizes ahead of time.
+## What it teaches
 
-Because the random spots come from a **seeded** generator, the same seed always produces the exact same packing. Press **shuffle** to advance the seed and watch a completely different arrangement assemble. The **density** slider controls how many spots are tried, and **min size** sets the smallest circle worth keeping.
+- **Greedy algorithms:** each circle grows to the largest safe size without looking ahead.
+- **Seeded randomness:** the same seed always produces the same packing, every time.
+- **Constraint satisfaction:** every circle obeys one rule (no overlap) and the result fills the space efficiently.
+- **Smoothstep:** circles appear with a soft easing animation rather than snapping into place.
 
-## Why it matters
+## Try this
 
-Packing problems sit at the meeting point of geometry, nature, and design:
-
-- **Nature loves packing.** Cells, seeds in a sunflower, bubbles in foam, and cracks in dried mud all settle into packings because each unit grows until it meets its neighbors. The same greedy rule appears everywhere.
-- **Design and layout.** Treemaps, tag clouds, and dashboard widgets use circle and rectangle packing to fit many items into a fixed space without overlap.
-- **A first taste of constraints.** The sketch is a tiny constraint solver: every circle must fit without crossing another. Holding many simple rules at once and letting a result emerge is the core move behind a lot of generative design.
-
-The version here is the simplest one that works: try a spot, grow, keep or discard. The Tutorial tab walks through the few lines that enforce the no-overlap rule.
+- Click "Shuffle" several times and compare how different seeds produce different size distributions.
+- Drag the "density" slider high to try more candidate positions and fill the gaps more completely.
+- Set "min size" to a small value and zoom into the corners. Many tiny circles fill the cracks.

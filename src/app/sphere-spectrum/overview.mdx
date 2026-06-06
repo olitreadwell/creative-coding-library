@@ -1,40 +1,25 @@
-## What this is
+# Sphere Spectrum
 
-A single sphere, turning slowly. At rest it is smooth and cold blue: it does
-nothing until it hears something. Turn on the microphone and its surface erupts,
-pushing out into colored peaks that track what you make.
+An icosphere whose surface erupts into colored peaks driven by your microphone, with each latitude band responding to a different pitch range.
 
-Two things follow loudness:
+Learners see how an audio FFT (fast Fourier transform) signal drives 3D geometry in real time, using log-frequency banding to match how pitch works perceptually.
 
-- **Height**: quiet sounds leave the surface smooth; loud sounds push that part
-  of the sphere out into a spike.
-- **Color**: quiet is cold (blue), loud is hot (red), running through a rainbow in
-  between.
+## What you see
 
-Frequency wraps the sphere as rings of latitude: bass near the top, treble near
-the bottom, so different pitches light up different bands of the surface.
+- A smooth, slowly rotating sphere at rest.
+- After enabling the microphone, the sphere surface pushes outward into peaks where sound is loud.
+- Cool blue means quiet; hot red means loud.
+- Bands near the top of the sphere respond to bass; bands near the bottom respond to treble.
 
-Nothing leaves your browser. The mic only starts after you press the button.
+## What it teaches
 
-## The big idea in plain words
+- **Vertex displacement:** each point on the sphere surface is pushed outward along its normal direction by an amount proportional to the sound energy in that point's frequency band.
+- **Log-frequency banding:** pitch is logarithmic, so raw FFT bins are grouped into bands with geometric spacing. This maps bass and treble more evenly.
+- **Envelope (attack/release):** each band's energy follows a fast-attack, slow-release curve. This makes the sphere punchy without flickering.
+- **Refs over state:** audio data changes 60 times per second. Using React refs (not state) avoids re-rendering the component tree on every frame.
 
-A microphone signal can be split by the Web Audio FFT into bins, each bin the
-loudness of one pitch. Raw bins are misleading: because pitch is logarithmic, the
-bass crams into the first few bins while the treble sprawls across hundreds. So we
-group the bins into a couple of dozen perceptual bands on a log scale, with a
-gentle boost to the highs so cymbals are not drowned by the kick.
+## Try this
 
-Every point on the sphere belongs to one band, chosen by its latitude. Each frame
-that band's loudness pushes the point outward and sets its color. A fast-attack,
-slow-release envelope per band keeps the motion punchy without flickering, and a
-noise gate ignores room tone so faint sounds leave the sphere still.
-
-## Why it matters
-
-Audio-reactive visuals are a staple of music videos, live visuals, and
-installations. The reusable pattern here is the audio pipeline: log-frequency
-banding, loudness shaping, and a peak-decay envelope turn a raw FFT into a stable,
-musical signal. Drive any geometry from those bands (a sphere here, but equally
-bars, petals, or particles) and you have a new instrument.
-
-The How it works tab walks through the code.
+- Enable the microphone and hum at different pitches. Watch which latitude of the sphere spikes.
+- Snap fingers near the microphone. The spike should be brief and sharp, then fade.
+- Raise the audio slider for more dramatic spikes. Lower it for a gentle shimmer.

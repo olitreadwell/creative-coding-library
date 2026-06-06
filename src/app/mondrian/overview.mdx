@@ -1,25 +1,25 @@
-## What this is
+# Mondrian
 
-This sketch sends a field of De Stijl panels flying toward you. Each panel is a Mondrian-style grid: recursive rectangle subdivision, bold primary-ish fills, thick black lines. But instead of one flat composition, there are many panels stacked at different depths along a z-axis, all falling at the same speed. The result is an endless tunnel of Mondrian grids rushing past the camera.
+An endless tunnel of Mondrian-style grid panels flying toward you, with perspective scaling and depth-of-field blur.
 
-A depth-of-field effect makes panels near the focus plane sharp and fully opaque while panels far from it fade toward transparent. The combination of perspective scaling, continuous motion, and selective opacity gives a sense of 3D space using nothing but Canvas 2D math.
+Learners see how three independent ideas (recursive subdivision, perspective projection, and depth of field) combine to produce a convincing 3D effect on a flat canvas.
 
-Click the canvas or press Regenerate to scramble all the layers at once.
+## What you see
 
-## The big ideas in plain words
+- A continuous stream of colorful grid panels rushing toward the camera.
+- Panels near the focus depth look sharp and fully opaque. Distant panels look faint.
+- Each panel is a unique Mondrian-style layout: primary-colored rectangles divided by thick black lines.
+- Clicking the canvas scrambles all layers with new random layouts.
 
-**Perspective projection** converts a 3D z-coordinate into a 2D scale factor. The formula is `scale = focal / (focal + z)`. A panel far away gets a small scale; a panel close gets a large scale. This is the same math used in early flight simulators and game engines.
+## What it teaches
 
-**Recursive subdivision** is what fills each panel. `subdivide` starts with one normalised unit square, splits it in two, then calls itself on each half, then on each quarter, and so on. At each split it decides randomly whether to cut horizontally or vertically, and where along that axis to cut (between 25% and 75% of the dimension). When depth reaches zero it returns the current rectangle as a leaf. All leaves tile the original square with no gaps.
+- **Perspective projection:** the formula `scale = focal / (focal + z)` makes far panels small and near panels large.
+- **Recursive subdivision:** the `subdivide` function splits a rectangle randomly, then calls itself on each half, producing a tree of rectangles.
+- **Depth of field:** alpha (transparency) is mapped to distance from the focus depth, simulating a camera's focus window.
+- **Recycling:** panels that pass the camera are assigned a new seed and placed at the far end of the tunnel, creating an endless loop from a finite pool.
 
-**Depth of field** is a camera optics phenomenon: only objects at the focus distance are sharp. Here it is faked by mapping each panel's z-distance from the focus plane to an alpha value. Panels within the focal range are drawn at full opacity. Panels further away are drawn translucent, so the scene reads as having a limited focus window.
+## Try this
 
-**Recycling** keeps the tunnel endless. Each animation frame, every panel moves forward (z decreases). When a panel passes the camera it is assigned a new random seed, placed at the far end of the tunnel, and subdivided fresh. The viewer never sees a repeated loop because each recycled panel is different.
-
-## Controls
-
-- **speed** -- how fast the panels fall toward the camera (z-units per second).
-- **layers** -- how many panel sets exist in the tunnel at once. More layers means denser coverage.
-- **density** -- subdivision depth per panel. Higher values produce many small rectangles; lower values produce a few large blocks.
-- **focus** -- the z depth considered in focus. Drag this to shift which part of the tunnel is sharpest.
-- **line weight** -- thickness of the grid lines. Near panels get heavier lines automatically because they are scaled up by perspective.
+- Drag "focus" from 0 to 2000 and watch the sharpness window sweep through the tunnel.
+- Set "density" to 2 for large, bold blocks per panel.
+- Set "speed" to maximum and watch the tunnel blur into a pattern.

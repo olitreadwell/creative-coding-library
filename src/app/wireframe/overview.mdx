@@ -1,36 +1,25 @@
-## What this is
+# Wireframe
 
-A solid shape, like a cube or a many-sided ball, spinning in space. It is drawn
-on a flat canvas, but it reads as 3D: the near side looks bigger and brighter,
-the far side looks smaller and dimmer. Drag it with your mouse or finger to spin
-it yourself.
+A solid 3D shape spinning on a flat canvas, using only rotation matrices and one perspective division to fake depth.
 
-Nothing here is real 3D. There is no 3D engine. It is plain Canvas 2D plus a
-little maths that fakes depth convincingly.
+Learners see how every 3D renderer works at its core: rotate points, then project them to 2D by dividing by distance.
 
-## The big idea in plain words
+## What you see
 
-Every corner of the shape is a point with three numbers: x (left/right), y
-(up/down), and z (near/far). Two steps turn those numbers into a picture.
+- A spinning wireframe shape (cube, sphere, or other solid) that reads as three-dimensional.
+- Near edges look larger and brighter. Far edges look smaller and dimmer.
+- Dragging the canvas with a mouse or finger spins the shape directly.
+- A perspective slider changes how extreme the depth effect is.
 
-**Rotate.** To spin the shape we nudge every point around an axis. The formula
-uses sine and cosine, the same pair that draws a circle. Apply it each frame and
-the whole shape turns together.
+## What it teaches
 
-**Project.** A screen is flat, so we have to flatten the points. The trick that
-sells the illusion is perspective: divide a point's position by how far away it
-is. Near points (large z) barely shrink, far points shrink a lot. That single
-divide is why railway tracks appear to meet in the distance, and it is what
-makes this drawing look 3D.
+- **Rotation matrices:** sine and cosine rotate a 3D point around an axis. Applied each frame with increasing angles, the shape spins.
+- **Perspective projection:** dividing a point's x and y by its z distance makes near things large and far things small. That one division is the core of all perspective rendering.
+- **Painter's algorithm:** edges are sorted by depth and drawn back-to-front. Far edges are drawn first so near edges paint over them correctly.
+- **Depth tinting:** near edges are brighter, far edges are dimmer. The eye reads this as light and distance.
 
-To finish the look we draw the far edges first and the near edges last, and we
-tint each edge by its depth, so the shape never looks like a flat tangle of
-lines.
+## Try this
 
-## Why it matters
-
-Rotate, then project: that is the heart of every 3D renderer, from a phone game
-to a film. Doing it by hand in a few lines shows there is no magic inside the
-fancy libraries, just sine, cosine, and one division.
-
-The How it works tab walks through the code.
+- Drag the perspective slider to a small value. The depth effect becomes very exaggerated, like a fisheye lens.
+- Drag it to a large value. The shape looks almost flat, as if viewed from very far away.
+- Drag the canvas to spin the shape manually.

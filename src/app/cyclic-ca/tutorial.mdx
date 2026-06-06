@@ -1,100 +1,36 @@
-## How it works, step by step
+# Tutorial: Cyclic Automaton
 
-This app runs a cyclic cellular automaton on an HTML canvas. The logic is a flat array of integers, a single rule function, and a drawing loop.
+By the end of this tutorial you will understand why spirals appear and how changing the threshold changes their shape.
 
-## Step 1: store the grid as a flat array
+## Predict
 
-A 2D grid is stored as a single `Uint8Array`. Each position holds a number from `0` to `states - 1`. The index formula converts a column and row into one array position:
+Each cell counts how many of its eight neighbors hold the state that "eats" it. If that count reaches the threshold, the cell changes to that state. Otherwise it stays.
 
-```ts
-function idx(col: number, row: number, cols: number): number {
-  return row * cols + col;
-}
-```
+With a threshold of 3, a cell needs at least three neighbors in the eating state before it changes. With a threshold of 1, it changes if even one neighbor holds the eating state.
 
-A flat array is faster than a nested array. The whole grid fits in one contiguous block of memory.
+Which threshold do you think creates faster, sharper spiral fronts: 1 or 3? Think about how easily one state can spread into another.
 
-## Step 2: seed the grid randomly
+## Run
 
-Before the simulation starts, every cell gets a random state. A seeded random-number generator means the same seed always produces the same starting grid:
+1. Open the sketch with 5 states and threshold 3. Let it run for ten seconds. Note the shape of the spiral arms.
+2. Click "Randomize" to reset. Change threshold to 1. Let it run for ten seconds. Compare the spiral arms.
+3. Increase states to 7. Let it run. Notice how the arms become more numerous and thinner.
+4. Click "Randomize" several times with states at 5 and threshold at 2. Notice that spirals always appear, even though the starting grid is different each time.
 
-```ts
-export function makeGrid(rng: Rng, cols: number, rows: number, states: number): Uint8Array {
-  const grid = new Uint8Array(cols * rows);
-  for (let i = 0; i < grid.length; i++) {
-    grid[i] = Math.floor(rng() * states);
-  }
-  return grid;
-}
-```
+## Look closer
 
-## Step 3: the cyclic rule
+- The grid wraps at all four edges (toroidal). A cell at the right edge counts cells at the left edge as neighbors. Spirals can cross boundaries without distortion.
+- The simulation time-steps at a fixed interval, not at the frame rate. This keeps the speed consistent even on a fast monitor.
+- Colors come from the Okabe-Ito colorblind-safe palette. Each state maps to a distinct hue that remains readable for the most common forms of color vision difference.
+- Spirals form because a curved advancing front is stable. A straight front is not. Small random irregularities in the starting grid are enough to start the curving.
 
-This is the whole automaton. For each cell, compute what state would eat it (`nextState = (current + 1) % states`), then count how many of the eight Moore neighbors already hold that state. If the count reaches the threshold, the cell advances.
+## Break it
 
-```ts
-export function step(
-  grid: Uint8Array,
-  cols: number,
-  rows: number,
-  states: number,
-  threshold: number,
-): Uint8Array {
-  const next = new Uint8Array(cols * rows);
-  for (let row = 0; row < rows; row++) {
-    for (let col = 0; col < cols; col++) {
-      const current = grid[idx(col, row, cols)] ?? 0;
-      const nextState = (current + 1) % states;
-      let count = 0;
-      for (let dr = -1; dr <= 1; dr++) {
-        for (let dc = -1; dc <= 1; dc++) {
-          if (dr === 0 && dc === 0) continue;
-          const nc = (((col + dc) % cols) + cols) % cols;
-          const nr = (((row + dr) % rows) + rows) % rows;
-          if ((grid[idx(nc, nr, cols)] ?? 0) === nextState) count++;
-        }
-      }
-      next[idx(col, row, cols)] = count >= threshold ? nextState : current;
-    }
-  }
-  return next;
-}
-```
+- Try threshold 4 with 5 states. The eating slows down and the spirals form more slowly and loosely.
+- Try 3 states and threshold 1. There are very few spiral arms because there are fewer states competing.
+- Let the simulation run for a long time without resetting. Do the spirals ever stop changing, or do they rotate indefinitely?
+- Try 8 states and threshold 2. Compare the density of spiral arms to 5 states.
 
-The double modulo `(((col + dc) % cols) + cols) % cols` handles toroidal wrapping without negative indices.
+## Recap
 
-## Step 4: color each state
-
-Each state maps to a colorblind-safe color from the Okabe-Ito palette. The `cbColor(state, theme)` function picks the right hue for the active theme:
-
-```ts
-ctx.fillStyle = cbColor(state, theme);
-ctx.fillRect(x, y, cellPx, cellPx);
-```
-
-With 5 states and 6 palette colors, every state gets a distinct, protanopia-safe hue.
-
-## Step 5: time the animation
-
-The simulation does not step every animation frame or it would run too fast. Instead, elapsed time accumulates. When enough time passes for one step, the grid advances:
-
-```ts
-state.accumulated += dt;
-while (state.accumulated >= stepInterval) {
-  state.grid = step(state.grid, cols, rows, states, threshold);
-  state.accumulated -= stepInterval;
-}
-```
-
-## Try this
-
-- Lower the **threshold** to 1 and watch how quickly and sharply the spirals form.
-- Increase **states** to 7 or 8 for more colors and more complex spiral arms.
-- Raise **threshold** to 4 to slow the eating and make softer boundaries.
-- Click **Randomize** to start fresh and watch the spirals re-emerge from noise.
-
-## What to remember
-
-- Each cell only sees its eight neighbors. No cell knows about the spiral.
-- The cyclic eating rule creates a feedback loop: where one color spreads, it creates a front for the next color to follow, and the next, and so on.
-- Spirals appear because those fronts curve. A curved advancing front is stable; a straight one is not.
+A cyclic eating rule, applied independently by each cell every tick, produces rotating spirals with no central design. The spirals appear because curved fronts are stable and straight fronts are not.

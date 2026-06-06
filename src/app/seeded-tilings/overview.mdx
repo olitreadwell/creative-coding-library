@@ -1,25 +1,25 @@
-## What this is
+# Seeded Tilings
 
-Seeded Tilings fills a canvas with Truchet tiles. Each tile is a square with two quarter-circle arcs. The arcs from neighboring tiles join together to form flowing, organic curves across the whole grid. No two runs look quite the same, but you can reproduce any pattern by using its seed value.
+A canvas filled with Truchet tiles, where each tile is a square with two quarter-circle arcs, and the pattern changes completely with each seed.
 
-## The big idea in plain words
+Learners see how a seeded pseudorandom number generator (PRNG) makes random results reproducible and shareable.
 
-Each tile can sit in one of two positions. Think of it like a square that you can place in position A or position B, nothing else. That one small choice, made randomly for every tile in the grid, is what creates the patterns.
+## What you see
 
-Here is how the randomness works:
+- A grid of squares, each containing two curved arcs.
+- The arcs from neighboring tiles join to form continuous flowing curves across the whole canvas.
+- Clicking "Re-roll" generates a new seed and a completely different pattern.
+- The two arc colors also come from the seed, so the palette changes with the pattern.
 
-- **Seed**: a short text string, like `"truchet"`.
-- **Pseudo-random number generator (PRNG)**: an algorithm that turns a seed into a stream of numbers. The numbers look random, but they come from a formula, so the same seed always gives the same sequence.
-- Because the same seed always produces the same stream of numbers, the same seed always produces the same grid of tiles.
+## What it teaches
 
-You can share a seed with someone else. They will see the exact same pattern you see. That is reproducibility: controlled randomness.
+- **Truchet tiles:** a square tile with two quarter-circle arcs, which can be placed in one of two orientations. Random orientation choices produce flowing patterns.
+- **Seeded PRNG:** a pseudorandom number generator seeded with a string produces the same sequence of numbers every time that string is used.
+- **Reproducibility:** the same seed always produces the same pattern. You can share a seed and another person sees exactly what you see.
+- **Emergence:** a single binary choice per tile (orientation 0 or 1) creates global patterns that look designed.
 
-## Why it matters
+## Try this
 
-This demo is a small window into several ideas that appear often in creative coding, games, and data tools:
-
-- **Seeded randomness**: games use seeds so two players can generate the same world. Simulations use seeds so an experiment can be repeated.
-- **Modular tiling**: complex-looking pictures can come from a tiny set of reusable pieces. Truchet tiles use only two pieces.
-- **Visual emergence**: simple local rules (flip a tile or not) create global patterns that look designed even though no one designed them.
-
-You do not need to know any math to explore this. Hit Re-roll to get a new seed, or type your own. The Tutorial tab shows how the code works, step by step.
+- Type the word "hello" in the seed field and press enter. The pattern is always the same for that word.
+- Try "world." A completely different pattern appears.
+- Drag the size slider to its minimum. The arcs become very fine and the patterns look almost like flowing fabric.

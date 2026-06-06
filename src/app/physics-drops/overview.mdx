@@ -1,28 +1,25 @@
-## What this is
+# Physics Drops
 
-Physics Drops is a live simulation. Colorful shapes fall from the top of the screen, bounce off each other, and pile up at the bottom. Shapes keep dropping until the container fills, then spawning stops and the pile settles. Reset starts over with a fresh random seed.
+Colorful circles and polygons fall, bounce, and pile up under simulated gravity using the matter.js physics engine.
 
-The shapes are circles and polygons. Sliders set gravity, bounciness, and item size, and a menu picks the shape. The physics engine handles the rest.
+Learners see how a physics engine separates the job of computing physics from the job of drawing, and what the three core concepts (engine, world, bodies) mean in practice.
 
-## The big idea in plain words
+## What you see
 
-A **physics engine** is a piece of software that pretends to be gravity. You describe objects, their size, and their position. The engine figures out what happens when they fall, collide, or stack on top of each other. You do not write collision math yourself. You just set up the scene.
+- Shapes dropping from the top of the canvas one at a time.
+- Shapes bouncing off each other and off the invisible walls and floor.
+- The pile growing until the container is roughly 60% full, then stopping.
+- Sliders controlling gravity strength and bounciness.
 
-This app uses [matter.js](https://brm.io/matter-js/), a 2D physics library. The key concepts are:
+## What it teaches
 
-- **Engine.** The engine holds all the rules: how strong gravity is, how bouncy objects are, and so on.
-- **World.** The world is the container. You add bodies to the world and the engine simulates them.
-- **Bodies.** A body is one object in the simulation. It has a shape (circle or polygon), a position, and physical properties like friction and bounciness.
-- **Runner.** The runner advances time. Every frame it tells the engine to calculate what happened in the last millisecond.
+- **Physics engine:** software that simulates gravity, collision, and stacking. You describe objects; the engine computes the results.
+- **Bodies:** objects in the simulation. Each has a shape, mass, position, and physical properties.
+- **Static bodies:** walls and floors marked as immovable. Other bodies collide with them but they never move.
+- **Data and rendering separation:** the engine works with numbers. The renderer reads those numbers and draws. Keeping them separate lets you swap one without touching the other.
 
-The colorful shapes you see are bodies. The invisible walls at the bottom and sides are also bodies, but they are marked **static**: they never move, no matter how hard other bodies hit them.
+## Try this
 
-## Why it matters
-
-This demo gives you a concrete feel for three ideas that appear in games, simulations, and creative tools:
-
-- **Rigid-body simulation.** Real objects do not pass through each other. The engine enforces this by solving "constraints" every frame. Rigid-body simulation is the same technique used in game engines like Unity and Godot.
-- **Separation of data and rendering.** The engine works in pure numbers. The renderer reads those numbers and draws to a canvas. Keeping them separate means you can swap out the renderer without changing the physics.
-- **Seeded randomness.** Every reset generates a new seed. The same seed always produces the same set of shapes. That makes the simulation reproducible and shareable.
-
-You do not need any math background to experiment here. Hit **Reset** a few times and watch how different seeds produce different pile-ups.
+- Drag "size" up and press "Reset." Bigger shapes fill the container with fewer items.
+- Lower "bounciness" and the shapes settle with almost no jitter. Raise it and the pile bounces chaotically.
+- Click "Reset" several times. A new seed picks new colors and positions each time.

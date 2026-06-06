@@ -1,27 +1,25 @@
-## What this is
+# Mic Spectrum
 
-Mic Spectrum listens to your microphone and draws a live bar chart of the sound
-it hears. Bass sits on the left, treble on the right, and each bar grows taller
-when that part of the sound gets louder. Click "Enable microphone", then speak,
-play music, or snap near the mic.
+A live bar chart of your microphone's sound, drawn in real time with bass on the left and treble on the right.
 
-Nothing is recorded or sent anywhere. The audio stays in your browser and the
-microphone only turns on after you press the button.
+Learners see how the Web Audio API breaks a microphone signal into frequency bands, and how four steps unlock a whole category of audio-reactive work.
 
-## The big idea in plain words
+## What you see
 
-Sound is never just one note at one volume. A voice or a chord is many
-frequencies happening at once. The Web Audio API splits that mix into bins with
-an FFT (a Fast Fourier Transform), and each bin says how much energy sits in a
-narrow band of pitches.
+- A row of colored bars that grow taller when sound is louder in that frequency range.
+- Bass frequencies on the left, treble on the right.
+- The bars respond immediately when you speak, snap fingers, or play music near the mic.
+- Nothing runs until you click "Enable microphone."
 
-Read those bins every frame and paint one bar per bin, and you can watch a sound
-come apart into its pieces in real time.
+## What it teaches
 
-## Why it matters
+- **FFT (fast Fourier transform):** an algorithm that splits a sound signal into bins, each measuring the loudness of one narrow pitch range.
+- **Web Audio graph:** a chain of audio nodes: microphone stream into a source node, then into an analyser node that reads frequency data.
+- **getUserMedia:** the browser API that requests microphone access, always prompting the user first.
+- **Privacy:** the audio stays in your browser. The stream stops and the mic indicator turns off when you disable it.
 
-Four small steps unlock a whole category of work: ask for microphone access,
-build a tiny audio graph, read the FFT each frame, and draw it. The same steps
-power music visualizers, equalizers, voice-activated effects, and tuning tools.
+## Try this
 
-The How it works tab walks through the code.
+- Speak slowly and watch which bars move most for your voice.
+- Snap fingers close to the microphone and watch how the treble bars spike briefly.
+- Slide "Gain" up if the bars are too short, or down if they hit the ceiling.

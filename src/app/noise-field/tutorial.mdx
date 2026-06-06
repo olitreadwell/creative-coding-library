@@ -1,57 +1,34 @@
-## How it works, step by step
+# Tutorial: Noise Field
 
-This sketch has four moving parts: a noise function, a flow field, a particle system, and a draw loop. Here is each one, in order.
+By the end of this tutorial you will understand how Perlin noise becomes a direction, how particles follow that direction, and why overlapping trails glow.
 
-### Step 1: build a noise function
+## Predict
 
-Perlin noise takes a 2D position `(x, y)` and returns a number, always between the same range, always smooth. Two nearby positions always return similar numbers. That smoothness is what creates flowing, organic patterns.
+Perlin noise at position (x, y) returns a smooth number. The sketch multiplies that number by `TAU * 2` (about 12.6) to convert it to an angle in radians. Radians are a way to measure direction: 0 means "right," 3.14 means "left."
 
-We create one noise function at startup using a **seed**, a number that fixes the shape of the noise. The same seed always produces the same pattern. Hitting "New seed" picks a different number, which produces a completely different pattern.
+If the noise value at a point is 0.5, what angle does that produce? (Multiply 0.5 by 12.6.) Does that direction point roughly right, up, left, or down?
 
-### Step 2: turn noise into a flow angle
+## Run
 
-For each particle, we sample the noise at the particle's current position and convert that noise value to an angle in radians. Radians are just a way to measure direction: 0 means "right", π/2 means "up", π means "left", and so on.
+1. Open the sketch and watch the particles for fifteen seconds. Identify two or three places where trails concentrate.
+2. Click "New seed" and find where the trails concentrate in the new field. Notice that the concentration spots are in different places.
+3. Watch a single particle for several frames. It follows a curved path, not a straight line, because the direction field changes from cell to cell.
+4. Let the sketch run for a full minute without interruption. Watch the glowing regions grow.
 
-```ts
-// Sample Perlin noise at position (x, y), scaled down so the field changes
-// gradually across the canvas. Multiply by TAU * 2 so angles span more than
-// one full rotation, creating tighter spirals and more variety.
-function flowAngle(perlin: PerlinNoise2D, x: number, y: number, scale: number): number {
-  return perlin(x * scale, y * scale) * TAU * 2;
-}
+## Look closer
 
-// Move a particle one step in the direction given by `angle`.
-// `wrap` keeps the particle on canvas; it teleports to the other side
-// when it reaches an edge.
-function stepParticle(p, angle, speed, width, height): Particle {
-  const nx = wrap(p.x + Math.cos(angle) * speed, 0, width);
-  const ny = wrap(p.y + Math.sin(angle) * speed, 0, height);
-  return { x: nx, y: ny };
-}
-```
+- The canvas is never fully cleared each frame. Instead a nearly-transparent dark rectangle is painted over it, dimming old trails slightly. Over many frames old trails fade, while heavily visited paths stay bright.
+- The blend mode is set to `"lighter"` before drawing particles. This makes overlapping colors add rather than cover. Ten dim strokes at the same spot produce one bright spot.
+- 2000 particles are created at random positions. Each particle is stored as an `{ x, y }` pair with no velocity. The flow field provides all the direction.
+- Particles that move off the edge of the canvas wrap to the opposite edge (toroidal boundary). No particle is ever lost.
 
-`FIELD_SCALE` controls how zoomed-in the noise is. A smaller value means the field changes slowly, so particles take long, sweeping paths. A larger value makes the field noisy and particles spiral in tight loops.
+## Break it
 
-### Step 3: spawn particles
+- Try changing the field scale in the source. A smaller scale value means the noise changes slowly, so particles take long sweeping paths. A larger scale means tight, turbulent spirals.
+- Try running with 500 particles instead of 2000. The trails become sparse and thread-like.
+- Watch what happens immediately after clicking "New seed." The old trails fade rapidly but are still visible for a moment.
+- Notice that particles always move in the direction the field points, never backward. The field only determines direction, not speed.
 
-We create 2,000 particles at random positions. Each particle is just an `{ x, y }` pair. No velocity, no mass: the field provides all the direction.
+## Recap
 
-### Step 4: the draw loop
-
-Every frame, three things happen:
-
-1. **Fade the canvas.** We paint the whole canvas with a nearly-transparent dark rectangle. This does not erase old lines; it just dims them a little. Over many frames, old lines fade out slowly, creating the trail effect.
-2. **Move and draw particles.** For each particle, we get the flow angle at its position, step it forward, and draw a short line from the old position to the new one.
-3. **Additive blending.** We switch the canvas blend mode to `"lighter"` before drawing. This makes overlapping strokes add their colors together. A few lines look dim; many lines in the same spot glow bright.
-
-The loop runs at up to 60 frames per second. The sketch pauses when the browser tab is hidden and respects the system "reduce motion" setting.
-
-## Try this
-
-- Hit **New seed** to generate a completely different field. The same code, a different pattern.
-- Imagine what happens with more particles: brighter glow, more coverage. With fewer: sparse, thread-like streams.
-- Try changing `FIELD_SCALE` in the source: smaller values create slower, more open spirals; larger values create tight, turbulent swirls.
-
-## What to remember
-
-Perlin noise gives each location a smooth, predictable angle. Particles follow those angles step by step. Additive blending makes the paths glow where they overlap. Those three ideas, combined, turn 2,000 moving dots into a luminous flowing field.
+Perlin noise gives each location a smooth angle. Particles follow that angle step by step. Additive blending makes paths glow where they overlap. Those three ideas, combined, turn 2000 moving dots into a luminous flowing field.

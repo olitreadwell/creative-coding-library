@@ -23,4 +23,18 @@ export const meta = defineApp({
   understandWhen:
     "You can predict where the still lines appear when the two frequencies are equal versus different.",
   predictPrompt: "If both frequencies are the same number, what shape do the still lines form?",
+  recallChecks: [
+    {
+      q: "What do the bright lines on a Chladni figure represent physically?",
+      a: "The nodal lines: points on the plate that do not move when it vibrates. In real life, sand collects there.",
+    },
+    {
+      q: "How is the overall Chladni pattern produced from two waves?",
+      a: "Two standing-wave sine patterns are added together (superposition). The result is their sum evaluated at every pixel.",
+    },
+    {
+      q: "What happens when you increase the mode parameter by one integer?",
+      a: "The number of segments in the pattern increases and the figure reorganizes into a new shape.",
+    },
+  ],
 });

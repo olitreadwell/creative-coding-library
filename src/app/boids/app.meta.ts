@@ -23,4 +23,18 @@ export const meta = defineApp({
     "You can name all three rules and predict which one breaks the flock if you turn it off.",
   predictPrompt:
     "If you turn off separation but keep alignment and cohesion, what happens to the flock over time?",
+  recallChecks: [
+    {
+      q: "What are the three rules every boid follows each frame?",
+      a: "Separation (move away from neighbors that are too close), alignment (steer toward the average heading of nearby neighbors), and cohesion (steer toward the average position of nearby neighbors).",
+    },
+    {
+      q: "Why does the flock form without any code that says 'flock together'?",
+      a: "Emergence: each boid follows only local rules, but the interaction of those rules across many boids produces group behavior.",
+    },
+    {
+      q: "What happens to a boid that exits the right edge of the canvas?",
+      a: "It reappears on the left edge, because the edges are toroidal.",
+    },
+  ],
 });

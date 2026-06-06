@@ -1,6 +1,15 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import { render, screen, cleanup } from "@testing-library/react";
+import { render, screen, cleanup, fireEvent } from "@testing-library/react";
 import type { AppMeta, AppLevel } from "@/lib/creative/registry";
+
+const mockReplace = vi.fn();
+let mockSearchParamsString = "";
+
+vi.mock("next/navigation", () => ({
+  useSearchParams: () => new URLSearchParams(mockSearchParamsString),
+  useRouter: () => ({ replace: mockReplace }),
+}));
+
 import { JourneyList } from "./JourneyList";
 
 const MASTERY_KEY = "creative-coding-library:mastery:v1";
@@ -26,6 +35,8 @@ function makeApp(slug: string, opts: { prereqs?: string[]; level?: AppLevel } = 
 
 beforeEach(() => {
   localStorage.clear();
+  mockSearchParamsString = "";
+  mockReplace.mockClear();
 });
 
 afterEach(() => {
@@ -131,7 +142,7 @@ describe("JourneyList — locked state", () => {
 
     render(<JourneyList apps={apps} />);
 
-    expect(screen.queryByText(/Locked/i)).toBeNull();
+    expect(screen.queryByText(/Locked — needs:/i)).toBeNull();
   });
 });
 
@@ -157,5 +168,94 @@ describe("JourneyList — mastery state", () => {
 
     const button = screen.getByRole("button", { name: /I get this/i });
     expect(button).toHaveAttribute("aria-pressed", "true");
+  });
+});
+
+describe("JourneyList — visibility toggle", () => {
+  it("defaults to Show all (renders locked cards)", () => {
+    const apps: AppMeta[] = [
+      makeApp("base", { level: 1 }),
+      makeApp("locked-app", { level: 2, prereqs: ["base"] }),
+    ];
+
+    render(<JourneyList apps={apps} />);
+
+    expect(screen.getByText(/Locked — needs:/i)).toBeInTheDocument();
+    expect(screen.getByRole("listitem", { name: /Locked — Locked-app/i })).toBeInTheDocument();
+  });
+
+  it("clicking Hide locked updates URL param to locked=hide", () => {
+    const apps: AppMeta[] = [makeApp("solo", { level: 1 })];
+
+    render(<JourneyList apps={apps} />);
+
+    const hideBtn = screen.getByRole("button", { name: /Hide locked/i });
+    fireEvent.click(hideBtn);
+
+    expect(mockReplace).toHaveBeenCalledWith("?locked=hide");
+  });
+
+  it("with locked=hide, locked cards are not rendered", () => {
+    mockSearchParamsString = "locked=hide";
+
+    const apps: AppMeta[] = [
+      makeApp("base", { level: 1 }),
+      makeApp("locked-app", { level: 2, prereqs: ["base"] }),
+    ];
+
+    render(<JourneyList apps={apps} />);
+
+    expect(screen.queryByText(/Locked — needs:/i)).toBeNull();
+    expect(screen.queryByRole("listitem", { name: /Locked — Locked-app/i })).toBeNull();
+  });
+
+  it("Open anyway link navigates to the app slug", () => {
+    const apps: AppMeta[] = [
+      makeApp("base", { level: 1 }),
+      makeApp("locked-app", { level: 2, prereqs: ["base"] }),
+    ];
+
+    render(<JourneyList apps={apps} />);
+
+    const openAnywayLink = screen.getByRole("link", { name: /Open anyway/i });
+    expect(openAnywayLink).toHaveAttribute("href", "/locked-app");
+  });
+
+  it("aria-label on locked card includes unmastered prereq title", () => {
+    const apps: AppMeta[] = [
+      makeApp("pointer-flow", { level: 1 }),
+      makeApp("boids", { level: 2, prereqs: ["pointer-flow"] }),
+    ];
+
+    render(<JourneyList apps={apps} />);
+
+    const lockedItem = screen.getByRole("listitem", { name: /Locked — Boids/i });
+    expect(lockedItem.getAttribute("aria-label")).toMatch(/unmastered prereqs: Pointer-flow/i);
+  });
+
+  it("shows hidden count message when all apps in a level are locked and filter is hide", () => {
+    mockSearchParamsString = "locked=hide";
+
+    const apps: AppMeta[] = [
+      makeApp("base", { level: 1 }),
+      makeApp("locked-app", { level: 2, prereqs: ["base"] }),
+    ];
+
+    render(<JourneyList apps={apps} />);
+
+    expect(screen.getByText(/locked app.? hidden in this level/i)).toBeInTheDocument();
+  });
+
+  it("clicking Show all removes locked param from URL", () => {
+    mockSearchParamsString = "locked=hide";
+
+    const apps: AppMeta[] = [makeApp("solo", { level: 1 })];
+
+    render(<JourneyList apps={apps} />);
+
+    const showAllBtn = screen.getByRole("button", { name: /Show all/i });
+    fireEvent.click(showAllBtn);
+
+    expect(mockReplace).toHaveBeenCalledWith("/");
   });
 });

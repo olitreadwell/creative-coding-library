@@ -1,0 +1,33 @@
+## What this is
+
+The spiral pattern you see on a sunflower head, a pinecone, or a pineapple. Each
+dot is a seed, and every new seed is placed a fixed turn around the center from
+the last one. Pick the right turn and the seeds pack into the interlocking
+spirals nature uses. Scroll up or down on the canvas to add or remove seeds and
+watch the bloom grow or shrink.
+
+## The big idea in plain words
+
+Two rules place every seed:
+
+1. **Turn by a fixed angle.** Seed number i sits at angle `i × angle` around the
+   center.
+2. **Step outward.** Its distance from the center is `sqrt(i)`, which keeps the
+   seeds evenly dense instead of bunching up.
+
+The magic is in the angle. Use a whole-number fraction of a circle, like 90 or
+120 degrees, and the seeds line up into a few obvious arms with big gaps between
+them. Use the **golden angle**, about 137.5 degrees, and no two seeds ever line
+up, so they fill the space evenly and the eye picks out spirals running both
+ways. Slide the angle control a hair off 137.5 and the whole pattern reorganizes,
+which shows how precise nature's choice is.
+
+## Why it matters
+
+Phyllotaxis is one of the clearest places where a simple rule meets a deep
+number. The golden angle comes from the golden ratio, and plants use it because
+even seed packing means more seeds in less space. For creative coding it is a
+tiny recipe, two lines of trigonometry, that yields a rich, organic image you can
+play with by ear.
+
+The How it works tab walks through the code, including the scroll handling.

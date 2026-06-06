@@ -1,0 +1,76 @@
+## How it works
+
+The whole sketch is four small steps: list the corners, spin them, flatten them,
+then draw them back to front.
+
+### 1. List the corners
+
+A shape is just an array of 3D points plus a list of which points are joined by
+an edge. A cube is eight corners at every combination of plus and minus one.
+
+```ts
+type Vec3 = { x: number; y: number; z: number };
+
+const cube: Vec3[] = [];
+for (const x of [-1, 1]) for (const y of [-1, 1]) for (const z of [-1, 1]) cube.push({ x, y, z });
+```
+
+For the edges we connect every pair of corners that sit at the shortest distance
+apart. That recovers the real edges without typing them out by hand.
+
+### 2. Spin every corner
+
+To rotate a point we turn it around an axis with sine and cosine. Doing it for
+the X axis then the Y axis gives a nice tumble.
+
+```ts
+function rotate(v: Vec3, ax: number, ay: number): Vec3 {
+  let { x, y, z } = v;
+  // around X
+  [y, z] = [y * Math.cos(ax) - z * Math.sin(ax), y * Math.sin(ax) + z * Math.cos(ax)];
+  // around Y
+  [x, z] = [x * Math.cos(ay) + z * Math.sin(ay), -x * Math.sin(ay) + z * Math.cos(ay)];
+  return { x, y, z };
+}
+```
+
+Each frame we add a little to the angles, so the shape keeps turning.
+
+### 3. Flatten with perspective
+
+The screen is 2D, so we drop the z value, but first we use it to fake depth.
+Divide by how far the point is from the camera. Near points stay large, far
+points shrink.
+
+```ts
+function project(v: Vec3, cameraDist: number) {
+  const f = cameraDist / (cameraDist - v.z);
+  return { x: v.x * f, y: v.y * f, scale: f, depth: v.z };
+}
+```
+
+That one division is the trick that makes a flat drawing look solid.
+
+### 4. Draw back to front
+
+If we drew edges in any order, near and far lines would cross wrongly. So we
+sort edges by their average depth and draw the far ones first. We also tint each
+edge by depth, near edges bright, far edges dim, which the eye reads as light and
+distance.
+
+```ts
+edges
+  .sort((a, b) => avgDepth(a) - avgDepth(b)) // far first
+  .forEach((e) => {
+    ctx.strokeStyle = depthColor(e);
+    ctx.lineWidth = depthWidth(e);
+    drawLine(e);
+  });
+```
+
+### Make it yours
+
+- Drag the canvas: the same `rotate` angles are nudged by the pointer.
+- The perspective slider changes `cameraDist`. Small values exaggerate depth;
+  large values look almost flat.
+- Swap the shape to see how the same four steps draw any set of points.

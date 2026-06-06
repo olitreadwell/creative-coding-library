@@ -1,0 +1,84 @@
+## How it works, step by step
+
+This app runs a matter.js physics simulation inside a React component. Here is the whole flow, broken into small pieces.
+
+### Step 1: describe the bodies before creating them
+
+Before touching matter.js, we decide what shapes to create. The `makeSpecs` function produces an array of plain objects called **specs**. Each spec says: where should this body start, how big is it, how many sides, and what hue.
+
+Specs are pure data. No matter.js involved yet. That keeps the shape-generation logic easy to test.
+
+```ts
+type BodySpec = {
+  x: number; // horizontal start position in pixels
+  kind: "circle" | "poly";
+  size: number; // diameter in pixels
+  sides: number; // polygon sides (ignored for circles)
+  hue: number; // 0-360 color hue
+};
+
+function makeSpecs(rng: Rng, count: number, width: number): BodySpec[] {
+  const specs: BodySpec[] = [];
+  for (let i = 0; i < count; i++) {
+    const kind = rng() < 0.5 ? "circle" : "poly";
+    const size = randRange(rng, 40, 80) * sizeScale; // sizeScale comes from the slider
+    const sides = kind === "poly" ? randInt(rng, 3, 8) : 0;
+    const x = randRange(rng, size, Math.max(size + 1, width - size));
+    const hue = randRange(rng, 0, 360);
+    specs.push({ x, kind, size, sides, hue });
+  }
+  return specs;
+}
+```
+
+`rng` is a seeded random number generator. The same seed always produces the same specs, so the same shapes appear in the same positions every time you use that seed.
+
+### Step 2: create the engine and world
+
+Now we bring in matter.js. Three objects make up the foundation:
+
+- `M.Engine.create()` creates the engine. We pass `{ gravity: { x: 0, y: 1.5 } }` to make things fall downward at 1.5x the default strength.
+- `M.Render.create()` sets up a `<canvas>` element and tells it where to draw.
+- `M.Runner.create()` handles the update loop. Every frame it calls the engine to advance time.
+
+### Step 3: add static walls
+
+Before dropping shapes, we add three invisible walls: one at the bottom and one on each side. They stop everything from falling off the screen.
+
+```ts
+function buildWalls(M, width, height) {
+  const opts = { isStatic: true, render: { fillStyle: "#1a1a2e" } };
+  return [
+    // floor
+    M.Bodies.rectangle(width / 2, height + 30, width + 120, 60, opts),
+    // left wall
+    M.Bodies.rectangle(-30, height / 2, 60, height * 2, opts),
+    // right wall
+    M.Bodies.rectangle(width + 30, height / 2, 60, height * 2, opts),
+  ];
+}
+```
+
+`isStatic: true` means the engine will never move these bodies, no matter how hard others collide with them.
+
+### Step 4: drop bodies until the container fills
+
+We do not add every body at once. A timer fires a few times a second and adds one body, which drops in from just above the top edge. After each drop we add up the area of all the bodies so far; once that total reaches roughly 60% of the canvas area, we stop the timer. That gives a full, settled pile instead of an endless stream. Reset clears everything and starts the count again.
+
+The engine then takes over. On each runner tick it applies gravity, detects collisions, and updates positions. The renderer reads the updated positions and draws.
+
+### Step 5: clean up on unmount
+
+matter.js creates canvases and runs timers. When the React component is removed from the page (or reset), we must clean up all of those resources. The `teardown` function stops the runner, stops the renderer, clears the world, clears the engine, and removes the canvas from the DOM.
+
+Skipping teardown causes memory leaks and duplicate canvases.
+
+## Try this
+
+- Drag the **size** slider up, then Reset. Bigger items fill the container with fewer shapes.
+- Raise **gravity** for a hard, fast pile, or lower **bounciness** so shapes settle without jiggling.
+- Click **Reset**. A new seed picks new colors and positions, and dropping starts again.
+
+## What to remember
+
+A physics engine follows a three-part pattern: **create an engine**, **add bodies to its world**, **let the runner update every frame**. The engine handles collision detection and response. You only supply the setup. That separation is what makes physics-based creative coding feel powerful without being complicated.

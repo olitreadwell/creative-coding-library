@@ -1,0 +1,24 @@
+## What this is
+
+Squish shows a handful of soft, wobbly blobs that fall under gravity, bounce off the walls, and deform when they hit the floor. You can grab any blob with your pointer and fling it across the canvas. It stretches as you drag and snaps back when you let go.
+
+Unlike a rigid-body simulation where objects keep their shape no matter what, a **soft body** is made of many small points connected by springs. Those points can spread apart or squeeze together, which makes the whole blob look squishy.
+
+## The big idea in plain words
+
+A soft body is just a ring of point masses connected by elastic strings. Three rules decide how it moves:
+
+1. **Verlet integration.** Each point remembers where it was one frame ago and where it is now. The difference is its velocity. Each frame we apply gravity to update the position, and the point carries its velocity along automatically. No separate velocity variable needed.
+
+2. **Distance constraints.** The strings between neighboring points have a natural rest length. If two points drift too far apart, we nudge them back toward each other. Run this correction a few times per frame and the skin stays roughly intact even under large forces.
+
+3. **Pressure force.** A real balloon stays round because air pushes outward. We fake this by measuring the polygon area each frame, comparing it to the rest area, and pushing every edge outward by an amount proportional to the deficit. This is what makes the blob puff back up after being squashed.
+
+Together these three rules produce the soft, bouncy look with no physics library at all: just arithmetic on arrays of 2D points.
+
+## Controls
+
+- **blobs** sets how many blobs appear. More blobs means more computation.
+- **gravity** changes how fast blobs fall.
+- **squish** adjusts constraint stiffness and pressure together. Low squish = very bouncy jelly. High squish = firmer, less deformable.
+- **Reset** places fresh blobs in their starting positions.

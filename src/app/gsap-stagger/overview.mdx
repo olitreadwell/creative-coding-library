@@ -1,0 +1,19 @@
+## What this is
+
+Stagger Grid is a 12 by 8 grid of colored tiles. When the page loads, a ripple wave spreads outward from the center. Each tile shrinks and spins, then the wave bounces back in reverse. The result looks like a stone dropped into still water, but made of squares.
+
+## The big idea in plain words
+
+"Stagger" means each tile starts its animation a tiny moment after its neighbor. The center tile goes first. The tiles just outside the center go next, a fraction of a second later. Then the next ring, then the next. By the time the outermost tiles start moving, the center is already halfway through.
+
+That staggered delay is the only trick. Take one simple move (shrink, spin) and spread its start time across a grid, and you get a wave for free.
+
+There is no physics math here. No particle system. Just one animation, started at different times, arranged in a grid shape.
+
+## Why it matters
+
+- **Timelines.** This sketch uses a GSAP timeline: a container that holds animations and plays them in order. Timelines make it easy to sequence, repeat, and reverse complex motion.
+- **Easing.** The tiles do not move at a constant speed. They start slow, speed up, then slow down again. That curve is called an "ease." Without easing, motion looks robotic.
+- **Stagger.** Stagger is the technique of offsetting each item's start time so a group of animations sweeps across a layout instead of all firing at once.
+
+You do not need to know the math to use it. Once you see the stagger property in the code, you can change the number and immediately hear the rhythm change. That is a good way to learn.

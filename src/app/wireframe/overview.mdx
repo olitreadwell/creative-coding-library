@@ -1,0 +1,36 @@
+## What this is
+
+A solid shape, like a cube or a many-sided ball, spinning in space. It is drawn
+on a flat canvas, but it reads as 3D: the near side looks bigger and brighter,
+the far side looks smaller and dimmer. Drag it with your mouse or finger to spin
+it yourself.
+
+Nothing here is real 3D. There is no 3D engine. It is plain Canvas 2D plus a
+little maths that fakes depth convincingly.
+
+## The big idea in plain words
+
+Every corner of the shape is a point with three numbers: x (left/right), y
+(up/down), and z (near/far). Two steps turn those numbers into a picture.
+
+**Rotate.** To spin the shape we nudge every point around an axis. The formula
+uses sine and cosine, the same pair that draws a circle. Apply it each frame and
+the whole shape turns together.
+
+**Project.** A screen is flat, so we have to flatten the points. The trick that
+sells the illusion is perspective: divide a point's position by how far away it
+is. Near points (large z) barely shrink, far points shrink a lot. That single
+divide is why railway tracks appear to meet in the distance, and it is what
+makes this drawing look 3D.
+
+To finish the look we draw the far edges first and the near edges last, and we
+tint each edge by its depth, so the shape never looks like a flat tangle of
+lines.
+
+## Why it matters
+
+Rotate, then project: that is the heart of every 3D renderer, from a phone game
+to a film. Doing it by hand in a few lines shows there is no magic inside the
+fancy libraries, just sine, cosine, and one division.
+
+The How it works tab walks through the code.

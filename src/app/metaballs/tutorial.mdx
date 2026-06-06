@@ -1,0 +1,72 @@
+## How it works, step by step
+
+This app draws metaballs with plain Canvas 2D. No physics library, no WebGL. Here is the whole chain, broken into four steps.
+
+## Step 1: the scalar field
+
+Each ball has a position and a radius. Its influence at any point `(x, y)` is:
+
+```ts
+influence = (r * r) / (dx * dx + dy * dy);
+```
+
+`dx` and `dy` are the distances from the ball's center. Squaring the radius means a bigger ball has proportionally more pull. Dividing by the distance squared makes the pull fall off fast with distance.
+
+The total field at a point is just the sum of all balls' influences:
+
+```ts
+export function fieldAt(balls, x, y) {
+  let sum = 0;
+  for (const ball of balls) {
+    const dx = x - ball.x;
+    const dy = y - ball.y;
+    const d2 = dx * dx + dy * dy;
+    sum += (ball.r * ball.r) / d2;
+  }
+  return sum;
+}
+```
+
+We sample this on a grid (a coarse grid is fine). The marching squares step handles the interpolation so the outline is still smooth.
+
+## Step 2: marching squares
+
+We walk over every square cell in the grid. Each cell has four corners. We check which corners are above the threshold and which are below, giving us one of 16 possible patterns (a 4-bit index).
+
+For each pattern we know exactly which edges the iso-contour must cross. A bit of linear interpolation finds the precise crossing point on each edge:
+
+```ts
+const t = (threshold - valueA) / (valueB - valueA);
+const crossX = xA + t * (xB - xA);
+```
+
+That gives us a short line segment per cell that belongs to the contour. We collect all segments from the whole grid and then stitch them into closed paths.
+
+## Step 3: physics
+
+Each ball drifts in a straight line and bounces off the canvas edges. The bounce is simple: flip the velocity component that is heading out of bounds:
+
+```ts
+if (ball.x - ball.r < 0) {
+  ball.x = ball.r;
+  ball.vx = Math.abs(ball.vx); // push back inward
+}
+```
+
+This runs every animation frame before sampling the field.
+
+## Step 4: drawing
+
+The stitched paths are drawn twice on the canvas: once as a translucent filled shape (the blob interior) and once as a crisp stroke (the outline). In dark mode a glow shadow is added to the stroke. In light mode the shadow is off and the stroke uses a deep saturated hue so it reads clearly on a pale background.
+
+The canvas is scaled by the device pixel ratio so the outline is sharp on high-DPI screens.
+
+## Try this yourself
+
+- Hit Shuffle several times and watch the new start positions change how quickly the blobs merge.
+- Lower the threshold constant in `field.ts` and the blobs will only merge when they almost touch. Raise it and they merge from further away.
+- Increase `GRID_CELLS` in `play/page.tsx` for a finer contour at the cost of more CPU work.
+
+## What to remember
+
+A scalar field plus a threshold plus marching squares is a complete recipe for smooth organic shapes. You write none of the blob outlines directly. The shape is implied by where the field crosses the cutoff, and the merging behavior comes for free from the additive nature of the field.

@@ -1,0 +1,23 @@
+## What this is
+
+Webcam ASCII takes the live feed from your camera and redraws it as a grid of text characters. Each cell gets a single character chosen by how dark or bright that area of the image is. Dark areas fill with dense, ink-heavy characters. Bright areas get light, open characters, or nothing at all.
+
+You stay in control. The camera does not start until you click "Enable camera." You can close the tab at any time to stop the feed.
+
+## The big idea in plain words
+
+Every image is just a grid of pixels, each with a brightness value. ASCII art works by finding a set of characters that have different amounts of ink. A period `.` covers almost no area. An `@` sign is packed with strokes. A space covers none.
+
+The sketch measures the actual ink coverage of every character by drawing each one onto a tiny hidden canvas and counting the filled pixels. It then sorts the characters from least ink to most. When drawing your face, it reads the brightness of each cell from the camera and picks the matching character from that sorted list.
+
+The result looks like the ASCII art in early computer demos, but it is calculated from real pixel data rather than typed by hand.
+
+## Controls
+
+- **Glyphs** lets you switch between three character sets: a full ASCII ramp with ~70 characters, a small block-shading set using Unicode box characters, and a minimal dots set. Each has a different visual feel.
+- **Cell size** controls how many columns and rows fit on the canvas. Larger cells give fewer, bolder characters. Smaller cells show more detail.
+- **Contrast** multiplies the brightness of each cell before picking a glyph. Raising it pushes mid-tones toward darker characters and makes the image pop.
+
+## Why it matters
+
+This sketch shows how image data becomes something other than pixels. Every real-time filter, face effect, and motion detector in the browser uses the same three steps: request the camera with `getUserMedia`, draw a frame onto a canvas with `drawImage`, and read the pixel values back with `getImageData`. What you do with those pixel values is up to you. Here we map them to characters. The same pipeline could drive a color filter, a mosaic, or a brightness threshold detector.

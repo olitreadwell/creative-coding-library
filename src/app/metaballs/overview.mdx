@@ -1,0 +1,23 @@
+## What this is
+
+Metaballs are blobs that merge when they get close and pull apart when they move away. No special effect is applied: the merging happens automatically from the math. Every blob is just a rule about how strongly it attracts nearby space. Add several rules together, look at where the total reaches a certain strength, and you get the outline of the blob.
+
+Move the canvas or hit Shuffle to respawn the balls with new starting positions.
+
+## The big idea in plain words
+
+Think of each ball as a little magnet buried in the canvas. Near the center the pull is strong. A meter away the pull is weak. Very far away it is almost nothing.
+
+We ask a single question at every point on a grid: how strong is the combined pull from all the magnets? That gives us a **scalar field**, a value at every location, higher near the balls and lower everywhere else.
+
+Now we pick a cutoff number called the **threshold**. Wherever the field crosses that number we draw a line. That line is the surface of the blob. When two balls get close their fields add up and the combined pull exceeds the threshold between them, connecting the two blobs into one. When they drift apart the field drops below the threshold and the blobs split cleanly.
+
+This is called an **implicit surface**, because you never define the shape directly; you imply it by asking where a function crosses a value.
+
+## Why it matters
+
+Metaballs are a real technique used in 3D animation, game effects, and fluid simulation. The 3D version works the same way: a scalar field, a threshold, and an algorithm to trace the surface. In 3D that algorithm is called marching cubes.
+
+Here you see the 2D version: marching squares. Each tiny square of the grid is classified by which corners are above the threshold, and a short line segment is placed to trace the boundary. String those segments together across the whole grid and you have the smooth organic outline.
+
+The Tutorial tab explains the code step by step.

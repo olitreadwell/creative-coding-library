@@ -1,0 +1,114 @@
+## How it works, step by step
+
+This sketch has two parts: the **field math** (pure functions, no React) and the **R3F component** (React + three.js). Here is how each part works.
+
+## Step 1: generate grid positions
+
+Before anything renders, we compute where every sphere sits in 3D space.
+
+```ts
+export function spherePositions(cols, rows, spacing) {
+  const halfW = ((cols - 1) * spacing) / 2;
+  const halfD = ((rows - 1) * spacing) / 2;
+  const positions = [];
+
+  for (let row = 0; row < rows; row++) {
+    for (let col = 0; col < cols; col++) {
+      positions.push({
+        x: col * spacing - halfW, // left-right
+        z: row * spacing - halfD, // front-back (3D uses Z, not Y, for depth)
+        col,
+        row,
+      });
+    }
+  }
+  return positions;
+}
+```
+
+`halfW` and `halfD` shift the grid so its center lands at the origin (0, 0, 0). The field is built much larger than the screen so it spills past every edge, and the camera sits above it tilted down about forty degrees, so the field reads as an ocean running to the horizon.
+
+Note that we do not set `y` here. `y` is up/down, and that changes every frame. Only the fixed `x` and `z` positions belong in this pre-computed list.
+
+## Step 2: compute the wave height
+
+`bob` returns the up/down position for one sphere at one point in time.
+
+```ts
+export function bob(col, row, t) {
+  const phase = (col + row) * WAVE_SPATIAL_FREQ;
+  return Math.sin(phase - t * WAVE_TEMPORAL_FREQ) * WAVE_AMPLITUDE;
+}
+```
+
+- `phase` offsets spheres diagonally across the grid. Spheres at different positions on the diagonal peak at different times, which creates a travelling wave instead of every sphere moving together.
+- Subtracting `t * WAVE_TEMPORAL_FREQ` makes the wave travel forward in time.
+- Multiplying by `WAVE_AMPLITUDE` sets the maximum height.
+
+## Step 3: update all spheres in the render loop
+
+The `SphereField` component uses `useFrame` to run code every frame. Inside it, we iterate over every sphere position and push three things into the instanced mesh: position + scale, rotation, and color.
+
+```tsx
+useFrame((state) => {
+  const t = state.clock.getElapsedTime(); // seconds since start
+
+  for (let i = 0; i < COUNT; i++) {
+    const cell = CELLS[i];
+    const range = WAVE_AMPLITUDE * amplitude; // amplitude comes from the slider
+    const y = bob(cell.col, cell.row, t) * amplitude;
+
+    tempObject.position.set(cell.x, y, cell.z);
+    tempObject.scale.setScalar(map(y, -range, range, 0.82, 1.15));
+    tempObject.rotation.y = t * 0.15 + cell.col * 0.3;
+    tempObject.updateMatrix(); // bake into a 4x4 matrix
+
+    mesh.setMatrixAt(i, tempObject.matrix); // write to GPU buffer
+
+    const hue = map(y, -range, range, HUE_RANGE[0], HUE_RANGE[1]);
+    tempColor.setHSL(hue / 360, 0.85, 0.58);
+    mesh.setColorAt(i, tempColor); // write color to GPU buffer
+  }
+
+  mesh.instanceMatrix.needsUpdate = true; // tell the GPU to re-read the buffers
+  if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
+});
+```
+
+`tempObject` and `tempColor` are created once outside the component and reused. Allocating new objects every frame would stress the garbage collector and cause hitches.
+
+## Step 4: lights make the spheres visible
+
+Without light, a `meshStandardMaterial` is completely black. Three light sources give the spheres their look:
+
+- **Ambient light** (intensity 0.7): a soft base fill so no part of any sphere is fully dark.
+- **Two directional lights**: one white from above-right, one blue-tinted from below-left. This creates the bright highlight and subtle color on the shadow side.
+- **One point light** (warm orange, above center): adds a warm glow that shifts across each sphere as it bobs.
+
+The material's metalness and roughness come from sliders, so you can take the spheres from soft matte to wet and reflective.
+
+## The endless horizon
+
+One line does most of the "ocean" work:
+
+```tsx
+<fog attach="fog" args={[backgroundColor, 18, 66]} />
+```
+
+Fog blends anything past the far distance into the background color. Because the
+grid extends well beyond that distance, its real edge is always hidden inside the
+fog, so the field looks like it carries on forever.
+
+## Try this
+
+- Change `COLS` or `ROWS` at the top of `play/page.tsx` to grow or shrink the field.
+- Change `HUE_RANGE` from `[180, 320]` to `[0, 60]` for a red/yellow palette.
+- Drag the amplitude slider to 0 to flatten the ocean, or up for heavy swell.
+- Lower the fog `far` value to pull the horizon closer; raise it to push it back.
+
+## What to remember
+
+- three.js organizes a 3D scene as a tree of objects, lights, and a camera. React Three Fiber lets you write that tree with JSX.
+- `useFrame` is the animation loop. Everything time-based lives there.
+- Instancing (`instancedMesh`) draws many copies of one mesh in a single GPU call. You update each copy by writing a matrix (transform) and a color into the instance buffers, then flagging them as dirty.
+- Lights are not decoration. `meshStandardMaterial` needs at least one light source to show any surface detail.

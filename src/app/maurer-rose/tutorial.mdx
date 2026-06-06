@@ -1,0 +1,58 @@
+## How it works, step by step
+
+This sketch is plain Canvas 2D. No library. The whole figure comes from two short functions.
+
+### Step 1: one point on the rose
+
+A rose curve lives in polar space. Given an angle, the distance from the center is a sine wave. We then convert that polar pair back to the x and y the canvas understands.
+
+```ts
+export function rosePoint(thetaRad: number, n: number, radius: number): Point {
+  const r = Math.sin(n * thetaRad) * radius; // petal height at this angle
+  return { x: r * Math.cos(thetaRad), y: r * Math.sin(thetaRad) };
+}
+```
+
+- `n` sets the petal count. With `n = 6` the sine completes six cycles per turn.
+- `r` can be negative. A negative radius simply places the point on the opposite side of the center, which is what fills in the petals.
+- `cos` and `sin` turn the angle and distance into a flat x and y. This is the polar-to-cartesian conversion.
+
+### Step 2: the Maurer walk
+
+Now we sample that curve at coarse, evenly spaced angles: every `d` degrees, 361 times. We keep all the vertices in order.
+
+```ts
+export function maurerVertices(n: number, d: number, radius: number): Point[] {
+  const pts: Point[] = [];
+  for (let i = 0; i <= 360; i++) {
+    pts.push(rosePoint(i * d * DEG_TO_RAD, n, radius));
+  }
+  return pts;
+}
+```
+
+The key is the angle `i * d`. If `d` is 71, the angles are 0, 71, 142, 213, and so on. Each step leaps most of the way around the circle, so consecutive points land far apart on the rose. Joining them draws a long chord straight across the flower rather than a short arc along it.
+
+Because 360 and `d` rarely share many factors, the walk visits many distinct angles before it repeats, which is why the chords pile up into a dense net.
+
+### Step 3: draw the chords
+
+We draw the 360 line segments one at a time so each can take its own color. The hue glides from cyan to magenta along the walk, and on the dark theme we use additive blending so crossings brighten.
+
+```ts
+for (let i = 1; i < verts.length; i++) {
+  const a = verts[i - 1];
+  const b = verts[i];
+  ctx.strokeStyle = hslString(hsl(hue, 0.9, 0.62), 0.5);
+  ctx.beginPath();
+  ctx.moveTo(a.x, a.y);
+  ctx.lineTo(b.x, b.y);
+  ctx.stroke();
+}
+```
+
+### Step 4: a gentle spin
+
+There is no simulation to run, so the animation is purely cosmetic: each frame we rotate the whole canvas by a tiny angle before drawing. Multiplying the spin speed by `dt` (seconds since the last frame) keeps the rotation steady on any screen, and the reduced-motion path renders a single still frame instead.
+
+That is the entire sketch. Two functions, a color ramp, and a slow turn. Try `n = 2, d = 39` for a clean star, or `n = 6, d = 71` for the dense web in the default view.

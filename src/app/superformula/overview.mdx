@@ -1,0 +1,19 @@
+## What this is
+
+A single mathematical equation, the Gielis superformula, can produce shapes that look like flowers, stars, gears, blobs, and polygons. You change four numbers and the shape transforms smoothly in front of you.
+
+The sketch draws the closed curve in real time on an HTML Canvas using JavaScript. No extra library handles the math. It is all one function.
+
+## The big idea in plain words
+
+Most shapes we know from geometry are described by separate formulas. A circle is one formula. A square needs four sides. A star needs more rules still.
+
+The superformula collapses all of that into one equation. It works in **polar coordinates**, which describe a point by its distance from the center (the radius) and its angle from the horizontal (theta). For each angle around the full 360 degrees, the formula tells you how far from the center the curve sits.
+
+When the four parameters (called m, n1, n2, and n3) are all equal to 1, you get a circle. Change m to 5 and you get a five-petal flower. Raise n1 and the petals sharpen into a star. Bring n2 and n3 close to each other and you get a rounded polygon. The same formula, different numbers, completely different shapes.
+
+## Why this matters
+
+Parametric shapes come up everywhere. Logos, icons, decorative patterns, and even biological forms follow equations similar to this one. Understanding that a single function can describe a huge family of shapes is a key idea in both mathematics and generative design.
+
+The slider controls in the sketch let you explore that family directly. A slow auto-morph keeps the shape moving so you can see it change over time without touching anything.

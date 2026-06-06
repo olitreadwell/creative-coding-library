@@ -1,0 +1,22 @@
+## What this is
+
+A Voronoi diagram is a way of dividing a flat surface into regions. Each region belongs to one point, called a site. Every spot in a region is closer to that site than to any other site. In this app the sites move around and bounce, so the regions shift and ripple in real time. Clicking adds a new site at the pointer.
+
+## The big idea in plain words
+
+Imagine you and a few friends each drop a pin on a map. Every house on the map belongs to whoever's pin is closest. That is a Voronoi diagram.
+
+To compute it, this app does not work pixel by pixel across the whole screen (that would be too slow). Instead it divides the screen into a grid of small blocks, about 6 pixels wide. For each block center it asks: which site is closest? Then it fills the whole block with that site's color. The result looks nearly identical to the exact diagram but runs fast enough to animate.
+
+When a new site is added by clicking, the cells around it shrink to give it space, and the surrounding cells rearrange instantly.
+
+## Why it matters
+
+Voronoi diagrams appear across many fields:
+
+- **Geography**: drawing service areas around hospitals, fire stations, or cell towers. Every house in an area is closest to that facility.
+- **Biology**: modelling how cells pack together, or how territories form in animal populations.
+- **Computer graphics**: used in texture generation, procedural terrain, and scattered-light shading.
+- **Machine learning**: the 1-nearest-neighbor classifier makes exactly this partition, just in high-dimensional space.
+
+The nearest-neighbor idea is one of the most widely reused patterns in computing. Understanding it through a visual like this makes it much easier to spot when to reach for it.

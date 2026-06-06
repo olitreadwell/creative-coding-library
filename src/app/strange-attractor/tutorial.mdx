@@ -1,0 +1,76 @@
+## How it works
+
+### 1. The rule
+
+The whole figure comes from one pure function. It takes a point and the four
+parameters and returns the next point.
+
+```ts
+function stepDeJong(x, y, p) {
+  return {
+    x: Math.sin(p.a * y) - Math.cos(p.b * x),
+    y: Math.sin(p.c * x) - Math.cos(p.d * y),
+  };
+}
+```
+
+Because each line is a sine minus a cosine, every result lands within minus two
+to plus two on both axes, so the shape always fits the screen after scaling.
+
+### 2. Draw faintly and let density build
+
+Each frame we take the last point and step the rule a few thousand more times,
+plotting each new point with a very low opacity. We never clear between frames,
+so places the path visits often slowly grow brighter. That accumulation is what
+turns a scatter of dots into a glowing structure.
+
+```ts
+ctx.globalAlpha = 0.07;
+for (let i = 0; i < 7000; i++) {
+  ({ x, y } = stepDeJong(x, y, params));
+  ctx.fillStyle = cbRamp((x + 2) / 4, theme);
+  ctx.fillRect(centerX + x * scale, centerY + y * scale, 1, 1);
+}
+```
+
+On dark themes we use additive blending so overlaps glow; on light themes we lay
+faint ink that darkens where the path returns.
+
+### 3. Reset when the rule changes
+
+When you move a slider or press a key, the figure is different, so we set a flag
+that clears the canvas on the next frame and restarts the point from a fixed
+seed. Without that you would see two attractors layered on top of each other.
+
+### 4. Keyboard interactivity
+
+This is the new idea in this sketch. The canvas is made focusable with
+`tabIndex={0}`, and a key handler maps the arrow keys to small changes in the
+parameters.
+
+```ts
+<canvas
+  tabIndex={0}
+  role="application"
+  aria-label="Arrow keys change the attractor's shape."
+  onKeyDown={(e) => {
+    if (e.key === "ArrowLeft") setParam("a", a - 0.02);
+    if (e.key === "ArrowRight") setParam("a", a + 0.02);
+    // up and down adjust b
+    e.preventDefault();
+  }}
+/>
+```
+
+A few notes that make keyboard input accessible:
+
+- `tabIndex={0}` lets the canvas receive focus by tab or click.
+- `role="application"` tells assistive tech this region handles its own keys.
+- We also expose the same parameters as labelled sliders, so the sketch is fully
+  usable without memorising any keys.
+
+### Make it yours
+
+- Hold an arrow key to sweep a parameter and watch the figure breathe.
+- Randomize jumps to a fresh set of four numbers; most look interesting.
+- Try other attractor maps (Clifford, Svensson) by swapping the two formulas.

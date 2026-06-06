@@ -1,0 +1,50 @@
+## What this is
+
+An endless ocean of spheres seen from above at a shallow angle. A wave travels
+across them so they rise and fall like swell, and each one shifts color as it
+moves. The field runs to a hazy horizon in every direction and fades into fog,
+so you never see an edge. The sliders change the swell height, the wave speed,
+and how shiny the spheres are.
+
+It runs in real time in the browser, built on [three.js](https://threejs.org/)
+via [React Three Fiber](https://r3f.docs.pmnd.rs/).
+
+## The big idea in plain words
+
+three.js builds a **3D scene** the same way you build a stage set. The scene
+contains:
+
+- **Objects** (the spheres). Each one has a shape and a material (how it reacts
+  to light).
+- **Lights** (ambient fill, two directional beams, one warm point light).
+  Without lights, everything looks flat and gray.
+- **A camera** sitting above the field and tilted down about forty degrees, the
+  framing that makes a flat plane feel vast.
+
+React Three Fiber (R3F) lets you write that stage set with React components.
+`<Canvas>` is the stage, `<ambientLight>` and `<directionalLight>` are lights,
+and one `<instancedMesh>` packs thousands of spheres into a single efficient draw
+call.
+
+Once the scene is set up, `useFrame` runs a callback every time the browser draws
+a frame (about 60 times per second). That callback advances the wave math and
+updates every sphere's position and color. The wave is a simple sine function:
+
+```
+y = sin( (col + row) × spatialFreq − time × temporalFreq ) × amplitude
+```
+
+The color follows the height: low spheres lean cool (teal/blue), high spheres
+lean warm (purple/pink).
+
+## Why it matters
+
+This sketch shows ideas you will find in almost every 3D web project:
+
+- **The scene graph and render loop.** Real-time 3D is not "draw once." A
+  callback runs every frame, updates state, and the renderer redraws.
+- **Instancing.** Drawing each sphere separately would be thousands of GPU draw
+  calls. An `instancedMesh` sends them all in one call, with a separate transform
+  and color per sphere. This is how 3D apps handle large counts cheaply.
+- **Fog for depth.** Distant spheres blend into the background color, which reads
+  as a horizon rather than a hard edge, and is what makes the field feel endless.

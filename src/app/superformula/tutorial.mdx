@@ -1,0 +1,77 @@
+## How it works, step by step
+
+This sketch has three parts: the formula, the drawing loop, and the controls. Here is each one in order.
+
+### Step 1: the formula
+
+The Gielis superformula takes an angle (theta) and four numbers (m, n1, n2, n3) and returns a radius.
+
+```ts
+export function superRadius(theta: number, params: SuperformulaParams): number {
+  const { m, n1, n2, n3, a, b } = params;
+  const angle = (m * theta) / 4;
+  const termA = Math.pow(Math.abs(Math.cos(angle) / a), n2);
+  const termB = Math.pow(Math.abs(Math.sin(angle) / b), n3);
+  const sum = termA + termB;
+  if (sum === 0) return 0;
+  return Math.pow(sum, -1 / n1);
+}
+```
+
+Two things to notice. First, the input angle is multiplied by m/4 before taking the cosine and sine. That factor controls the rotational symmetry: m=4 gives four-fold symmetry, m=5 gives five-fold, and so on. Second, the result is raised to the power -1/n1. That negative exponent flips the curve: a bigger sum means a smaller radius, which creates indentations between the petals.
+
+### Step 2: drawing the curve
+
+To turn a polar formula into a visible shape, we sample it at many evenly spaced angles and convert each radius-angle pair to an (x, y) point.
+
+```ts
+const steps = 720;
+ctx.beginPath();
+for (let i = 0; i <= steps; i++) {
+  const theta = (i / steps) * Math.PI * 2;
+  const r = superRadius(theta, params) * scale;
+  const x = cx + Math.cos(theta) * r;
+  const y = cy + Math.sin(theta) * r;
+  if (i === 0) ctx.moveTo(x, y);
+  else ctx.lineTo(x, y);
+}
+ctx.closePath();
+ctx.stroke();
+```
+
+720 steps gives a smooth curve at any canvas size. Fewer steps would show the individual line segments as flat edges.
+
+`scale` is computed from the canvas size so the shape fills the available space regardless of window dimensions.
+
+### Step 3: the animation loop
+
+The sketch uses `useAnimationFrame` from the shared library, which handles pausing when the tab is hidden and respects the system "reduce motion" setting. Each frame, a time value `t` is passed to the callback.
+
+The auto-morph uses `t` to slowly oscillate n1 between two values. The sliders set the base parameters; the auto-morph adds a small sine wave on top so the shape is always gently breathing.
+
+```ts
+const morphed = {
+  ...params,
+  n1: params.n1 + Math.sin(t * 0.4) * 0.6,
+};
+```
+
+### Step 4: controls and presets
+
+The four sliders let you set m, n1, n2, and n3 directly. The preset selector jumps to named parameter sets that produce recognizable shapes:
+
+- **Flower** (m=5, n1=1, n2=1, n3=1): five petals with round tips.
+- **Star** (m=4, n1=2, n2=10, n3=10): four sharp points.
+- **Gear** (m=19, n1=100, n2=50, n3=50): many flat-topped teeth.
+- **Blob** (m=2, n1=0.5, n2=0.5, n3=0.5): a soft, rounded lobe.
+
+## Try this
+
+- Move the **m** slider slowly from 1 to 10. Watch new petals appear at each integer.
+- Set n2 and n3 to very large numbers (above 6). The curve flattens into a polygon.
+- Set n1 below 1. The shape inverts and becomes star-like even at low m values.
+- Pick **Gear** from the preset menu and then nudge the sliders one at a time to see what each parameter controls.
+
+## What to remember
+
+The superformula maps one angle to one radius. Sample that function at 720 angles, connect the dots, and you have the shape. Four numbers control everything. That is the whole sketch.

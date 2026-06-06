@@ -1,0 +1,57 @@
+## How it works, step by step
+
+Plain Canvas 2D. The entire pattern comes from one trigonometry formula evaluated across a grid.
+
+### Step 1: the plate field
+
+Picture the plate as a unit square: `x` and `y` both run from 0 to 1. A single vibration mode is a product of two sine waves, one along each axis. We add two such modes, with the wave counts `a` and `b` swapped between them.
+
+```ts
+export function chladni(x: number, y: number, a: number, b: number): number {
+  const PI = Math.PI;
+  return Math.sin(PI * a * x) * Math.sin(PI * b * y) + Math.sin(PI * b * x) * Math.sin(PI * a * y);
+}
+```
+
+A few things fall out of this for free:
+
+- At any edge (`x = 0`, `x = 1`, `y = 0`, `y = 1`) every sine term is zero, so the value is zero. The rim of the plate is always a node, which is physically correct for a clamped plate.
+- Swapping `x` and `y` leaves the value unchanged, so every figure is symmetric across the diagonal.
+- The value never leaves the range from -2 to 2, since it is two products of sines.
+
+The tests assert all three of these properties.
+
+### Step 2: find the nodes
+
+The plate is still wherever the field is zero. We turn "closeness to zero" into a brightness from 0 to 1, so the lines have soft, drawable thickness instead of being infinitely thin.
+
+```ts
+export function nodeIntensity(value: number, width: number): number {
+  const t = 1 - Math.abs(value) / width;
+  return t < 0 ? 0 : t > 1 ? 1 : t;
+}
+```
+
+A value of exactly zero gives intensity 1, a glowing node. As the field grows away from zero the intensity fades to 0 over the chosen `width`.
+
+### Step 3: paint it efficiently
+
+Evaluating the formula for every screen pixel every frame would be slow. Instead we compute it once on a small fixed grid (200 by 200) and write the colors straight into an `ImageData` buffer, blending the line color over the background by the node intensity:
+
+```ts
+const t = nodeIntensity(chladni(x, y, a, b), NODE_WIDTH);
+data[i] = fill[0] + (line[0] - fill[0]) * t; // red, similarly green and blue
+```
+
+That small buffer is then drawn scaled up to fill the canvas, with smoothing on so the lines look crisp at any size.
+
+### Step 4: a gentle shimmer
+
+A fixed mode pair gives a frozen figure. To bring it to life we let `a` and `b` drift a tiny amount around their slider values using a slow sine of time:
+
+```ts
+const da = a + DRIFT * Math.sin(t * 0.5);
+const db = b + DRIFT * Math.sin(t * 0.37 + 1);
+```
+
+The two different speeds keep the wobble from ever repeating exactly, so the lines breathe. With reduced motion the sketch skips the drift and renders the exact integer figure as a still frame. Try `a = 4, b = 7` for a dense lattice, or `a = 1, b = 2` for the simplest cross.

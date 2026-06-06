@@ -11,7 +11,7 @@ export const meta = defineApp({
   license: "MIT",
   commercialUse: "paid-gig-safe",
   kind: "creative",
-  builtAt: "2026-06-05",
+  builtAt: "2026-06-05T14:51:54+12:00",
   prereqs: ["seeded-tilings"],
   understandWhen:
     "You can explain how pixel brightness maps to dot radius and predict what a finer cell grid does to frame rate.",

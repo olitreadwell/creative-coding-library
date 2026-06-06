@@ -17,7 +17,7 @@ export const meta = defineApp({
   license: "MIT",
   commercialUse: "paid-gig-safe",
   kind: "creative",
-  builtAt: "2026-06-05",
+  builtAt: "2026-06-05T10:08:06+12:00",
   prereqs: ["lissajous"],
   understandWhen:
     "You can explain what removing the smallest epicycles does to the traced path and why higher terms add detail.",

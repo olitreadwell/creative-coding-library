@@ -11,7 +11,7 @@ export const meta = defineApp({
   license: "MIT",
   commercialUse: "paid-gig-safe",
   kind: "creative",
-  builtAt: "2026-06-05",
+  builtAt: "2026-06-05T14:50:44+12:00",
   prereqs: ["noise-field"],
   understandWhen:
     "You can explain what each frequency bin in the FFT output represents and predict which bins spike for a low hum versus a whistle.",

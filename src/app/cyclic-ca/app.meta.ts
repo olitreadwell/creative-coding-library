@@ -12,7 +12,7 @@ export const meta = defineApp({
   license: "MIT",
   commercialUse: "paid-gig-safe",
   kind: "creative",
-  builtAt: "2026-06-05",
+  builtAt: "2026-06-05T16:58:41+12:00",
   prereqs: ["conway-life"],
   understandWhen:
     "You can explain why spirals emerge from a cyclic eat-or-be-eaten rule and predict what happens with two states instead of many.",

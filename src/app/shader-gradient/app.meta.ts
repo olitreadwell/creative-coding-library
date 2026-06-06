@@ -17,7 +17,7 @@ export const meta = defineApp({
   license: "MIT",
   commercialUse: "paid-gig-safe",
   kind: "creative",
-  builtAt: "2026-06-05",
+  builtAt: "2026-06-05T07:50:36+12:00",
   prereqs: ["hsl-palette"],
   understandWhen:
     "You can read a GLSL color expression and predict the resulting hue without running the shader.",

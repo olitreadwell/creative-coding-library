@@ -18,7 +18,7 @@ export const meta = defineApp({
   license: "MIT",
   commercialUse: "paid-gig-safe",
   kind: "creative",
-  builtAt: "2026-06-05",
+  builtAt: "2026-06-05T17:22:59+12:00",
   prereqs: ["webcam-mosaic", "squish"],
   understandWhen:
     "You can describe how the pinch gesture is detected from landmark coordinates and predict what breaks if the hand is partially offscreen.",

@@ -12,7 +12,7 @@ export const meta = defineApp({
   license: "MIT",
   commercialUse: "paid-gig-safe",
   kind: "creative",
-  builtAt: "2026-06-05",
+  builtAt: "2026-06-05T14:51:46+12:00",
   prereqs: [],
   understandWhen:
     "You can explain why each balloon drifts toward the cursor and predict how changing the shockwave radius affects the response.",

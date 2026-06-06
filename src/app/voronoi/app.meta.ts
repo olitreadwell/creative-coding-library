@@ -12,7 +12,7 @@ export const meta = defineApp({
   license: "MIT",
   commercialUse: "paid-gig-safe",
   kind: "creative",
-  builtAt: "2026-06-05",
+  builtAt: "2026-06-05T16:58:41+12:00",
   prereqs: ["circle-packing"],
   understandWhen:
     "You can describe what the nearest-site partition means and predict how adding a site in a large cell changes the diagram.",

@@ -12,7 +12,7 @@ export const meta = defineApp({
   license: "MIT",
   commercialUse: "paid-gig-safe",
   kind: "creative",
-  builtAt: "2026-06-05",
+  builtAt: "2026-06-05T16:58:41+12:00",
   prereqs: [],
   understandWhen:
     "You can describe how randomness determines each mushroom's shape and position, and predict the effect of changing the seed.",

@@ -17,7 +17,7 @@ export const meta = defineApp({
   license: "MIT",
   commercialUse: "paid-gig-safe",
   kind: "creative",
-  builtAt: "2026-06-05",
+  builtAt: "2026-06-05T10:08:06+12:00",
   prereqs: ["pointer-flow"],
   understandWhen:
     "You can predict which of the three rules breaks the flock if disabled alone, and explain why.",

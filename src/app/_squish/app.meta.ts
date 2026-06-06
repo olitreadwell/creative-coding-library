@@ -11,7 +11,7 @@ export const meta = defineApp({
   license: "MIT",
   commercialUse: "paid-gig-safe",
   kind: "creative",
-  builtAt: "2026-06-05",
+  builtAt: "2026-06-05T16:58:41+12:00",
   prereqs: ["physics-drops", "metaballs"],
   understandWhen:
     "You can explain how Verlet integration differs from Euler and predict what happens to a blob when spring stiffness is very high.",

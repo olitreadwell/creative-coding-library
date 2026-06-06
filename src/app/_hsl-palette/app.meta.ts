@@ -11,7 +11,7 @@ export const meta = defineApp({
   license: "MIT",
   commercialUse: "paid-gig-safe",
   kind: "creative",
-  builtAt: "2026-06-05",
+  builtAt: "2026-06-05T07:50:36+12:00",
   prereqs: [],
   understandWhen:
     "You can predict which hue values produce complementary or triadic pairs without running the tool.",

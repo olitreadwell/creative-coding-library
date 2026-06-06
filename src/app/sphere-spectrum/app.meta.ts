@@ -12,7 +12,7 @@ export const meta = defineApp({
   license: "MIT",
   commercialUse: "paid-gig-safe",
   kind: "creative",
-  builtAt: "2026-06-05",
+  builtAt: "2026-06-05T18:23:05+12:00",
   prereqs: ["mic-spectrum", "r3f-spheres"],
   understandWhen:
     "You can explain what vertex displacement does in 3D and predict which frequency bands affect which part of the sphere surface.",

@@ -12,7 +12,7 @@ export const meta = defineApp({
   license: "MIT",
   commercialUse: "paid-gig-safe",
   kind: "creative",
-  builtAt: "2026-06-05",
+  builtAt: "2026-06-05T14:44:40+12:00",
   prereqs: ["two-grid"],
   understandWhen:
     "You can apply a rotation matrix to a 3D point by hand and explain what the perspective divide does to depth.",

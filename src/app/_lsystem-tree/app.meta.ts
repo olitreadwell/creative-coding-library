@@ -17,7 +17,7 @@ export const meta = defineApp({
   license: "MIT",
   commercialUse: "paid-gig-safe",
   kind: "creative",
-  builtAt: "2026-06-05",
+  builtAt: "2026-06-05T08:44:33+12:00",
   prereqs: ["shrooms"],
   understandWhen:
     "You can trace a 3-step L-system expansion by hand and predict the resulting turtle path.",

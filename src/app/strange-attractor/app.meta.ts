@@ -18,7 +18,7 @@ export const meta = defineApp({
   license: "MIT",
   commercialUse: "paid-gig-safe",
   kind: "creative",
-  builtAt: "2026-06-05",
+  builtAt: "2026-06-05T15:37:57+12:00",
   prereqs: ["noise-field"],
   understandWhen:
     "You can explain why small parameter changes produce radically different shapes and predict whether nearby parameters look similar.",

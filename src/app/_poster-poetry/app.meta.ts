@@ -12,7 +12,7 @@ export const meta = defineApp({
   license: "MIT",
   commercialUse: "paid-gig-safe",
   kind: "creative",
-  builtAt: "2026-06-05",
+  builtAt: "2026-06-05T16:58:41+12:00",
   prereqs: ["hsl-palette"],
   understandWhen:
     "You can describe the grid layout rules and explain how the API response maps onto the canvas typography.",

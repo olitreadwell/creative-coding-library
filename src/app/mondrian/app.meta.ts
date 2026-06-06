@@ -12,7 +12,7 @@ export const meta = defineApp({
   license: "MIT",
   commercialUse: "paid-gig-safe",
   kind: "creative",
-  builtAt: "2026-06-05",
+  builtAt: "2026-06-05T16:58:41+12:00",
   prereqs: ["lsystem-tree", "wireframe"],
   understandWhen:
     "You can trace how perspective scaling and recursive subdivision combine to create the tunnel illusion.",

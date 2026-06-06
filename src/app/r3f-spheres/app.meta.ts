@@ -18,7 +18,7 @@ export const meta = defineApp({
   license: "MIT",
   commercialUse: "paid-gig-safe",
   kind: "creative",
-  builtAt: "2026-06-05",
+  builtAt: "2026-06-05T08:44:33+12:00",
   prereqs: ["two-grid", "wireframe"],
   understandWhen:
     "You can describe how the R3F scene graph maps to three.js objects and explain what useFrame does each tick.",

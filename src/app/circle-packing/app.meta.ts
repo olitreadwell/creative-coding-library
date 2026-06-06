@@ -17,7 +17,7 @@ export const meta = defineApp({
   license: "MIT",
   commercialUse: "paid-gig-safe",
   kind: "creative",
-  builtAt: "2026-06-05",
+  builtAt: "2026-06-06T11:23:11+12:00",
   prereqs: ["seeded-tilings"],
   understandWhen:
     "You can explain the grow-until-collision strategy and predict how density changes with a smaller minimum radius.",

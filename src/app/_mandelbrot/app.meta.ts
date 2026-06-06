@@ -17,7 +17,7 @@ export const meta = defineApp({
   license: "MIT",
   commercialUse: "paid-gig-safe",
   kind: "creative",
-  builtAt: "2026-06-05",
+  builtAt: "2026-06-05T08:44:33+12:00",
   prereqs: ["hsl-palette"],
   understandWhen:
     "You can explain what the escape count measures and predict how changing max iterations affects boundary detail.",

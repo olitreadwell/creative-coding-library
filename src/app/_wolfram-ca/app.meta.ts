@@ -17,7 +17,7 @@ export const meta = defineApp({
   license: "MIT",
   commercialUse: "paid-gig-safe",
   kind: "creative",
-  builtAt: "2026-06-05",
+  builtAt: "2026-06-05T10:08:06+12:00",
   prereqs: ["seeded-tilings"],
   understandWhen:
     "Given a 3-cell neighborhood pattern, you can compute the next state for rule 30 by hand.",

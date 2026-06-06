@@ -18,7 +18,7 @@ export const meta = defineApp({
   license: "MIT",
   commercialUse: "paid-gig-safe",
   kind: "creative",
-  builtAt: "2026-06-05",
+  builtAt: "2026-06-05T16:58:41+12:00",
   prereqs: ["maurer-rose"],
   understandWhen:
     "You can predict how many petals a given n value produces and describe what m controls separately from n.",

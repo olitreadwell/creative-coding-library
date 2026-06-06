@@ -17,7 +17,7 @@ export const meta = defineApp({
   license: "MIT",
   commercialUse: "paid-gig-safe",
   kind: "creative",
-  builtAt: "2026-06-05",
+  builtAt: "2026-06-06T11:23:11+12:00",
   prereqs: ["lissajous"],
   understandWhen:
     "You can predict the rough shape of the web for any combination of petal count n and step angle d.",

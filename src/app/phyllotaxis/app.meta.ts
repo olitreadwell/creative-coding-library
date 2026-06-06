@@ -18,7 +18,7 @@ export const meta = defineApp({
   license: "MIT",
   commercialUse: "paid-gig-safe",
   kind: "creative",
-  builtAt: "2026-06-05",
+  builtAt: "2026-06-05T16:10:39+12:00",
   prereqs: [],
   understandWhen:
     "You can state what the golden angle is and explain why that specific angle produces gap-free packing.",

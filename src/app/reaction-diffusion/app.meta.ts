@@ -17,7 +17,7 @@ export const meta = defineApp({
   license: "MIT",
   commercialUse: "paid-gig-safe",
   kind: "creative",
-  builtAt: "2026-06-05",
+  builtAt: "2026-06-05T10:08:06+12:00",
   prereqs: ["conway-life"],
   understandWhen:
     "You can explain the role of the feed and kill rates and predict which parameter change turns spots into stripes.",

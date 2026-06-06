@@ -17,7 +17,7 @@ export const meta = defineApp({
   license: "MIT",
   commercialUse: "paid-gig-safe",
   kind: "creative",
-  builtAt: "2026-06-05",
+  builtAt: "2026-06-05T07:50:36+12:00",
   prereqs: ["seeded-tilings"],
   understandWhen:
     "You can predict how seed changes the field direction and explain why scale affects the smoothness of flow.",

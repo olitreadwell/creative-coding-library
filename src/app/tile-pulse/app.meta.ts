@@ -12,7 +12,7 @@ export const meta = defineApp({
   license: "MIT",
   commercialUse: "paid-gig-safe",
   kind: "creative",
-  builtAt: "2026-06-05",
+  builtAt: "2026-06-05T16:58:41+12:00",
   prereqs: ["gsap-stagger"],
   understandWhen:
     "You can explain why easing makes the ripple feel organic and predict how a linear ease changes the feel.",

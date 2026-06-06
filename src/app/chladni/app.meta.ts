@@ -17,7 +17,7 @@ export const meta = defineApp({
   license: "MIT",
   commercialUse: "paid-gig-safe",
   kind: "creative",
-  builtAt: "2026-06-05",
+  builtAt: "2026-06-06T11:23:11+12:00",
   prereqs: ["lissajous"],
   understandWhen:
     "You can predict where the nodal lines appear for equal frequency modes versus unequal ones.",

@@ -18,7 +18,7 @@ export const meta = defineApp({
   license: "MIT",
   commercialUse: "paid-gig-safe",
   kind: "creative",
-  builtAt: "2026-06-05",
+  builtAt: "2026-06-05T16:58:41+12:00",
   prereqs: ["boids", "reaction-diffusion"],
   understandWhen:
     "You can describe the sense-rotate-move-deposit loop and predict what raising the sensor angle does to trail shape.",

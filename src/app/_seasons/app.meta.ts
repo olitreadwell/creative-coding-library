@@ -11,7 +11,7 @@ export const meta = defineApp({
   license: "MIT",
   commercialUse: "paid-gig-safe",
   kind: "creative",
-  builtAt: "2026-06-05",
+  builtAt: "2026-06-05T16:58:41+12:00",
   prereqs: ["hsl-palette"],
   understandWhen:
     "You can describe how palette interpolation produces the color transition between seasons without inspecting the code.",

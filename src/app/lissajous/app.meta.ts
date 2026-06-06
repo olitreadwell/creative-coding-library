@@ -17,7 +17,7 @@ export const meta = defineApp({
   license: "MIT",
   commercialUse: "paid-gig-safe",
   kind: "creative",
-  builtAt: "2026-06-05",
+  builtAt: "2026-06-05T08:44:33+12:00",
   prereqs: ["gsap-stagger"],
   understandWhen:
     "You can predict the shape of the curve for any integer frequency ratio and explain why non-integer ratios produce open paths.",

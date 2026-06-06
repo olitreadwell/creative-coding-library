@@ -17,7 +17,7 @@ export const meta = defineApp({
   license: "MIT",
   commercialUse: "paid-gig-safe",
   kind: "creative",
-  builtAt: "2026-06-05",
+  builtAt: "2026-06-05T10:08:06+12:00",
   prereqs: ["voronoi"],
   understandWhen:
     "You can explain the threshold value's role and predict what happens to the blobs when you raise it.",

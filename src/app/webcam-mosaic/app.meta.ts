@@ -12,7 +12,7 @@ export const meta = defineApp({
   license: "MIT",
   commercialUse: "paid-gig-safe",
   kind: "creative",
-  builtAt: "2026-06-05",
+  builtAt: "2026-06-05T17:29:20+12:00",
   prereqs: ["webcam-ascii", "webcam-mirror"],
   understandWhen:
     "You can explain when each mode (glyph vs dot) is better and predict how switching modes affects the perceived detail.",

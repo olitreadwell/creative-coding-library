@@ -17,7 +17,7 @@ export const meta = defineApp({
   license: "MIT",
   commercialUse: "paid-gig-safe",
   kind: "creative",
-  builtAt: "2026-06-05",
+  builtAt: "2026-06-05T07:50:36+12:00",
   prereqs: [],
   understandWhen:
     "You can predict the animation order for any starting cell and explain what the stagger amount controls.",

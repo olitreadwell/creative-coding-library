@@ -17,7 +17,7 @@ export const meta = defineApp({
   license: "MIT",
   commercialUse: "paid-gig-safe",
   kind: "creative",
-  builtAt: "2026-06-05",
+  builtAt: "2026-06-05T10:08:06+12:00",
   prereqs: ["lsystem-tree"],
   understandWhen:
     "You can trace the depth-first backtracking steps on a 3x3 grid by hand and explain why it always produces a perfect maze.",

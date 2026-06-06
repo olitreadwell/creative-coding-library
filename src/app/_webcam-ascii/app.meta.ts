@@ -11,7 +11,7 @@ export const meta = defineApp({
   license: "MIT",
   commercialUse: "paid-gig-safe",
   kind: "creative",
-  builtAt: "2026-06-05",
+  builtAt: "2026-06-05T17:10:58+12:00",
   prereqs: ["webcam-mirror"],
   understandWhen:
     "You can predict which character appears for a very bright region versus a very dark one and explain the glyph density ordering.",

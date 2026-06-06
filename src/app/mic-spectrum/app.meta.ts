@@ -17,4 +17,18 @@ export const meta = defineApp({
   understandWhen:
     "You can explain what each bar in the spectrum represents and predict which bars spike for a hum versus a whistle.",
   predictPrompt: "If you hum then whistle, which end of the bar chart lights up for each sound?",
+  recallChecks: [
+    {
+      q: "What does each bar in the frequency spectrum represent?",
+      a: "Each bar shows the loudness of one narrow frequency range, so low bars on the left represent bass and high bars on the right represent treble.",
+    },
+    {
+      q: "What is the role of the AnalyserNode in the Web Audio graph?",
+      a: "It reads the live audio stream and runs an FFT to produce an array of frequency bin values that the canvas reads each frame.",
+    },
+    {
+      q: "Why does the browser ask for permission before showing any audio data?",
+      a: "getUserMedia requires user consent before a website can access the microphone, protecting the user from silent recording.",
+    },
+  ],
 });

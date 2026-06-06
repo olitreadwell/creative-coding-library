@@ -18,4 +18,18 @@ export const meta = defineApp({
     "You can trace how perspective scaling and recursive splitting work together to create the tunnel illusion.",
   predictPrompt:
     "If panels stop shrinking with distance and stay the same size, what does the tunnel look like?",
+  recallChecks: [
+    {
+      q: "What does the perspective projection formula scale = focal / (focal + z) do?",
+      a: "It maps depth z to a scale factor: a small z (close to camera) gives a scale near 1 (large), and a large z (far away) gives a scale near 0 (tiny).",
+    },
+    {
+      q: "How does recursive subdivision produce the Mondrian grid pattern?",
+      a: "The subdivide function splits a rectangle either horizontally or vertically, then calls itself on each half, building a tree of smaller rectangles.",
+    },
+    {
+      q: "What does depth of field do to panels that are far from the focus depth?",
+      a: "Their alpha (opacity) is reduced, making them fade toward transparent the further they are from the focus plane.",
+    },
+  ],
 });

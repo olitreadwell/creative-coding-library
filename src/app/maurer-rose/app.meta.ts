@@ -23,4 +23,18 @@ export const meta = defineApp({
   understandWhen: "You can predict the rough web shape for a given petal count n and step angle d.",
   predictPrompt:
     "If d divides evenly into 360, what does the chord web look like, and why does the step angle change things so much?",
+  recallChecks: [
+    {
+      q: "What is polar coordinate r in the rose curve formula r = sin(n * angle)?",
+      a: "r is the distance from the center to the point at that angle, so the formula maps every angle to a radius that traces the petals.",
+    },
+    {
+      q: "Why does changing d by just 1 degree reorganize the entire web pattern?",
+      a: "A small step angle change samples completely different points on the rose, connecting them in a different order and producing a new chord arrangement.",
+    },
+    {
+      q: "What visual effect does the number of petals n have on the Maurer rose?",
+      a: "n sets how many petal lobes the underlying rose has, which controls the coarse shape that the chord web is woven across.",
+    },
+  ],
 });

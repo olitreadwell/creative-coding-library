@@ -133,19 +133,19 @@ describe("Catalog multi-select toggle", () => {
 describe("Catalog clear filters", () => {
   it("does not show clear button when no filters are active", () => {
     render(<Catalog apps={APPS} />);
-    expect(screen.queryByText("Clear filters")).toBeNull();
+    expect(screen.queryByText("Reset filters")).toBeNull();
   });
 
   it("shows clear button when a library filter is active", () => {
     mockParams.set("library", "p5");
     render(<Catalog apps={APPS} />);
-    expect(screen.getByText("Clear filters")).toBeInTheDocument();
+    expect(screen.getByText("Reset filters")).toBeInTheDocument();
   });
 
   it("clear button calls router.replace with empty params", () => {
     mockParams.set("library", "p5");
     render(<Catalog apps={APPS} />);
-    const clearBtn = screen.getAllByText("Clear filters")[0];
+    const clearBtn = screen.getAllByText("Reset filters")[0];
     expect(clearBtn).toBeDefined();
     fireEvent.click(clearBtn!);
     expect(mockReplace).toHaveBeenCalledWith("?", expect.anything());
@@ -154,7 +154,9 @@ describe("Catalog clear filters", () => {
   it("empty state shows clear filters action when filters are active", () => {
     mockParams.set("q", "zzznomatch");
     render(<Catalog apps={APPS} />);
-    expect(screen.getByText("No apps match these filters.")).toBeInTheDocument();
-    expect(screen.getAllByText("Clear filters").length).toBeGreaterThan(0);
+    expect(
+      screen.getByText("No sketches match. Try different search terms or filters."),
+    ).toBeInTheDocument();
+    expect(screen.getAllByText("Reset filters").length).toBeGreaterThan(0);
   });
 });

@@ -7,20 +7,20 @@ import { ThemeProvider } from "@/components/theme-provider";
 const geist = Geist({ subsets: ["latin"], variable: "--font-sans" });
 
 export const metadata: Metadata = {
-  title: "creative-coding-library — built to be broken",
+  title: "creative-coding-library: built to be broken",
   description:
-    "30 generative-art sketches ordered by prereqs. Predict what runs, break it, fix it, understand it.",
+    "30 generative-art sketches, ordered by what you need to know first. Predict, run, break, fix, repeat.",
   openGraph: {
-    title: "creative-coding-library — built to be broken",
+    title: "creative-coding-library: built to be broken",
     description:
-      "30 generative-art sketches ordered by prereqs. Predict what runs, break it, fix it, understand it.",
+      "30 generative-art sketches, ordered by what you need to know first. Predict, run, break, fix, repeat.",
     type: "website",
   },
   twitter: {
     card: "summary",
-    title: "creative-coding-library — built to be broken",
+    title: "creative-coding-library: built to be broken",
     description:
-      "30 generative-art sketches ordered by prereqs. Predict what runs, break it, fix it, understand it.",
+      "30 generative-art sketches, ordered by what you need to know first. Predict, run, break, fix, repeat.",
   },
 };
 

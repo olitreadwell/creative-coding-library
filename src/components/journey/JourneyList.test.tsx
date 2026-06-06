@@ -43,9 +43,9 @@ describe("JourneyList — level grouping", () => {
 
     render(<JourneyList apps={apps} />);
 
-    expect(screen.getByText("L1 — Foundations")).toBeInTheDocument();
-    expect(screen.getByText("L2 — Intermediate")).toBeInTheDocument();
-    expect(screen.getByText("L3 — Advanced")).toBeInTheDocument();
+    expect(screen.getByText("L1: Start here")).toBeInTheDocument();
+    expect(screen.getByText("L2: More control")).toBeInTheDocument();
+    expect(screen.getByText("L3: Complex systems")).toBeInTheDocument();
   });
 
   it("skips a level section when no apps belong to that level", () => {
@@ -53,9 +53,9 @@ describe("JourneyList — level grouping", () => {
 
     render(<JourneyList apps={apps} />);
 
-    expect(screen.getByText("L1 — Foundations")).toBeInTheDocument();
-    expect(screen.queryByText("L2 — Intermediate")).toBeNull();
-    expect(screen.getByText("L3 — Advanced")).toBeInTheDocument();
+    expect(screen.getByText("L1: Start here")).toBeInTheDocument();
+    expect(screen.queryByText("L2: More control")).toBeNull();
+    expect(screen.getByText("L3: Complex systems")).toBeInTheDocument();
   });
 
   it("renders each app title as a link to its slug", () => {

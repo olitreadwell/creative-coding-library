@@ -8,9 +8,9 @@ import { MasteryButton } from "@/components/learning/MasteryButton";
 
 const LEVELS: AppLevel[] = [1, 2, 3];
 const LEVEL_LABELS: Record<AppLevel, string> = {
-  1: "L1 — Foundations",
-  2: "L2 — Intermediate",
-  3: "L3 — Advanced",
+  1: "L1: Start here",
+  2: "L2: More control",
+  3: "L3: Complex systems",
 };
 
 function topoSort(apps: readonly AppMeta[]): AppMeta[] {

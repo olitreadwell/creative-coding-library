@@ -24,4 +24,18 @@ export const meta = defineApp({
     "You can predict which tile animates first and explain what the stagger delay amount controls.",
   predictPrompt:
     "If you move the wave origin from center to top-left, how does the tile order change?",
+  recallChecks: [
+    {
+      q: "What does the stagger delay control in a GSAP stagger animation?",
+      a: "The fixed time gap between when each successive element starts its animation.",
+    },
+    {
+      q: "What is the role of a GSAP timeline here?",
+      a: "It holds all the tile animations and controls their shared playback, including looping and reversing the whole sequence.",
+    },
+    {
+      q: "Why does easing make the tile motion feel more natural than a constant speed?",
+      a: "Easing accelerates the tile into and out of its animation, matching how physical objects move rather than mechanical constant-speed motion.",
+    },
+  ],
 });

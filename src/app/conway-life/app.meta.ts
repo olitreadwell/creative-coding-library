@@ -24,4 +24,18 @@ export const meta = defineApp({
     "You can apply all four Conway rules to a small grid by hand and get the next generation right.",
   predictPrompt:
     "A 2x2 block of live cells: does it stay alive, die, or keep changing after ten steps?",
+  recallChecks: [
+    {
+      q: "State the four Conway rules: when does a live cell survive, when does it die, and when does a dead cell become alive?",
+      a: "A live cell with 2 or 3 live neighbors survives. A live cell with fewer than 2 dies (underpopulation). A live cell with more than 3 dies (overpopulation). A dead cell with exactly 3 live neighbors becomes alive (reproduction).",
+    },
+    {
+      q: "What does 'toroidal grid' mean in the context of this simulation?",
+      a: "The edges wrap around: a cell at the right border neighbors cells at the left border, so every cell always has exactly eight neighbors.",
+    },
+    {
+      q: "What is emergence in the context of Conway's Game of Life?",
+      a: "Patterns like gliders and oscillators appear from the four rules alone. No code names or programs those patterns directly.",
+    },
+  ],
 });

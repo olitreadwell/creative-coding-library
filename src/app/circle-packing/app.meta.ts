@@ -24,4 +24,18 @@ export const meta = defineApp({
     "You can explain the grow-until-collision rule and predict how pack density changes with a smaller minimum size.",
   predictPrompt:
     "If you cut the minimum circle radius in half, does the canvas end up with more circles, fewer gaps, or both?",
+  recallChecks: [
+    {
+      q: "What is the one rule every circle in this packing follows?",
+      a: "Grow until you touch a neighbor or the canvas edge, then stop.",
+    },
+    {
+      q: "Why does the same seed always produce the same packing?",
+      a: "A seeded PRNG produces a deterministic sequence of candidate positions, so the same seed gives the same result every run.",
+    },
+    {
+      q: "Why are early circles larger than circles placed later?",
+      a: "Early circles find more open space and can grow further before hitting a neighbor. Later circles fill smaller gaps.",
+    },
+  ],
 });

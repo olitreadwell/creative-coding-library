@@ -23,4 +23,18 @@ export const meta = defineApp({
   understandWhen:
     "You can state what the golden angle is and explain why that angle produces tight, gap-free packing.",
   predictPrompt: "If you swap the golden angle for 90 degrees, what pattern do you get instead?",
+  recallChecks: [
+    {
+      q: "What is the golden angle and why does it produce even packing?",
+      a: "The golden angle is approximately 137.5 degrees. Rotating each seed by this amount places it in the largest available gap, so seeds pack without clustering or leaving holes.",
+    },
+    {
+      q: "Why does each seed sit at distance sqrt(i) from the center?",
+      a: "Square root spacing keeps the area of the ring around each seed roughly constant, so seeds at larger radii do not spread out and create gaps.",
+    },
+    {
+      q: "What happens to the pattern when you use 90 degrees instead of the golden angle?",
+      a: "Seeds land on four aligned spokes, leaving large empty sectors between them, because 90 divides evenly into 360 and seeds repeat the same four directions.",
+    },
+  ],
 });

@@ -23,4 +23,18 @@ export const meta = defineApp({
   understandWhen:
     "You can explain what the threshold value does and predict what happens to blob size when you raise it.",
   predictPrompt: "If you raise the threshold, do the blobs grow, shrink, or pull together?",
+  recallChecks: [
+    {
+      q: "What does the threshold value control in the metaball field?",
+      a: "It sets the field strength at which the visible outline is drawn: a higher threshold means only points very close to a ball exceed it, making blobs smaller.",
+    },
+    {
+      q: "Why do two nearby blobs merge into one shape?",
+      a: "Their individual field contributions add together, so the region between them rises above the threshold and gets included in the outline.",
+    },
+    {
+      q: "What does marching squares do to turn the scalar field into a visible blob outline?",
+      a: "It checks each grid cell corner against the threshold, looks up which edge pattern applies, and places a short line segment to trace the boundary.",
+    },
+  ],
 });

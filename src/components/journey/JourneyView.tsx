@@ -1,9 +1,9 @@
 "use client";
 
-import { useMemo, useState, useEffect } from "react";
+import { useMemo } from "react";
 import Link from "next/link";
 import type { AppMeta } from "@/lib/creative/registry";
-import { useMastery } from "@/lib/creative/useMastery";
+import { useMastery, useMasteredSlugs } from "@/lib/creative/useMastery";
 import { MasteryButton } from "@/components/learning/MasteryButton";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,7 +12,6 @@ const NODE_W = 200;
 const NODE_H = 140;
 const COL_GAP = 80;
 const ROW_GAP = 24;
-const MASTERY_KEY = "creative-coding-library:mastery:v1";
 
 type LayeredNode = {
   app: AppMeta;
@@ -94,42 +93,6 @@ function computeLayers(apps: readonly AppMeta[]): {
   }
 
   return { nodes, hasCycle, degenerate };
-}
-
-function readMasteredSlugs(): Set<string> {
-  if (typeof window === "undefined") return new Set();
-  try {
-    const raw = window.localStorage.getItem(MASTERY_KEY);
-    if (raw === null) return new Set();
-    const parsed: unknown = JSON.parse(raw);
-    if (typeof parsed !== "object" || parsed === null || Array.isArray(parsed)) return new Set();
-    const store = parsed as Record<string, unknown>;
-    const mastered = new Set<string>();
-    for (const [slug, entry] of Object.entries(store)) {
-      if (typeof entry === "object" && entry !== null && "mastered" in entry) {
-        const e = entry as { mastered: unknown };
-        if (e.mastered === true) mastered.add(slug);
-      }
-    }
-    return mastered;
-  } catch {
-    return new Set();
-  }
-}
-
-function useMasteredSlugs(): Set<string> {
-  const [mastered, setMastered] = useState<Set<string>>(() => readMasteredSlugs());
-
-  useEffect(() => {
-    const onStorage = (e: StorageEvent) => {
-      if (e.key !== MASTERY_KEY) return;
-      setMastered(readMasteredSlugs());
-    };
-    window.addEventListener("storage", onStorage);
-    return () => window.removeEventListener("storage", onStorage);
-  }, []);
-
-  return mastered;
 }
 
 type EdgeCoord = { x1: number; y1: number; x2: number; y2: number };

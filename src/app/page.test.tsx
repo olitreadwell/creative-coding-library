@@ -13,8 +13,8 @@ vi.mock("@/lib/creative/registry.generated", () => ({
   apps: [],
 }));
 
-vi.mock("@/components/journey/JourneyView", () => ({
-  JourneyView: () => <div data-testid="journey-view" />,
+vi.mock("@/components/journey/JourneyList", () => ({
+  JourneyList: () => <div data-testid="journey-view" />,
 }));
 
 vi.mock("@/components/catalog", () => ({

@@ -4,7 +4,7 @@ import { Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { apps } from "@/lib/creative/registry.generated";
 import { Catalog } from "@/components/catalog";
-import { JourneyView } from "@/components/journey/JourneyView";
+import { JourneyList } from "@/components/journey/JourneyList";
 import { ThemeToggle } from "@/components/theme-toggle";
 
 type View = "journey" | "catalog";
@@ -73,7 +73,7 @@ function HomeContent() {
         <ViewToggle current={view} onChange={setView} />
       </div>
 
-      {view === "journey" ? <JourneyView apps={apps} /> : <Catalog apps={apps} />}
+      {view === "journey" ? <JourneyList apps={apps} /> : <Catalog apps={apps} />}
     </div>
   );
 }

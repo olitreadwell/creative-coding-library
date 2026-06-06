@@ -59,6 +59,32 @@ function writeEntry(slug: string, mastered: boolean): string | null {
   return masteredAt || null;
 }
 
+function readMasteredSlugs(): Set<string> {
+  const store = readStore();
+  const result = new Set<string>();
+  for (const [slug, entry] of Object.entries(store)) {
+    if (entry !== undefined && entry.mastered === true) result.add(slug);
+  }
+  return result;
+}
+
+export function useMasteredSlugs(): Set<string> {
+  const [slugs, setSlugs] = useState<Set<string>>(() => readMasteredSlugs());
+
+  useEffect(() => {
+    const onStorage = (event: StorageEvent) => {
+      if (event.key !== STORAGE_KEY) return;
+      setSlugs(readMasteredSlugs());
+    };
+    window.addEventListener("storage", onStorage);
+    return () => {
+      window.removeEventListener("storage", onStorage);
+    };
+  }, []);
+
+  return slugs;
+}
+
 export function useMastery(slug: string): MasteryState {
   const slugRef = useRef(slug);
 

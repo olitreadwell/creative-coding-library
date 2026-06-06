@@ -18,4 +18,18 @@ export const meta = defineApp({
     "You can explain what vertex displacement is and predict which part of the sphere spikes for a low note versus a high one.",
   predictPrompt:
     "If you sing a high note, does the top, equator, or whole surface of the sphere spike?",
+  recallChecks: [
+    {
+      q: "What is vertex displacement?",
+      a: "Moving each vertex of a 3D mesh along its normal by some amount. The sphere spikes where vertices are pushed outward by audio data.",
+    },
+    {
+      q: "What does an FFT produce from microphone input?",
+      a: "An array of amplitude values, one per frequency band. Low-index values represent bass; high-index values represent treble.",
+    },
+    {
+      q: "Why does the sphere look different for bass versus treble?",
+      a: "Each frequency band maps to a different region of the sphere. Bass displaces one set of vertices, treble displaces another.",
+    },
+  ],
 });

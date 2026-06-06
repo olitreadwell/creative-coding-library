@@ -24,4 +24,18 @@ export const meta = defineApp({
     "You can describe the sense-turn-move-deposit loop each agent follows and predict what a wider sensor angle does to the trails.",
   predictPrompt:
     "If you widen the sensor angle, do the trails get broader, thinner, or more tangled?",
+  recallChecks: [
+    {
+      q: "What three things does each agent do on every step?",
+      a: "It senses the trail ahead at two angled positions, turns toward the stronger signal, moves forward, and deposits a little trail behind it.",
+    },
+    {
+      q: "Why do the trails form thick ropes instead of spreading out uniformly?",
+      a: "Agents follow each other's deposits, so paths reinforce themselves. Stronger trails attract more agents, which make the trail even stronger.",
+    },
+    {
+      q: "What does the text mask add to the simulation?",
+      a: "It restricts where agents can deposit, so the slime-mold growth is confined to the letter shapes and the words emerge from the agent behavior.",
+    },
+  ],
 });

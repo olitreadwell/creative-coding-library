@@ -28,10 +28,10 @@ function hueFromSlug(slug: string): number {
 type Sort = "oldest" | "newest" | "level" | "name";
 
 const SORT_LABELS: Record<Sort, string> = {
-  oldest: "Oldest first",
-  newest: "Newest first",
-  level: "Level",
-  name: "Name (A–Z)",
+  oldest: "Added first",
+  newest: "Added last",
+  level: "By level",
+  name: "A to Z",
 };
 
 const SORT_KEYS = Object.keys(SORT_LABELS) as Sort[];
@@ -305,8 +305,8 @@ function CatalogInner({ apps }: { apps: readonly AppMeta[] }) {
               type="search"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search apps..."
-              aria-label="Search apps"
+              placeholder="Search by name or concept..."
+              aria-label="Search by name or concept"
               className="w-full rounded-md border border-border bg-background py-1.5 pr-3 pl-8 text-sm text-foreground placeholder:text-foreground/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             />
           </div>
@@ -343,7 +343,7 @@ function CatalogInner({ apps }: { apps: readonly AppMeta[] }) {
               className="inline-flex items-center gap-1 rounded-md border border-border px-2.5 py-1.5 text-sm text-foreground/70 transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               <X className="size-3.5" aria-hidden="true" />
-              Clear filters
+              Reset filters
             </button>
           )}
         </div>
@@ -375,19 +375,21 @@ function CatalogInner({ apps }: { apps: readonly AppMeta[] }) {
       </div>
 
       <p className="mb-4 text-sm text-foreground/70" aria-live="polite">
-        Showing {filtered.length} of {apps.length} app{apps.length === 1 ? "" : "s"}.
+        {filtered.length} of {apps.length} sketch{apps.length === 1 ? "" : "es"} shown.
       </p>
 
       {filtered.length === 0 ? (
         <div className="flex flex-col items-start gap-3">
-          <p className="text-foreground/60">No apps match these filters.</p>
+          <p className="text-foreground/60">
+            No sketches match. Try different search terms or filters.
+          </p>
           <button
             type="button"
             onClick={clearAll}
             className="inline-flex items-center gap-1 rounded-md border border-border px-2.5 py-1.5 text-sm text-foreground/70 transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             <X className="size-3.5" aria-hidden="true" />
-            Clear filters
+            Reset filters
           </button>
         </div>
       ) : (

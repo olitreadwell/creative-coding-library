@@ -62,8 +62,7 @@ function HomeContent() {
             30 generative-art sketches. Built to be broken.
           </p>
           <p className="mt-1 max-w-2xl text-sm text-foreground/50">
-            Each sketch teaches one concept. Predict what it does, run it, break it, fix it, explain
-            it.
+            Each sketch teaches one concept. Predict, run, break, fix, repeat.
           </p>
         </div>
         <ThemeToggle />

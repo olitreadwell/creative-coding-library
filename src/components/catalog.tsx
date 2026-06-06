@@ -1,24 +1,29 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { Search, SlidersHorizontal } from "lucide-react";
+import { Search, SlidersHorizontal, X } from "lucide-react";
 import type { AppMeta } from "@/lib/creative/registry";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
+const CONCEPTS_INLINE_THRESHOLD = 12;
+const LIBRARIES_INLINE_THRESHOLD = 6;
 
 function hueFromSlug(slug: string): number {
   let h = 0;
   for (let i = 0; i < slug.length; i++) h = (h * 31 + slug.charCodeAt(i)) % 360;
   return h;
 }
-
-type Filters = {
-  library: string | null;
-  level: string | null;
-  concept: string | null;
-};
 
 type Sort = "oldest" | "newest" | "level" | "name";
 
@@ -28,6 +33,12 @@ const SORT_LABELS: Record<Sort, string> = {
   level: "Level",
   name: "Name (A–Z)",
 };
+
+const SORT_KEYS = Object.keys(SORT_LABELS) as Sort[];
+
+function isSort(v: string | null): v is Sort {
+  return v !== null && (SORT_KEYS as string[]).includes(v);
+}
 
 function compareApps(a: AppMeta, b: AppMeta, sort: Sort): number {
   switch (sort) {
@@ -47,7 +58,38 @@ function compareApps(a: AppMeta, b: AppMeta, sort: Sort): number {
   }
 }
 
-function FilterRow({
+function MultiFilterRow({
+  label,
+  options,
+  active,
+  onToggle,
+  onClear,
+}: {
+  label: string;
+  options: string[];
+  active: string[];
+  onToggle: (value: string) => void;
+  onClear: () => void;
+}) {
+  if (options.length === 0) return null;
+  return (
+    <div className="flex flex-wrap items-center gap-1.5">
+      <span className="mr-1 text-xs font-medium tracking-wide text-foreground/70 uppercase">
+        {label}
+      </span>
+      <Chip selected={active.length === 0} onClick={onClear}>
+        all
+      </Chip>
+      {options.map((opt) => (
+        <Chip key={opt} selected={active.includes(opt)} onClick={() => onToggle(opt)}>
+          {opt}
+        </Chip>
+      ))}
+    </div>
+  );
+}
+
+function SingleFilterRow({
   label,
   options,
   active,
@@ -150,26 +192,95 @@ function AppCard({ app }: { app: AppMeta }) {
   );
 }
 
-export function Catalog({ apps }: { apps: readonly AppMeta[] }) {
-  const [filters, setFilters] = useState<Filters>({ library: null, level: null, concept: null });
-  const [sort, setSort] = useState<Sort>("oldest");
-  const [query, setQuery] = useState("");
-  const [showFilters, setShowFilters] = useState(false);
+function parseMulti(param: string | null): string[] {
+  if (!param) return [];
+  return param.split(",").filter(Boolean);
+}
+
+function serializeMulti(values: string[]): string {
+  return values.join(",");
+}
+
+function CatalogInner({ apps }: { apps: readonly AppMeta[] }) {
+  const router = useRouter();
+  const params = useSearchParams();
 
   const libraries = useMemo(() => [...new Set(apps.map((a) => a.library))].sort(), [apps]);
   const levels = useMemo(() => [...new Set(apps.map((a) => String(a.level)))].sort(), [apps]);
   const concepts = useMemo(() => [...new Set(apps.flatMap((a) => a.concepts))].sort(), [apps]);
 
-  const activeCount =
-    (filters.library ? 1 : 0) + (filters.level ? 1 : 0) + (filters.concept ? 1 : 0);
+  const activeLibraries = useMemo(() => parseMulti(params.get("library")), [params]);
+  const activeLevel = params.get("level");
+  const activeConcepts = useMemo(() => parseMulti(params.get("concept")), [params]);
+  const sort: Sort = isSort(params.get("sort")) ? (params.get("sort") as Sort) : "oldest";
+  const query = params.get("q") ?? "";
+
+  const showFiltersDefault =
+    libraries.length < LIBRARIES_INLINE_THRESHOLD ||
+    levels.length <= 3 ||
+    concepts.length < CONCEPTS_INLINE_THRESHOLD;
+  const [showFilters, setShowFilters] = useState(showFiltersDefault);
+
+  function updateParams(updates: Record<string, string | null>) {
+    const next = new URLSearchParams(params.toString());
+    for (const [key, value] of Object.entries(updates)) {
+      if (value === null || value === "") {
+        next.delete(key);
+      } else {
+        next.set(key, value);
+      }
+    }
+    router.replace(`?${next.toString()}`, { scroll: false });
+  }
+
+  function setQuery(value: string) {
+    updateParams({ q: value || null });
+  }
+
+  function setSort(value: Sort) {
+    updateParams({ sort: value === "oldest" ? null : value });
+  }
+
+  function toggleLibrary(value: string) {
+    const next = activeLibraries.includes(value)
+      ? activeLibraries.filter((v) => v !== value)
+      : [...activeLibraries, value];
+    updateParams({ library: next.length ? serializeMulti(next) : null });
+  }
+
+  function clearLibraries() {
+    updateParams({ library: null });
+  }
+
+  function setLevel(value: string | null) {
+    updateParams({ level: value });
+  }
+
+  function toggleConcept(value: string) {
+    const next = activeConcepts.includes(value)
+      ? activeConcepts.filter((v) => v !== value)
+      : [...activeConcepts, value];
+    updateParams({ concept: next.length ? serializeMulti(next) : null });
+  }
+
+  function clearConcepts() {
+    updateParams({ concept: null });
+  }
+
+  function clearAll() {
+    router.replace("?", { scroll: false });
+  }
+
+  const activeCount = activeLibraries.length + (activeLevel ? 1 : 0) + activeConcepts.length;
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     return apps
       .filter((a) => {
-        if (filters.library && a.library !== filters.library) return false;
-        if (filters.level && String(a.level) !== filters.level) return false;
-        if (filters.concept && !a.concepts.includes(filters.concept)) return false;
+        if (activeLibraries.length > 0 && !activeLibraries.includes(a.library)) return false;
+        if (activeLevel && String(a.level) !== activeLevel) return false;
+        if (activeConcepts.length > 0 && !activeConcepts.some((c) => a.concepts.includes(c)))
+          return false;
         if (q) {
           const hay =
             `${a.title} ${a.description} ${a.library} ${a.concepts.join(" ")}`.toLowerCase();
@@ -179,7 +290,7 @@ export function Catalog({ apps }: { apps: readonly AppMeta[] }) {
       })
       .slice()
       .sort((a, b) => compareApps(a, b, sort));
-  }, [apps, filters, sort, query]);
+  }, [apps, activeLibraries, activeLevel, activeConcepts, sort, query]);
 
   return (
     <section aria-label="App catalog">
@@ -213,42 +324,51 @@ export function Catalog({ apps }: { apps: readonly AppMeta[] }) {
               </span>
             )}
           </button>
-          <label htmlFor="catalog-sort" className="sr-only">
-            Sort
-          </label>
-          <select
-            id="catalog-sort"
-            value={sort}
-            onChange={(e) => setSort(e.target.value as Sort)}
-            className="rounded-md border border-border bg-background px-2 py-1.5 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          >
-            {(Object.keys(SORT_LABELS) as Sort[]).map((key) => (
-              <option key={key} value={key}>
-                {SORT_LABELS[key]}
-              </option>
-            ))}
-          </select>
+          <Select value={sort} onValueChange={(v) => setSort(v as Sort)}>
+            <SelectTrigger aria-label="Sort">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {SORT_KEYS.map((key) => (
+                <SelectItem key={key} value={key}>
+                  {SORT_LABELS[key]}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          {activeCount > 0 && (
+            <button
+              type="button"
+              onClick={clearAll}
+              className="inline-flex items-center gap-1 rounded-md border border-border px-2.5 py-1.5 text-sm text-foreground/70 transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              <X className="size-3.5" aria-hidden="true" />
+              Clear filters
+            </button>
+          )}
         </div>
 
         {showFilters && (
           <div className="mt-3 space-y-2.5 rounded-lg border border-border p-3">
-            <FilterRow
+            <MultiFilterRow
               label="library"
               options={libraries}
-              active={filters.library}
-              onPick={(v) => setFilters((f) => ({ ...f, library: v }))}
+              active={activeLibraries}
+              onToggle={toggleLibrary}
+              onClear={clearLibraries}
             />
-            <FilterRow
+            <SingleFilterRow
               label="level"
               options={levels}
-              active={filters.level}
-              onPick={(v) => setFilters((f) => ({ ...f, level: v }))}
+              active={activeLevel}
+              onPick={setLevel}
             />
-            <FilterRow
+            <MultiFilterRow
               label="concept"
               options={concepts}
-              active={filters.concept}
-              onPick={(v) => setFilters((f) => ({ ...f, concept: v }))}
+              active={activeConcepts}
+              onToggle={toggleConcept}
+              onClear={clearConcepts}
             />
           </div>
         )}
@@ -259,7 +379,17 @@ export function Catalog({ apps }: { apps: readonly AppMeta[] }) {
       </p>
 
       {filtered.length === 0 ? (
-        <p className="text-foreground/60">No apps match these filters.</p>
+        <div className="flex flex-col items-start gap-3">
+          <p className="text-foreground/60">No apps match these filters.</p>
+          <button
+            type="button"
+            onClick={clearAll}
+            className="inline-flex items-center gap-1 rounded-md border border-border px-2.5 py-1.5 text-sm text-foreground/70 transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            <X className="size-3.5" aria-hidden="true" />
+            Clear filters
+          </button>
+        </div>
       ) : (
         <ul className="grid list-none grid-cols-1 gap-6 p-0 sm:grid-cols-2 lg:grid-cols-3">
           {filtered.map((app) => (
@@ -270,5 +400,19 @@ export function Catalog({ apps }: { apps: readonly AppMeta[] }) {
         </ul>
       )}
     </section>
+  );
+}
+
+export function Catalog({ apps }: { apps: readonly AppMeta[] }) {
+  return (
+    <Suspense
+      fallback={
+        <section aria-label="App catalog">
+          <p className="text-sm text-foreground/70">Loading catalog...</p>
+        </section>
+      }
+    >
+      <CatalogInner apps={apps} />
+    </Suspense>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { Suspense } from "react";
+import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
 import { apps } from "@/lib/creative/registry.generated";
 import { Catalog } from "@/components/catalog";
@@ -68,8 +69,14 @@ function HomeContent() {
         <ThemeToggle />
       </header>
 
-      <div className="mb-6">
+      <div className="mb-6 flex items-center gap-3">
         <ViewToggle current={view} onChange={setView} />
+        <Link
+          href="/review"
+          className="rounded-md border border-border px-3 py-1.5 text-sm text-foreground/70 hover:text-foreground hover:bg-accent transition-colors"
+        >
+          Review
+        </Link>
       </div>
 
       {view === "journey" ? <JourneyList apps={apps} /> : <Catalog apps={apps} />}

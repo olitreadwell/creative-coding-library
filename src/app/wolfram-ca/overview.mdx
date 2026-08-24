@@ -1,0 +1,25 @@
+# Elementary CA
+
+One-dimensional cellular automata where each row is computed from the row above it using one short rule, building patterns that can be simple, fractal, or chaotic.
+
+Learners see how eight bits define a complete rule set, and why some rules produce fractals while others produce chaos.
+
+## What you see
+
+- A growing pattern of black and white cells starting from a single black cell at the top.
+- The pattern expands downward, one row at a time.
+- Different rule numbers produce completely different patterns.
+- The four preset rules demonstrate four distinct classes of behavior.
+
+## What it teaches
+
+- **Elementary cellular automaton:** each cell is 0 or 1. Each new row is computed by looking at each cell and its two neighbors in the row above.
+- **Rule number:** eight possible 3-cell patterns exist. Each gets a 1 or 0 answer. Eight answers, one bit each, form a number from 0 to 255. That number is the rule.
+- **Four classes:** rules produce simple repetition (rule 184), fractal structure (rule 90), complexity (rule 110), or chaos (rule 30).
+- **ImageData:** the whole pattern is written into a pixel buffer in one pass. One `putImageData` call paints everything faster than drawing cell by cell.
+
+## Try this
+
+- Type any number from 0 to 255 in the rule input and watch the pattern change instantly.
+- Compare rule 90 (Sierpinski triangle fractal) to rule 30 (no repeating pattern).
+- Note that most rules (like 0 or 255) produce trivial results: all cells dead or all cells alive after one step.

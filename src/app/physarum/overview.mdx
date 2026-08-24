@@ -1,0 +1,25 @@
+# Physarum Letters
+
+A slime mold simulation where thousands of agents sense a shared trail map and grow to spell out words.
+
+Learners see how local sensing rules produce efficient network patterns, and how a text mask steers agents into letter shapes.
+
+## What you see
+
+- Glowing, vein-like strands spelling out one word at a time.
+- The strands shift and reform when the word changes, leaving faint ghost traces.
+- The colors cycle through four words: wind, water, fire, and grass, each with a matching palette.
+- No central controller decides the shape. Every strand is built by thousands of independent agents.
+
+## What it teaches
+
+- **Agents:** each software agent has a position and a heading, and follows three steps every frame: sense, turn, move and deposit.
+- **Trail map:** a shared grid of values that agents deposit into and also read to decide which way to turn.
+- **Diffusion and decay:** the trail map blurs and fades each frame. Only heavily reinforced paths survive.
+- **Text mask:** a small amount of extra trail is added to cells inside each word. Agents sense this and gather inside the letters.
+
+## Try this
+
+- Watch the transition when the word changes. The old trails fade over several seconds while the new word forms.
+- Adjust the "sense angle" slider. Narrow angles produce parallel lines; wide angles produce swirling, branching paths.
+- Lower the agent count. With fewer agents the trails become sparse and thread-like.

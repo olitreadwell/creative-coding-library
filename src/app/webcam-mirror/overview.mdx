@@ -1,0 +1,25 @@
+# Webcam Mirror
+
+Your live camera feed redrawn as a grid of colored dots sized by brightness, creating a live halftone effect.
+
+Learners see the core three-step camera pipeline: request access, sample the video into a small canvas, read pixels back.
+
+## What you see
+
+- A grid of colored dots replacing your camera image in real time.
+- Bright areas produce large dots. Dark areas produce small or invisible dots.
+- Dot colors run from deep blue (dark) to bright yellow (bright) on a colorblind-safe ramp.
+- Nothing runs until you click "Enable camera."
+
+## What it teaches
+
+- **getUserMedia:** the browser API for requesting camera access. Permission is always required.
+- **Luminance:** a single brightness value computed from red, green, and blue using weighted addition. Green contributes most because human eyes are most sensitive to green.
+- **Dot radius from brightness:** a bright cell (luminance near 1) gets the largest dot. A dark cell (luminance near 0) gets a near-invisible dot.
+- **Mirroring:** the canvas is flipped horizontally so the result reads as a mirror, not a camera facing you.
+
+## Try this
+
+- Hold your hand in front of a bright background and watch the dot sizes create a clear silhouette.
+- Raise "Contrast" and watch dark areas vanish while bright areas saturate.
+- Try the sketch in a dark room with one light source to see the gradient clearly.

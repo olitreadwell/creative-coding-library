@@ -1,0 +1,34 @@
+# Tutorial: Maurer Rose
+
+By the end of this tutorial you will understand how changing the step angle `d` causes the 361 sample points to visit different parts of the rose curve and produce different chord patterns.
+
+## Predict
+
+The sketch samples the rose curve at 361 angles: `0 * d`, `1 * d`, `2 * d`, and so on up to `360 * d` degrees. If `d = 1`, consecutive samples are adjacent and form the smooth curve. If `d = 71`, consecutive samples are far apart on the curve.
+
+If you set `d = 90`, each step jumps a quarter of the way around the circle. How many distinct positions do you expect the 361 samples to visit? (Hint: 360 divided by 90 is 4.)
+
+## Run
+
+1. Open the sketch with the default settings and watch it rotate slowly.
+2. Set `n = 5, d = 1`. The result should look like the smooth rose curve itself, because adjacent samples are adjacent on the curve.
+3. Keep `n = 5` and change `d` to 71. The lines now cut across the curve, forming the web.
+4. Change `d` by 1 to 72 and compare. The pattern reorganizes completely.
+
+## Look closer
+
+- Each of the 360 line segments gets its own color. The hue glides from cyan to magenta along the walk. On dark backgrounds, additive blending makes crossings brighter.
+- The faint outline behind the web is the smooth rose curve itself, drawn separately. It shows what the chord endpoints sample from.
+- A negative value of `r` (radius) places the point on the opposite side of the center. This is what fills in petals that would otherwise only appear on one side.
+- The animation is purely cosmetic: the canvas rotates by a small angle each frame. The sketch computes the same chords every frame and rotates the canvas transform before drawing.
+
+## Break it
+
+- Try `d = 60`. There are only 6 distinct positions (360 / 60 = 6), so you see only 6 points connected by 5 lines.
+- Try `n = 3, d = 37` and compare the complexity to `n = 3, d = 60`.
+- Try `n = 1, d = 71`. The underlying curve is a single circle, so the chords all start and end on a circle.
+- Drag `n` from 1 to 10 while keeping `d = 71`. Count how the web changes.
+
+## Recap
+
+A rose curve in polar coordinates is sampled at coarse angle steps. Straight lines connect consecutive samples. The pattern in the web depends entirely on how well those steps spread across the curve.

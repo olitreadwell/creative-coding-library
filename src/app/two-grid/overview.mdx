@@ -1,0 +1,25 @@
+# Vector Grid
+
+A 10 by 10 grid of squares that spin, pulse, and shift color in a ripple wave from the center, using the two.js vector graphics library.
+
+Learners see how a scene graph lets you update shapes by changing properties rather than redrawing from scratch.
+
+## What you see
+
+- A grid of colored squares, each spinning and pulsing.
+- A ripple wave starts at the center and travels outward continuously.
+- Squares near the center rotate faster and pulse at a different time than outer squares.
+- Colors shift with the wave, from blue-purple at the center to teal at the edges.
+
+## What it teaches
+
+- **Scene graph:** two.js keeps a list of all shapes internally. You update each shape's rotation or scale property and two.js handles redrawing.
+- **Phase offset:** each square's distance from the center delays its animation, producing the visible wave.
+- **Transforms:** rotation and scale are applied around each shape's own center. You change one number; the library handles the math.
+- **Euclidean distance:** the distance from each square to the center is computed with `sqrt(dx^2 + dy^2)` and normalized to the range [0, 1].
+
+## Try this
+
+- Watch the center square carefully. It rotates at the slowest speed but pulses first.
+- Watch a corner square. It rotates faster and its pulse lags behind the center.
+- Notice how the color of each square changes in sync with its size pulse.

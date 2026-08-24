@@ -1,0 +1,34 @@
+# Tutorial: Mondrian
+
+By the end of this tutorial you will understand how the perspective formula scales panels by depth and how recursive subdivision produces the grid layouts.
+
+## Predict
+
+The perspective formula is `scale = FOCAL / (FOCAL + z)`. When `z` is 0 the panel is at the camera and fills the screen. When `z` is large the panel is small.
+
+If `FOCAL = 800` and a panel is at `z = 800`, what is its scale? (Divide 800 by 1600.) Now compare that to a panel at `z = 0`. Which panel is larger and by how much?
+
+## Run
+
+1. Open the sketch and watch one panel travel from the far end to the camera.
+2. Notice the panel grows as it approaches. That growth is the perspective formula running every frame.
+3. Set "focus" to 500. Panels near `z = 500` look fully opaque. Panels farther away look transparent.
+4. Click the canvas to scramble all panels. Notice each panel is a different layout.
+
+## Look closer
+
+- Rectangles inside each panel are stored in normalized coordinates (0 to 1 in both dimensions). They are scaled to canvas pixels only at draw time, using the perspective scale. This keeps the subdivision math simple and independent of canvas size.
+- The `subdivide` function flips a coin to choose horizontal or vertical split, then picks a random split position between 25% and 75% of the dimension. Base case: when depth reaches 0, return the current rectangle as a leaf.
+- Layers are sorted back-to-front (far to near) before drawing. Near panels paint over far ones, producing correct overlap.
+- The alpha for each panel is computed as `0.1 + blend * 0.9`. Even panels far from focus are slightly visible (alpha 0.1), preserving the sense of depth.
+
+## Break it
+
+- Set "layers" to 3 and "speed" slow. Only three panels are in the tunnel at once. You can see each one clearly as it passes.
+- Set "density" to 6. Each panel has many small rectangles, making it complex and detailed.
+- Set "focus" to 0. Panels closest to the camera are sharpest; everything behind them fades.
+- Click the canvas rapidly. Each click assigns new random seeds to all panels, changing every layout simultaneously.
+
+## Recap
+
+Perspective projection converts a z-coordinate into a scale. Recursive subdivision builds Mondrian-style grids. Depth of field is alpha mapped to distance from a focus plane. Recycled panels keep the tunnel endless without growing memory use.

@@ -1,0 +1,34 @@
+# Tutorial: L-System Tree
+
+By the end of this tutorial you will understand how the string-rewriting step produces a long sequence of drawing commands and how bracket pairs create branches.
+
+## Predict
+
+The axiom is `X`. After one expansion, `X` becomes `F+[[X]-X]-F[-FX]+X`. After two expansions, every `X` in that result expands again.
+
+After two iterations, roughly how long do you expect the string to be compared to after one iteration? Think about how many characters are in the axiom versus the expanded string.
+
+## Run
+
+1. Set "Iterations" to 1 and observe the tree. It is very rough and spare.
+2. Set "Iterations" to 3. The tree gains recognizable branches. Note that the trunk shape from step 1 is visible inside the trunk.
+3. Set "Iterations" to 6. The tree is dense and detailed. The string driving it is tens of thousands of characters long.
+4. Click "Re-roll" at Iterations 6. The overall shape stays similar but individual branches differ because of seeded jitter.
+
+## Look closer
+
+- Every `F` in the final string draws one branch segment. Every `[` saves the turtle's position and heading onto a stack. Every `]` restores the last saved state and continues from there.
+- Depth is tracked as the turtle enters and exits brackets. Depth 0 is the trunk. Higher depths are thinner, farther-out branches.
+- Color blends from warm brown at depth 0 to bright green at the highest depths. Line width also decreases with depth.
+- The jitter adds a small random amount to each forward step. The seed for that jitter changes on each "Re-roll," producing different trees from the same rules.
+
+## Break it
+
+- Set Iterations to 1 and look at the tree carefully. Identify the trunk segment (one `F`), the first branch points (the `[` brackets), and where the brackets close.
+- Set Iterations to 6 then remove the "Re-roll" and draw the same tree twice. Confirm that without re-rolling the seed, the tree is identical.
+- Try imagining what would happen if `F` became `FFF` instead of `FF`. Each segment would triple in length, so the tree would grow very tall.
+- Watch the corners where branches join the trunk. The `lineCap = "round"` setting smooths those joints. Imagine what they would look like with `"butt"` instead.
+
+## Recap
+
+An L-system rewrites a short string into a long one by applying substitution rules repeatedly. A turtle reads the final string and draws. Bracket pairs `[ ]` create branches by saving and restoring position. Depth tracks nesting, driving both color and thickness.

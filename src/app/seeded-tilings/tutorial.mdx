@@ -1,0 +1,34 @@
+# Tutorial: Seeded Tilings
+
+By the end of this tutorial you will understand why the same seed always produces the same pattern and how two arc orientations create continuous flowing curves.
+
+## Predict
+
+Each tile calls the PRNG once. If the result is below 0.5 the tile uses orientation 0; if at or above 0.5 it uses orientation 1. The PRNG is deterministic: given the same seed, it produces the same sequence of calls.
+
+If you change the seed from "hello" to "hello1" do you expect the pattern to change completely or change only in a few tiles? Think about what changing the seed does to the full sequence of random numbers.
+
+## Run
+
+1. Open the sketch with any seed. Note the overall flow direction (does the pattern lean horizontal or vertical?).
+2. Click "Re-roll" ten times. Watch for patterns where the curves flow strongly in one direction versus patterns where they swirl.
+3. Type the same seed twice by re-rolling and then typing it back. The pattern should be identical.
+4. Change the tile size slider from large to small. The number of tiles increases but each tile still makes the same arc connection to its neighbors.
+
+## Look closer
+
+- `Math.ceil` is used when computing the grid dimensions. If 7.2 tiles would fit, the grid uses 8, so the canvas edge is always covered.
+- The arc radius is exactly half the tile size. This is why arcs from adjacent tiles meet precisely at the edge midpoints, creating continuous curves without gaps or overlaps.
+- Two PRNGs are created: one for tile orientations (seeded with the seed string) and one for colors (seeded with the seed string plus "-palette"). This keeps color and pattern linked to the same seed without interfering with each other's sequence.
+- Orientation 0 places arcs through the top-left and bottom-right corners. Orientation 1 places them through the top-right and bottom-left corners.
+
+## Break it
+
+- Type a single character as the seed: "a." Then try "b." Are the patterns similar or completely different?
+- Set tile size to its maximum and count how many tiles fit on the canvas. Each one shows its arcs clearly.
+- Re-roll ten times and look for a pattern where all curves seem to run mostly vertically. What percentage of tiles would need orientation 0 to produce that effect?
+- Try a long seed like a full sentence. The pattern is just as deterministic; the sentence is just a different starting number for the PRNG.
+
+## Recap
+
+A Truchet tile is a square with two quarter-circle arcs. Random orientation choices, driven by a seeded PRNG, create continuous curves across the whole grid. Same seed, same pattern, every time.

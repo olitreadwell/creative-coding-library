@@ -38,3 +38,15 @@ tsconfig.tsbuildinfo
 
 # claude transient
 .claude/scheduled_tasks.lock
+.claude/worktrees/
+
+# playwright
+.playwright-mcp/
+test-results/
+playwright-report/
+blob-report/
+.playwright/
+e2e-results/
+
+# generated decks
+public/decks/

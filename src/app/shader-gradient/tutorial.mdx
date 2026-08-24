@@ -1,0 +1,34 @@
+# Tutorial: Shader Gradient
+
+By the end of this tutorial you will understand how a uniform connects JavaScript time to the GPU shader, and how domain warping produces blob shapes from sine functions.
+
+## Predict
+
+The shader receives `uTime` (seconds since the sketch started) as a uniform. A uniform is the same value for every pixel in a given frame, but it changes between frames.
+
+The warp function adds `sin` terms that include `uTime`. As `uTime` grows, the sine values change. Does the animation speed up, slow down, or stay constant as time increases? Think about the range of the sine function.
+
+## Run
+
+1. Open the sketch and watch for ten seconds. Try to identify two or three blob boundaries that move.
+2. Switch from "calm" to "wild." The blob shapes shift immediately because `uSeed` changes, which shifts the palette hue region.
+3. Switch back to "calm" and continue watching. The shapes are different from when you first opened it because time has advanced.
+4. Look at the animation near the edges of the canvas. Are the blobs continuous or do they cut off sharply at the edges?
+
+## Look closer
+
+- The sketch uses exactly one triangle covering the whole screen, not a rectangle made of two triangles. This is slightly more efficient because one triangle has no diagonal seam.
+- The `ogl` library creates a WebGL context (the browser's gateway to the GPU). WebGL is a lower-level API than Canvas 2D.
+- `useAnimationFrame` from the shared library calls the render callback each frame. Each call updates `uTime` with the current elapsed seconds, then calls `renderer.render()`.
+- The three palette presets change `uSeed`, which shifts the `d` coefficient in the cosine palette formula. This rotates which part of the color cycle the output passes through.
+
+## Break it
+
+- Switch between palettes rapidly five times. The transition is instant because only one uniform value changes.
+- Let it run for five minutes. The animation is still smooth because the GPU recomputes every pixel every frame from scratch.
+- Imagine reducing the screen to one pixel. The GPU still runs the shader once for that pixel, returning a color based on its position and time.
+- Think about what would change if `uTime` were frozen at 0. The image would be a single, static frame with no movement.
+
+## Recap
+
+A fragment shader runs once per pixel on the GPU. A uniform (here `uTime`) passes a value from JavaScript into the shader each frame. Domain warping bends the pixel's position with sine waves before sampling a cosine color palette. Those three ideas are the whole sketch.

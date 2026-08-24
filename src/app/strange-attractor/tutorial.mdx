@@ -1,0 +1,34 @@
+# Tutorial: Strange Attractor
+
+By the end of this tutorial you will understand how density accumulation produces the bright regions and why the figure always fits within the same screen area.
+
+## Predict
+
+The de Jong rule is: `nextX = sin(a * y) - cos(b * x)`, `nextY = sin(c * x) - cos(d * y)`. Because each new value is a sine minus a cosine, the result is always between -2 and 2 on both axes.
+
+If the result is always between -2 and 2, why does the shape appear different sizes when you change the parameters? Think about how the shape is scaled for drawing.
+
+## Run
+
+1. Open the sketch and watch the figure appear over about ten seconds. Notice how it starts sparse and gradually fills in.
+2. Click the canvas to give it focus. Press the right arrow key once. The figure clears and starts rebuilding with a slightly different `a` parameter.
+3. Hold the right arrow key. The figure rebuilds continuously as `a` changes.
+4. Click "Randomize" to jump to a fresh set of four numbers.
+
+## Look closer
+
+- Each frame, 7000 new points are plotted. The canvas is never cleared between frames, so older points stay. After many frames, frequently visited regions grow bright.
+- On dark themes, blend mode is set to `"lighter"` (additive). Overlapping faint marks add their colors together. On light themes, faint ink darkens where the path returns.
+- When parameters change, a flag triggers a full canvas clear on the next frame. Without this, the old and new attractors would layer on top of each other.
+- Arrow keys change parameter `a` by 0.02 each press (left and right) and parameter `b` by 0.02 (up and down). The sliders expose all four parameters directly.
+
+## Break it
+
+- Set all four parameters to 1.0. The figure becomes a simple, predictable shape.
+- Click "Randomize" ten times and compare the variety. Some figures are dense blobs, some are thin lines, some are complex knots.
+- Press the right arrow key very slowly, one press at a time. Watch the figure change in small increments.
+- Try holding the left arrow until the slider hits its minimum, then hold the right arrow to sweep all the way back.
+
+## Recap
+
+One rule, applied millions of times, traces an attractor. Density rendering turns visit frequency into brightness. Four numbers decide the figure. Tiny parameter changes lead to completely different shapes.

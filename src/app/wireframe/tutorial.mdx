@@ -1,0 +1,34 @@
+# Tutorial: Wireframe
+
+By the end of this tutorial you will understand the two-step process (rotate then project) and why drawing back-to-front produces correct overlap.
+
+## Predict
+
+The perspective formula is `f = cameraDist / (cameraDist - z)`. A point with `z = 0` is at the center of the scene. A point with a large positive `z` is farther away.
+
+If `cameraDist = 5` and a point has `z = 4`, what is `f`? (Divide 5 by `5 - 4`.) Now compute `f` for `z = 0`. Which point appears larger on screen and by how much?
+
+## Run
+
+1. Open the sketch and watch the default shape spin.
+2. Drag the perspective slider slowly from left to right. Find the point where the shape looks most "natural."
+3. Click the canvas and drag left-right to spin the shape around the vertical axis.
+4. Click and drag up-down to spin around the horizontal axis.
+
+## Look closer
+
+- A cube is defined as 8 corners at every combination of (+1, -1) across all three axes. That gives exactly 8 points: `[-1,-1,-1], [-1,-1,1], [-1,1,-1]`, and so on.
+- Edges are found by connecting corner pairs that are exactly distance 2 apart (one unit on one axis). This recovers the correct 12 cube edges without typing them manually.
+- Edges are sorted by their average depth (`(za + zb) / 2`) before drawing. Ascending order means far edges are drawn first.
+- Depth tinting maps z to brightness: near edges get a high color value, far edges get a low one. This is done with a `lerp` between two color values based on the projected depth.
+
+## Break it
+
+- Try the perspective slider at its extreme minimum. Edges at different depths look very different in size, almost distorted.
+- Drag the canvas vigorously and let go. The shape keeps spinning because the drag momentum is applied to the angle each frame.
+- Try changing the shape to a sphere (icosphere). The same four steps (corners, rotate, project, draw back-to-front) produce a completely different wireframe.
+- Look at the shape from a side angle (drag to about 45 degrees). Compare how clearly you can see front versus back edges.
+
+## Recap
+
+Rotate every corner with sine and cosine. Project from 3D to 2D by dividing by distance. Sort edges by depth and draw far ones first. Tint by depth. Those four steps produce every 3D wireframe this sketch can draw.

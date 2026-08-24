@@ -1,0 +1,25 @@
+# Strange Attractor
+
+A shape that appears when one rule is applied millions of times to its own output, each point plotted very faintly so the shape builds up from density.
+
+Learners see the de Jong attractor, a concrete example of chaos: tiny changes in four numbers produce completely different but still structured figures.
+
+## What you see
+
+- A glowing figure built from millions of faint dots.
+- Bright regions show where the path visits most often.
+- The figure changes shape when you move the sliders or press the arrow keys.
+- Clicking "Randomize" jumps to a completely different figure.
+
+## What it teaches
+
+- **Iteration:** the rule takes a point and produces the next point. Applied millions of times, the visited points trace the attractor shape.
+- **Density rendering:** each point is plotted with very low opacity. Where the path visits often, faint marks stack up into bright regions.
+- **Chaos:** small changes in the four parameters (a, b, c, d) lead to completely different figures, even though the rule structure stays the same.
+- **Keyboard accessibility:** the canvas has `tabIndex` and `role="application"` so arrow keys adjust parameters without a mouse.
+
+## Try this
+
+- Click the canvas to focus it, then press the left and right arrow keys. Watch the figure morph in real time.
+- Hold an arrow key to sweep a parameter continuously. The figure breathes and shifts.
+- Click "Randomize" and compare the new figure to the previous one.

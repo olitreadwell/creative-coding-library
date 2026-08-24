@@ -1,0 +1,25 @@
+# Circle Packing
+
+Circles grow one at a time until they touch a neighbor or the edge, filling a canvas without overlapping.
+
+Learners see how a simple greedy rule, applied repeatedly, produces a structured result that looks designed.
+
+## What you see
+
+- Circles appear one by one and grow outward until they stop.
+- Early circles are large because they have more open space. Later circles are small because they squeeze into gaps.
+- Each circle is colored by size: small circles are cool, large circles are warm.
+- Pressing "Shuffle" clears the canvas and starts again with a different seed.
+
+## What it teaches
+
+- **Greedy algorithms:** each circle grows to the largest safe size without looking ahead.
+- **Seeded randomness:** the same seed always produces the same packing, every time.
+- **Constraint satisfaction:** every circle obeys one rule (no overlap) and the result fills the space efficiently.
+- **Smoothstep:** circles appear with a soft easing animation rather than snapping into place.
+
+## Try this
+
+- Click "Shuffle" several times and compare how different seeds produce different size distributions.
+- Drag the "density" slider high to try more candidate positions and fill the gaps more completely.
+- Set "min size" to a small value and zoom into the corners. Many tiny circles fill the cracks.

@@ -1,0 +1,25 @@
+# Maze
+
+A perfect maze carved live by a depth-first algorithm that explores as far as possible, then backtracks when it gets stuck.
+
+Learners see how a recursive backtracking algorithm builds a spanning tree of a grid graph, with no loops and one path between any two cells.
+
+## What you see
+
+- A grid of cells. Walls disappear as the algorithm carves passages.
+- A highlighted cell (the frontier) that moves forward into unvisited space and snaps back when cornered.
+- The carving completes, leaving a fully connected maze.
+- Clicking "New maze" starts fresh with a different seed.
+
+## What it teaches
+
+- **Graphs:** the grid is a set of nodes (cells) connected by possible edges (shared walls). The maze is a spanning tree of that graph.
+- **Depth-first search:** the algorithm always goes as deep as possible before backtracking.
+- **Backtracking:** when a path reaches a dead end, the algorithm undoes its last move and tries another direction.
+- **Bitmask:** each cell stores its four walls as four bits in one integer, saving space and making wall checks fast.
+
+## Try this
+
+- Watch the frontier cell. When it is forced to backtrack, it snaps back along the thread it came from.
+- After the maze finishes, trace a path from one corner to the opposite corner. There is exactly one path between any two cells.
+- Click "New maze" several times. Different seeds produce mazes with different corridor styles.

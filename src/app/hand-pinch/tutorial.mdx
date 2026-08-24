@@ -1,0 +1,35 @@
+# Tutorial: Hand Pinch
+
+By the end of this tutorial you will understand how the sketch turns 21 hand landmarks into a grab gesture and drives the blob's position with linear interpolation.
+
+## Predict
+
+The pinch is detected by measuring the distance between two fingertip points. When that distance is below a threshold, the fingers are touching.
+
+The threshold is adjustable with the sensitivity slider. If you raise the sensitivity, do you think pinches register more easily or less easily? Think about what "more sensitive" means for a distance threshold.
+
+## Run
+
+1. Click "Enable" and allow camera access. Wait a moment for the model to load.
+2. Hold one hand in front of the camera. You should see 21 dots appear on your hand.
+3. Slowly bring your thumb and index finger together until you see the blob start moving.
+4. Drag your pinched fingers across the camera frame. Watch the blob ease toward your hand.
+5. Pinch with both hands and slowly pull them apart.
+
+## Look closer
+
+- The model uses GPU acceleration if available and falls back to CPU if not. The first load takes a moment because the model files come from a CDN.
+- The camera is shown mirrored (like a selfie). To match this, the sketch flips the x coordinate: `canvasX = (1 - point.x) * width`.
+- The blob uses `lerp` (linear interpolation): `newPos = old + (target - old) * 0.25`. Each frame it moves 25% of the remaining distance. This creates the smooth follow behavior.
+- The blob is drawn as a ring of points with a small sine wobble per point. The wobble frequency differs per blob so it looks alive rather than mechanical.
+
+## Break it
+
+- Try the sensitivity slider at maximum. The pinch should register even when your fingers are still slightly apart.
+- Try the sensitivity slider at minimum. You may need to press your fingers firmly together before the blob responds.
+- Try a two-hand stretch in a small space. Notice how the blob's size and shape change proportionally to the distance between your hands.
+- Hold your hand very close to the camera lens. The tracking points may drift or lose accuracy.
+
+## Recap
+
+The model returns 21 landmarks per hand as x/y positions. A simple distance check between two fingertips detects the pinch. Linear interpolation moves the blob smoothly toward the grab point each frame. That is the entire interaction layer.

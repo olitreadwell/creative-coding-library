@@ -1,0 +1,34 @@
+# Tutorial: Maze
+
+By the end of this tutorial you will understand why the algorithm always produces a perfect maze (one path between any two cells) and how backtracking is implemented with a stack.
+
+## Predict
+
+The algorithm starts at cell 0, marks it as visited, and pushes it onto a stack. Each step it tries to carve into a random unvisited neighbor. If no unvisited neighbors exist, it pops back.
+
+The maze has `cols * rows` cells. A perfect maze has `cols * rows - 1` passages (one fewer than cells). Why exactly that number? Think about what a tree with N nodes requires.
+
+## Run
+
+1. Open the sketch and watch the carving start from the top-left corner.
+2. Watch the frontier cell push deep into unexplored space. Notice it sometimes turns corners sharply.
+3. Watch the frontier snap back when it gets cornered. That is backtracking: the stack pops to the last cell with an unvisited neighbor.
+4. When carving finishes, trace a path from one corner to the opposite corner.
+
+## Look closer
+
+- Walls are stored as a 4-bit integer per cell. The four bits represent north, east, south, and west. A bit set to 1 means the wall is present. Carving clears the bit.
+- The algorithm uses an explicit stack (an array) rather than recursion. This avoids hitting the JavaScript call-stack limit on large grids.
+- When a passage is carved, both sides of the wall are cleared: the current cell's wall in direction D, and the neighbor's wall in the opposite direction.
+- The animation replays a pre-recorded script of carve events. The maze is already computed before animation starts, so the same seed always produces the same maze.
+
+## Break it
+
+- Wait for the maze to complete, then count the passages visible (walls removed) in one row. A 10-column row has 10 cells, which means at most 9 passages could appear in that row.
+- Look for a long corridor. That corridor formed because the algorithm went deep in one direction before finding a dead end.
+- Generate several mazes with "New maze." Look for differences in corridor length and branching density.
+- Find a cell near the center with only one opening. That cell was a dead end in the carving path.
+
+## Recap
+
+The recursive backtracker builds a spanning tree by doing a randomized depth-first search. It carves when it can go forward, and pops back when it cannot. The result always has exactly `N - 1` passages connecting `N` cells, with one path between any pair.

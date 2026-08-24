@@ -1,0 +1,25 @@
+# Seeded Tilings
+
+A canvas filled with Truchet tiles, where each tile is a square with two quarter-circle arcs, and the pattern changes completely with each seed.
+
+Learners see how a seeded pseudorandom number generator (PRNG) makes random results reproducible and shareable.
+
+## What you see
+
+- A grid of squares, each containing two curved arcs.
+- The arcs from neighboring tiles join to form continuous flowing curves across the whole canvas.
+- Clicking "Re-roll" generates a new seed and a completely different pattern.
+- The two arc colors also come from the seed, so the palette changes with the pattern.
+
+## What it teaches
+
+- **Truchet tiles:** a square tile with two quarter-circle arcs, which can be placed in one of two orientations. Random orientation choices produce flowing patterns.
+- **Seeded PRNG:** a pseudorandom number generator seeded with a string produces the same sequence of numbers every time that string is used.
+- **Reproducibility:** the same seed always produces the same pattern. You can share a seed and another person sees exactly what you see.
+- **Emergence:** a single binary choice per tile (orientation 0 or 1) creates global patterns that look designed.
+
+## Try this
+
+- Type the word "hello" in the seed field and press enter. The pattern is always the same for that word.
+- Try "world." A completely different pattern appears.
+- Drag the size slider to its minimum. The arcs become very fine and the patterns look almost like flowing fabric.

@@ -1,0 +1,25 @@
+# Webcam Mosaic
+
+Your camera feed redrawn as a coarse grid, where each cell is replaced by a character or a dot sized by that area's brightness.
+
+Learners see the shared pipeline behind ASCII art and halftone effects: sample, measure brightness, choose a mark.
+
+## What you see
+
+- A live grid effect from your camera in your chosen style: ASCII characters, block characters, or dot circles.
+- Dark patches fill with heavy marks. Bright patches fill with light marks or nothing.
+- A style control to switch between the three looks instantly.
+- Nothing runs until you click "Enable."
+
+## What it teaches
+
+- **Camera sampling:** the video is drawn into a tiny canvas (one pixel per cell) and pixel values are read back. This is efficient because `getImageData` only reads the bytes you need.
+- **Brightness to mark:** for glyphs, brightness maps to a character index in a density-sorted list. For circles, brightness maps directly to radius.
+- **Unified pipeline:** both effects share the same three steps. Only the final "choose a mark" step differs between them.
+- **getUserMedia:** the browser API that requests camera access. Access is always gated by the user's explicit permission.
+
+## Try this
+
+- Switch between ASCII, Blocks, and Circles. Compare how each style represents the same image.
+- Drag cell size to maximum for a very coarse, poster-like look.
+- Drop cell size to minimum for near-photographic detail.

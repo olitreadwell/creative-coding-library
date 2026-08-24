@@ -1,0 +1,34 @@
+# Tutorial: Metaballs
+
+By the end of this tutorial you will understand how the scalar field produces merging behavior automatically and why the contour line appears where it does.
+
+## Predict
+
+Each ball contributes `(r * r) / (distance * distance)` to the field at every point. When two balls are far apart, the field between them is low. When they get close, the two contributions add together.
+
+If the threshold is 1.0, and each ball produces a field value of 0.6 at the point exactly between them, what is the combined field at that point? Does the contour line appear there?
+
+## Run
+
+1. Open the sketch and watch two blobs drift toward each other. Note the exact moment they merge (when the contour closes between them).
+2. Watch a merged pair drift apart. Note the exact moment they split.
+3. Click "Shuffle" and watch the initial positions. Some arrangements start already merged; others start separate.
+4. Watch the outline of one blob while it is alone. The curve is smooth and roughly circular.
+
+## Look closer
+
+- The marching squares algorithm divides the canvas into a grid of small cells. For each cell, it checks all four corners. Corners above the threshold are "inside." Corners below are "outside."
+- Linear interpolation (lerp) finds the exact crossing point on each cell edge. This is what makes the outline smooth rather than staircase-shaped.
+- Each ball bounces off the canvas edges by flipping the velocity component that is heading out of bounds.
+- The filled shape and the stroke outline are drawn separately. The fill is translucent, showing overlap. The stroke is fully opaque.
+
+## Break it
+
+- Find the threshold constant in the source code. Raise it. The blobs should only merge when almost touching.
+- Lower the threshold. The blobs should merge from further away, and isolated blobs grow larger.
+- Increase `GRID_CELLS` for a finer contour at the cost of more CPU work per frame.
+- Try moving all blobs to the same region by clicking Shuffle many times until you get a crowded start.
+
+## Recap
+
+Each ball defines a field that falls off with distance. The contour line appears wherever the sum of all fields crosses a threshold. Merging happens automatically when two fields add up to cross the threshold between two balls.

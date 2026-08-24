@@ -1,0 +1,130 @@
+## How it works, step by step
+
+Poster Poetry has four moving parts: fetching a quote from an API, seeding a deterministic layout from the quote text, drawing overlapping rotated type with Canvas 2D transforms, and painting color blocks behind some words for reversed contrast.
+
+## Step 1: show something immediately, then fetch
+
+Waiting for a network request before drawing anything leaves a blank screen. Instead, the app uses the first entry in a bundled array on first render:
+
+```ts
+const [quote, setQuote] = useState<Quote>(() => FALLBACK_QUOTES[0]!);
+```
+
+The fetch starts in a `useEffect`. When it resolves, `setQuote` swaps in the API result and the poster redraws with the new words. If the fetch fails, the catch block does nothing -- the fallback quote stays.
+
+## Step 2: cancel in-flight requests on unmount
+
+React components can unmount before a fetch finishes. An `AbortController` prevents a resolved fetch from calling `setQuote` on an unmounted component:
+
+```ts
+const ctrl = new AbortController();
+abortRef.current = ctrl;
+
+fetchQuote(ctrl.signal)
+  .then((q) => setQuote(q))
+  .catch(() => {
+    /* abort or network failure: keep current quote */
+  });
+
+return () => {
+  abortRef.current?.abort();
+};
+```
+
+## Step 3: seed a PRNG from the quote text
+
+To make every quote produce the same composition reproducibly, the quote string is hashed into a numeric seed, which initializes a mulberry32 pseudorandom number generator:
+
+```ts
+import { makeRng } from "@/lib/creative/random";
+
+const rng = makeRng(quote.quote);
+```
+
+Every decision -- chunk sizes, which chunks get a color block, which rotation to apply -- calls `rng()`. Because the seed is fixed per quote, the same quote always produces the same poster.
+
+## Step 4: split the quote into chunks
+
+Rather than wrapping text in lines, the layout breaks the quote into word groups of varying size. The first group is kept short so it can be set very large:
+
+```ts
+function chunkQuote(text: string, rng: Rng): string[] {
+  const words = text.split(/\s+/).filter(Boolean);
+  const chunks: string[] = [];
+
+  const openerCount = words.length > 4 ? 1 + Math.round(rng() * 1) : 1;
+  chunks.push(words.slice(0, openerCount).join(" "));
+
+  let i = openerCount;
+  while (i < words.length) {
+    const groupSize = 1 + Math.floor(rng() * 3);
+    chunks.push(words.slice(i, i + groupSize).join(" "));
+    i += groupSize;
+  }
+
+  return chunks;
+}
+```
+
+## Step 5: draw each chunk at its own angle
+
+Canvas 2D has no built-in rotated text. To place a word at an arbitrary angle without rotating the whole canvas, use `save`, `translate`, `rotate`, then `restore`:
+
+```ts
+ctx.save();
+ctx.translate(x, y); // move origin to the word's anchor point
+ctx.rotate((deg * Math.PI) / 180); // rotate around that point
+ctx.fillText(text, 0, 0); // draw at the new origin
+ctx.restore(); // undo the transform
+```
+
+`save` and `restore` stack the current transform and clip region. Every chunk gets its own isolated coordinate space. They overlap because each transform is applied on top of the shared canvas buffer.
+
+## Step 6: paint color blocks behind some words
+
+Some chunks are rendered reversed out of a solid color block. The block is drawn before the text, in the same rotated coordinate space:
+
+```ts
+ctx.fillStyle = blockColor;
+ctx.fillRect(-pad, -pad * 0.5, textWidth + pad * 2, fontSize * 1.15 + pad);
+
+ctx.fillStyle = inkReversedColor;
+ctx.fillText(text, 0, 0);
+```
+
+Because the rect and text share the same `translate/rotate`, the block always aligns to the text regardless of angle.
+
+## Step 7: DPR-aware canvas sizing
+
+A canvas drawn at CSS pixel dimensions looks blurry on high-density screens. The fix is to scale the backing buffer by `devicePixelRatio`, then draw in CSS-pixel space using `ctx.setTransform`:
+
+```ts
+const fit = () => {
+  const dpr = window.devicePixelRatio ?? 1;
+  canvas.width = Math.round(canvas.clientWidth * dpr);
+  canvas.height = Math.round(canvas.clientHeight * dpr);
+  draw();
+};
+
+const ro = new ResizeObserver(fit);
+ro.observe(canvas);
+```
+
+Inside `draw`, every measurement uses CSS pixels. The transform scales them up to physical pixels transparently.
+
+## Step 8: three angular layouts
+
+Each layout is a pure function that takes the canvas context, quote, and color scheme, then draws a different composition:
+
+- **Slash stack** -- words stack top-to-bottom with alternating small rotations. A thick diagonal rule slashes across mid-canvas. Odd chunks nudge right to break the grid.
+- **Cross axis** -- some words run vertically (rotated 90 degrees), others horizontally. A vertical rule bar divides the canvas into zones.
+- **Billboard** -- a single massive opener dominates center. Remaining chunks scatter around it at wild fixed angles, like torn paper overlaid on a wall.
+
+All three share `drawBlockWord` and `drawAuthor`, so color and font choices stay consistent across layouts.
+
+## Try this
+
+- Open the app in a narrow window and watch how the chunks reflow because font sizes scale with canvas width.
+- Switch to "Cross axis" with "Gold" to see vertical type running perpendicular to horizontal text.
+- Open the network panel in browser dev tools, go offline, then click "New quote" -- the poster does not break.
+- Add a fourth layout that places every chunk rotated exactly 45 degrees, tiled like a diagonal grid.

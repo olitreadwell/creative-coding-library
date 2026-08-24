@@ -1,0 +1,34 @@
+# Tutorial: Voronoi
+
+By the end of this tutorial you will understand why the sketch uses squared distance instead of full distance and how the downsampled grid keeps the animation fast.
+
+## Predict
+
+The nearest-site function compares `dx * dx + dy * dy` for each site and picks the smallest. This is the squared distance. Taking the square root would give the actual distance in pixels, but the sketch skips that step.
+
+If site A has squared distance 900 and site B has squared distance 1600, which site is closer? Does knowing the actual distance (30 pixels vs 40 pixels) change the answer?
+
+## Run
+
+1. Open the sketch and watch the regions shift as sites move.
+2. Pause your eyes on one region boundary. Watch it drift as both adjacent sites move.
+3. Click in the center of a large region. A new site appears and that region splits.
+4. Add 10 sites by clicking repeatedly. Compare the average region size to when you started.
+
+## Look closer
+
+- The canvas is divided into cells of 6 pixels wide. For each cell, the center pixel is checked against all sites. The whole cell is then filled with the winning site's color. Using 6 pixels instead of 1 pixel reduces the number of nearest-site checks by a factor of 36.
+- Borders appear by checking horizontal and vertical neighbors. If the cell to the right belongs to a different site, a vertical line is drawn at the shared edge. No polygon clipping or geometric computation is needed.
+- Sites bounce by flipping the velocity component heading out of bounds: if `x < 0`, set `vx = Math.abs(vx)`. This keeps all sites on the canvas without any conditional logic beyond the bounds check.
+- When the user clicks, the pointer position is converted from page coordinates to canvas CSS coordinates using `getBoundingClientRect`. The new site is added to the array and picked up by the next animation frame.
+
+## Break it
+
+- Try "speed" at its maximum. The cells churn rapidly and the borders flicker.
+- Try setting "sites" to 2 (minimum). The canvas splits into two roughly equal halves separated by a roughly straight line.
+- Click a site's center (try to click right on a small region). Notice that clicking adds a new site, not selects an existing one.
+- Use "Reset" several times. Each reset places sites at new random positions with new random velocities.
+
+## Recap
+
+Voronoi is nearest-neighbor assignment: every point belongs to its closest site. Comparing squared distances avoids a square root for each check. A 6-pixel downsampled grid makes the animation fast enough to run every frame.

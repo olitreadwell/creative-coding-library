@@ -1,0 +1,34 @@
+# Tutorial: Lissajous
+
+By the end of this tutorial you will understand how two sine waves, each controlling one axis, produce a Lissajous curve and why changing the phase makes the shape morph.
+
+## Predict
+
+The x position is `A * sin(a * t + phase)` and the y position is `B * sin(b * t)`. The frequencies `a` and `b` set the ratio of how fast each sine wave completes a cycle.
+
+With a 3:2 ratio, the x wave completes 3 cycles while the y wave completes 2. What do you think the curve looks like when both frequencies are equal (1:1 ratio)? Think about what shape results when x and y move in sync.
+
+## Run
+
+1. Open the sketch with the default 3:2 ratio. Watch the curve for ten seconds and note its overall shape.
+2. Switch to 5:4. The curve becomes denser because it takes longer for both sine waves to return to the same starting point simultaneously.
+3. Switch back to 3:2. Notice the shape morphs gradually from the 5:4 shape rather than jumping.
+4. Watch the outer loops. They are slightly dimmer than the inner region. That is the decay envelope fading the curve toward the center.
+
+## Look closer
+
+- The curve is sampled at 2000 points, stepping `t` from 0 to `10 * 2π`. That range is enough to complete many cycles and fill in the shape.
+- Each segment is drawn separately so it can take its own color. The color shifts from blue-cyan to violet along the curve.
+- The phase increases by a small amount each frame, multiplied by the elapsed time `dt` to stay consistent across screens of different speeds.
+- The `decay` parameter multiplies each point's position by an exponential envelope. Near `t = 0` the curve is at full size. Near the end it shrinks toward the center.
+
+## Break it
+
+- Try ratio 5:4 and watch the curve for several minutes. It fills the space more completely than 3:2 because it takes more cycles to close.
+- Imagine what happens if both frequencies are equal (ratio 1:1). The result is an ellipse or a straight line, depending on the phase.
+- Count the number of loops the curve makes horizontally and vertically in the 3:2 ratio. They should be 3 and 2 respectively.
+- Compare the 3:4 ratio to the 3:2 ratio. One is a vertical elongated shape, the other is horizontal.
+
+## Recap
+
+Two sine waves, one controlling x and one controlling y, trace a Lissajous curve. The frequency ratio sets the shape. Advancing the phase each frame rotates the shape continuously. That is the whole sketch.

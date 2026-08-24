@@ -1,0 +1,25 @@
+# Noise Field
+
+Thousands of particles flow through a direction field built from Perlin noise, leaving glowing trails wherever many paths overlap.
+
+Learners see how smooth randomness (Perlin noise) differs from plain randomness, and how additive blending makes overlapping lines glow.
+
+## What you see
+
+- Thousands of tiny dots moving across a dark canvas.
+- The dots follow sweeping, organic paths that curve and spiral.
+- Where many paths cross the same area, the colors add together and glow bright.
+- Clicking "New seed" generates a completely different set of paths.
+
+## What it teaches
+
+- **Perlin noise:** a way to produce smooth, gradually changing random numbers. Nearby positions always return similar values, unlike plain `Math.random()`.
+- **Flow field:** each position on the canvas has a direction. A particle at that position follows that direction.
+- **Additive blending:** overlapping line segments add their colors. Ten dim lines at the same spot look like one bright light.
+- **Seeded randomness:** the same seed always produces the same noise shape and the same particle paths.
+
+## Try this
+
+- Click "New seed" and compare the new pattern to the old one. The overall feel is similar but the specific paths are different.
+- Watch one area of the canvas. Some areas fill with light quickly; others stay sparse. That comes from the noise field pushing particles toward or away from those spots.
+- Let the animation run for a full minute. The paths build into a luminous texture as more and more trails layer up.

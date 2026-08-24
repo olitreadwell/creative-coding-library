@@ -1,0 +1,25 @@
+# Physics Drops
+
+Colorful circles and polygons fall, bounce, and pile up under simulated gravity using the matter.js physics engine.
+
+Learners see how a physics engine separates the job of computing physics from the job of drawing, and what the three core concepts (engine, world, bodies) mean in practice.
+
+## What you see
+
+- Shapes dropping from the top of the canvas one at a time.
+- Shapes bouncing off each other and off the invisible walls and floor.
+- The pile growing until the container is roughly 60% full, then stopping.
+- Sliders controlling gravity strength and bounciness.
+
+## What it teaches
+
+- **Physics engine:** software that simulates gravity, collision, and stacking. You describe objects; the engine computes the results.
+- **Bodies:** objects in the simulation. Each has a shape, mass, position, and physical properties.
+- **Static bodies:** walls and floors marked as immovable. Other bodies collide with them but they never move.
+- **Data and rendering separation:** the engine works with numbers. The renderer reads those numbers and draws. Keeping them separate lets you swap one without touching the other.
+
+## Try this
+
+- Drag "size" up and press "Reset." Bigger shapes fill the container with fewer items.
+- Lower "bounciness" and the shapes settle with almost no jitter. Raise it and the pile bounces chaotically.
+- Click "Reset" several times. A new seed picks new colors and positions each time.

@@ -1,0 +1,34 @@
+# Tutorial: Phyllotaxis
+
+By the end of this tutorial you will understand why `sqrt(i)` keeps seed density even and why the golden angle of approximately 137.5 degrees produces the most even fill.
+
+## Predict
+
+Seed `i` sits at angle `i * angleRad` and distance `scale * sqrt(i)` from the center. The area of a ring at radius `r` grows as `r` increases.
+
+If seeds were spaced at `i` instead of `sqrt(i)`, outer seeds would be much farther apart than inner seeds. What visual pattern would that produce? Think about whether the bloom would look evenly packed or sparse near the outside.
+
+## Run
+
+1. Open the sketch with the default angle of 137.5 degrees. Scroll up to about 500 seeds.
+2. Set the angle slider to exactly 90 degrees. A regular grid of spokes appears.
+3. Return to 137.5 degrees. The spirals reappear.
+4. Nudge the angle to 137.4 and compare. The spirals change direction and count.
+
+## Look closer
+
+- The golden angle is `360 * (1 - 1/phi)` where `phi` is the golden ratio (about 1.618). This angle never lines up as a simple fraction of a full turn, so seeds never repeat on the same spoke.
+- The scale is computed each frame as `(Math.min(width, height) * 0.47) / Math.sqrt(count)`. This ensures the outermost seed stays inside the canvas as the count grows.
+- Color comes from a colorblind-safe ramp indexed by seed order, so early seeds and late seeds appear as distinct hues.
+- The slow rotation uses `useAnimationFrame`, which pauses when the tab is hidden and respects the system "reduce motion" setting.
+
+## Break it
+
+- Try 99.5 degrees. This is not a simple fraction of 360, so you still get spirals, just with different counts.
+- Try 60 degrees (360 / 6 = 60). You see exactly six spokes because every sixth seed lands in the same direction.
+- Scroll to 3000 seeds and set the angle to 137.5. Study the spiral arms. Count how many arms run clockwise and counterclockwise.
+- Set the angle to 180 degrees. Every seed lands on the opposite side from the previous one, producing two long straight arms.
+
+## Recap
+
+Two rules place every seed: rotate by a fixed angle, and step outward by the square root of the index. The golden angle of 137.5 degrees produces even packing because it never aligns with any simple fraction of a full turn.

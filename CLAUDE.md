@@ -54,6 +54,26 @@ If any of these fail, stop and fix. No `--no-verify`, no `eslint-disable`-the-fi
 - One worktree per app: `git worktree add ../wt-<slug> -b app/<slug> main`.
 - The build script regenerates `registry.generated.ts` on each worktree, so no merge conflict can arise from the catalog.
 
+## Interactive learning lab
+
+The `interactive-learning/` tree holds the learning-design knowledge base that feeds generated learner journeys. Keep this map current whenever folders, note counts, or roles shift.
+
+```
+interactive-learning/
+  README.md / CLAUDE.md   human entry + two-verb agent protocol
+  pedagogy/   (4 notes)   the learning science
+  platforms/  (5 notes)   teardowns of what good looks like
+  patterns/   (3 notes)   reusable interactive-lesson designs
+  journeys/   (TEMPLATE)  generated journeys land here
+```
+
+Rules:
+
+- Update the counts above when notes are added or removed.
+- `journeys/` is generator output. Do not hand-edit existing journeys; append new dated ones.
+- `pedagogy/`, `platforms/`, `patterns/` are source-of-truth notes. Edit in place.
+- New note? Place under the right bucket and bump the count here in the same PR.
+
 ## When in doubt
 
 Read [`docs/creative-coding/CONVENTIONS.md`](./docs/creative-coding/CONVENTIONS.md) before adding files. Read [`docs/creative-coding/LICENSING.md`](./docs/creative-coding/LICENSING.md) before adding a dependency or copying a source.

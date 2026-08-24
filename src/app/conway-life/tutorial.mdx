@@ -1,0 +1,34 @@
+# Tutorial: Conway's Game of Life
+
+By the end of this tutorial you will understand how the four rules produce stable, repeating, and moving patterns from a random start.
+
+## Predict
+
+The four rules are: a live cell with fewer than 2 live neighbors dies; a live cell with 2 or 3 lives; a live cell with more than 3 dies; a dead cell with exactly 3 becomes alive.
+
+A single live cell has zero live neighbors, so it dies on the next tick. A cluster of exactly four cells arranged in a 2x2 square each has three neighbors. What happens to that cluster on the next tick?
+
+## Run
+
+1. Open the sketch and press Pause immediately. Count a few clusters in the frozen grid.
+2. Press Play for one second, then Pause again. Compare the grid to your memory of the first frame.
+3. Look for a 2x2 block of live cells. Watch it across several generations. It stays a 2x2 block forever.
+4. Press Randomize and watch the first twenty ticks. Notice how some areas stabilize quickly while others keep changing.
+
+## Look closer
+
+- The simulation runs at 10 ticks per second, independent of the frame rate. This keeps behavior consistent on any device.
+- The grid is stored as a single `Uint8Array`. Each cell is 0 (dead) or 1 (alive). Using one byte per cell is faster than using true/false values.
+- The next generation is always written into a separate array. The current generation is never changed mid-step. This prevents one cell's update from affecting its neighbor's calculation.
+- Cells are tinted by position, creating a color gradient. The color does not affect behavior: it only helps you see which areas are active.
+
+## Break it
+
+- Find a 3-cell L-shape (two cells in a row, one cell above the end). Watch it for five ticks. It becomes a 2x2 block within two ticks.
+- Try "Randomize" with a very sparse starting density. The grid may go quiet in a few ticks if there are not enough neighbors to sustain reactions.
+- Pause the grid and find a cluster with exactly three live neighbors around a dead cell. Predict that the dead cell will become alive on the next tick, then confirm.
+- Watch the edges. A live cell at the right edge has neighbors at the left edge. Does the behavior look continuous across that boundary?
+
+## Recap
+
+Four rules, applied simultaneously to every cell in the grid, produce a system that can generate order from noise. The simulation does not know about gliders or oscillators. Those patterns exist because they satisfy the rules in a self-sustaining way.

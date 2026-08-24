@@ -60,6 +60,15 @@ Runtime + dev dependencies vetted against the [`CONVENTIONS.md`](./docs/creative
 - gsap @ ^3 — Standard "No Charge" GreenSock License (paid-gig-safe) — animation/easing/timeline
 - two.js @ ^0.8 — MIT — SVG/Canvas vector renderer
 - ogl @ ^1 — MIT — minimal WebGL helper
+- shadcn / @base-ui/react — MIT — UI component primitives (Card, Badge, Button)
+- class-variance-authority @ ^0.7 — Apache-2.0 — variant styling
+- clsx @ ^2 — MIT — className builder
+- tailwind-merge @ ^3 — MIT — Tailwind class merge
+- lucide-react @ ^1 — ISC — icon set
+- tw-animate-css @ ^1 — MIT — Tailwind animation utilities
+- three @ ^0.184 — MIT — 3D / WebGL engine
+- @react-three/fiber @ ^9 — MIT — React renderer for three.js
+- matter-js @ ^0.20 — MIT — 2D rigid-body physics
 
 ## Adaptations
 

@@ -250,7 +250,7 @@ export default function NoiseFieldPlayPage() {
       }
     >
       <div className="flex h-full flex-col sm:flex-row">
-        <div className="relative min-h-0 flex-1">
+        <div className="relative flex-1 min-h-[45dvh] sm:min-h-0">
           <canvas
             ref={canvasRef}
             className="absolute inset-0 h-full w-full"
@@ -259,7 +259,7 @@ export default function NoiseFieldPlayPage() {
             style={{ background: isLight ? LIGHT_BG : DARK_BG }}
           />
         </div>
-        <div className="shrink-0 overflow-y-auto border-t border-border p-3 sm:border-t-0 sm:border-l">
+        <div className="min-h-0 overflow-y-auto border-t border-border p-3 max-h-[40dvh] sm:max-h-none sm:shrink-0 sm:border-t-0 sm:border-l">
           <KnobsPanel
             title="Field controls"
             knobs={[

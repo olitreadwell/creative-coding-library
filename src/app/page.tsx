@@ -62,7 +62,7 @@ function HomeContent() {
           <p className="mt-2 text-sm text-foreground/70 sm:text-base">
             30 generative-art sketches. Built to be broken.
           </p>
-          <p className="mt-1 max-w-2xl text-sm text-foreground/50">
+          <p className="mt-1 max-w-2xl text-sm text-foreground/70">
             Each sketch teaches one concept. Predict, run, break, fix, repeat.
           </p>
         </div>

@@ -223,6 +223,7 @@ export default function LSystemTreePage(): React.ReactElement {
         className="absolute inset-0 h-full w-full"
         aria-label="L-system fractal plant. Use the Iterations slider to control depth. Use Re-roll to randomize branch jitter."
         style={{ background: bgColor }}
+        suppressHydrationWarning
       />
     </PlayShell>
   );

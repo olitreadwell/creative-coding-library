@@ -88,7 +88,7 @@ function AppRow({ app, masteredSlugs, bySlug }: AppRowProps) {
     <li
       className={[
         "rounded-xl border border-foreground/10 p-4 transition hover:border-foreground/30",
-        isLocked ? "opacity-50" : "",
+        isLocked ? "bg-muted/50" : "",
       ].join(" ")}
       aria-label={ariaLabel}
     >
@@ -110,7 +110,7 @@ function AppRow({ app, masteredSlugs, bySlug }: AppRowProps) {
           </div>
           <p className="mt-2 text-sm text-foreground/70">{app.description}</p>
           {app.understandWhen !== undefined && app.understandWhen.length > 0 && (
-            <p className="mt-1.5 text-xs text-foreground/50 italic">{app.understandWhen}</p>
+            <p className="mt-1.5 text-xs text-foreground/70 italic">{app.understandWhen}</p>
           )}
         </Link>
         <div className="shrink-0 sm:self-center">
@@ -119,10 +119,10 @@ function AppRow({ app, masteredSlugs, bySlug }: AppRowProps) {
       </div>
       {isLocked && (
         <div className="mt-2 flex items-center gap-3">
-          <p className="text-xs text-foreground/50">Locked — needs: {missing}</p>
+          <p className="text-xs text-foreground/70">Locked — needs: {missing}</p>
           <Link
             href={`/${app.slug}`}
-            className="text-xs text-foreground/60 underline underline-offset-2 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground/30 rounded"
+            className="text-xs text-foreground/70 underline underline-offset-2 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground/30 rounded"
           >
             Open anyway
           </Link>

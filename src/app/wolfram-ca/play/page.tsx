@@ -149,9 +149,11 @@ export default function WolframCaPlayPage() {
     setSeed((s) => s + 1);
   }, []);
 
-  const btnClass =
-    "text-sm px-3 py-1 rounded border border-border hover:border-foreground/50 text-foreground/70 hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
-  const btnActive = "border-foreground/50 text-foreground bg-foreground/10";
+  const btnBase =
+    "text-sm px-3 py-1 rounded border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
+  const btnIdle =
+    "border-border hover:border-foreground/50 text-foreground/70 hover:text-foreground";
+  const btnActive = "border-foreground bg-foreground text-background";
   const inputClass =
     "w-16 rounded border border-border bg-transparent px-2 py-1 text-sm tabular-nums focus:outline-none focus:ring-2 focus:ring-ring";
 
@@ -182,7 +184,7 @@ export default function WolframCaPlayPage() {
               key={r}
               type="button"
               onClick={() => handlePreset(r)}
-              className={`${btnClass} ${rule === r ? btnActive : ""}`}
+              className={`${btnBase} ${rule === r ? btnActive : btnIdle}`}
               aria-pressed={rule === r}
               aria-label={`Switch to rule ${r}`}
             >
@@ -193,7 +195,7 @@ export default function WolframCaPlayPage() {
           <button
             type="button"
             onClick={handleRestart}
-            className={btnClass}
+            className={`${btnBase} ${btnIdle}`}
             aria-label="Restart the simulation from a single centered cell"
           >
             Restart

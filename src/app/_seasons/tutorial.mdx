@@ -1,0 +1,86 @@
+## How it works, step by step
+
+There are three main ideas: season palettes, smooth blending, and flowing curves. Here is each one.
+
+### Step 1: define season palettes
+
+Each season is a plain object with a background color and a list of ribbon colors. Every color comes from the Okabe-Ito set, which stays distinguishable for people with red-green color blindness.
+
+```ts
+const SEASON_PALETTES = {
+  spring: {
+    bg: "#e8f4f0",
+    ribbons: [[86, 180, 233], [0, 158, 115], ...],  // sky blue, bluish green
+    accent: [204, 121, 167],                          // soft pink dots
+  },
+  summer: {
+    bg: "#fdf6e3",
+    ribbons: [[240, 228, 66], [230, 159, 0], ...],   // yellow, orange
+    accent: [240, 228, 66],
+  },
+  // ...and so on for autumn and winter
+};
+```
+
+### Step 2: blend between palettes
+
+The sketch always holds two seasons: `from` and `to`. A number `t` grows from 0 to 1 each frame. When it reaches 1, `from` becomes `to`, and `to` advances to the next season.
+
+```ts
+// t advances each frame based on cycle speed and elapsed time (dt).
+blendT += cycleSpeed * dt;
+
+// Each ribbon color is blended channel by channel.
+function lerpRgb(a, b, t) {
+  return [
+    Math.round(a[0] + (b[0] - a[0]) * t),
+    Math.round(a[1] + (b[1] - a[1]) * t),
+    Math.round(a[2] + (b[2] - a[2]) * t),
+  ];
+}
+```
+
+At `t = 0` you see the `from` season. At `t = 0.5` the colors are halfway between. At `t = 1` the `to` season has fully arrived. The eye never sees a hard cut.
+
+### Step 3: draw flowing curves
+
+Each ribbon is a path drawn with short `lineTo` steps across the canvas. The vertical position is the sum of two sine waves with different frequencies. The waves drift forward over time, so the ribbons appear to flow.
+
+```ts
+for (let px = 0; px <= width; px += 3) {
+  const normalizedX = px / width;
+  const wave =
+    Math.sin(normalizedX * Math.PI * freq + phase + drift) * amplitude +
+    Math.sin(normalizedX * Math.PI * freq * 0.7 + phase * 1.3 + drift * 0.8) * amplitude * 0.4;
+  const y = yBase + wave;
+  ctx.lineTo(px, y);
+}
+```
+
+Each ribbon gets a linear gradient stroke that blends two palette colors from left to right. That gives each ribbon its own depth.
+
+### Step 4: accent dots
+
+A small set of dots floats through the scene. They drift slowly, wrap at the edges, and wobble on a sine curve. Their color comes from the blended accent value, so it also transitions smoothly between seasons.
+
+### The draw loop
+
+Every frame, four things happen in order:
+
+1. Clear the canvas and fill with the blended background color.
+2. Advance `t` and check if a season transition is complete.
+3. Draw the ribbon curves with the blended palette.
+4. Update and draw the accent dots.
+
+The loop uses `useAnimationFrame` from the shared library, which pauses when the tab is hidden and respects the system "reduce motion" setting.
+
+## Try this
+
+- Pick a season from the select and watch the ribbons jump to that palette.
+- Turn auto-cycle off and manually switch between seasons to see how each palette differs.
+- Move the speed slider to the right to watch seasons blur through each other. Move it left for a slow, meditative drift.
+- Increase the ribbon count to fill the canvas with layers. Decrease it for a sparse, open look.
+
+## What to remember
+
+Lerp is the key idea. Given any two values and a number from 0 to 1, lerp gives you the smooth in-between. Apply it to all three channels of a color and you get a smooth color transition. Apply it to a background color and you blend the whole scene. The same one-line formula scales to palettes, positions, sizes, and anything else that changes over time.

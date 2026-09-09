@@ -1,0 +1,34 @@
+# Tutorial: Mushrooms
+
+By the end of this tutorial you will understand how depth controls both size and transparency, and how the sine sway produces independent motion for each mushroom.
+
+## Predict
+
+The depth value for each mushroom is between 0 (farthest) and 1 (nearest). Size is `0.4 + depth * 0.6`. Transparency (alpha) is `0.35 + depth * 0.65`.
+
+A mushroom with depth 0 has what size scale? A mushroom with depth 1? How much bigger is the nearest mushroom compared to the farthest?
+
+## Run
+
+1. Open the sketch and find the largest, most opaque mushroom. That mushroom has a depth value close to 1.
+2. Find the smallest, most transparent mushroom. Its depth value is close to 0.
+3. Watch the sway for ten seconds. Notice that the large cap mushrooms move more than the small ones.
+4. Click near the top of the canvas to plant a new mushroom. Compare its size to mushrooms already in the foreground.
+
+## Look closer
+
+- All mushroom data is computed before any drawing begins. The `MushroomGeometry` type stores all the numbers for one mushroom. Drawing is a separate step that reads from that data.
+- Sorting is `list.sort((a, b) => a.depth - b.depth)`. Ascending depth means far mushrooms are drawn first and near ones overdraw them.
+- The sway offset is `Math.sin(t * swaySpeed + phase) * capRx * 0.08`. The phase is `x * 0.013 + depth * 2.3`, which shifts each mushroom into a different part of the sine wave.
+- Each mushroom is drawn as three Canvas 2D calls: a tapered quadrilateral for the stem, a half-ellipse for the cap, and small circles for spots.
+
+## Break it
+
+- Set sway to 0. All mushrooms become still. The only motion stops.
+- Set sway to 2 (maximum). The caps swing visibly, especially the large ones.
+- Press "Regenerate" and count how many mushrooms appear in the foreground (large and opaque) versus the background (small and transparent).
+- Try clicking in many spots quickly. Each click inserts a new mushroom at the correct depth position in the sorted list.
+
+## Recap
+
+A mushroom is a typed data object. Depth controls both size and transparency with simple linear formulas. Sorting by depth produces correct overdraw. A sine wave with per-mushroom phase makes each cap sway independently.

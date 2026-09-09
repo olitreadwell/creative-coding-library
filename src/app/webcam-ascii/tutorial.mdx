@@ -1,0 +1,34 @@
+# Tutorial: Webcam ASCII
+
+By the end of this tutorial you will understand how glyph ink density is measured and how brightness maps to a character index.
+
+## Predict
+
+The sketch draws each character on a 16 by 16 canvas and counts pixels with non-zero alpha. A space scores 0 filled pixels. An `@` scores close to 256.
+
+After sorting from least ink to most, which end of the sorted array holds the densest characters? If a cell is very dark (brightness near 0), which end of the sorted array should it pick from?
+
+## Run
+
+1. Click "Enable camera" and allow access.
+2. Hold your hand in front of a bright background. Watch the edge between your hand and the background become a sharp character boundary.
+3. Switch "Glyphs" between ASCII, Blocks, and Dots. Notice how the number of distinct density levels changes the smoothness of the gradient.
+4. Raise "Contrast" and watch dark shadow areas fill with denser characters.
+
+## Look closer
+
+- The sketch samples the camera into a tiny canvas that matches the grid dimensions (for example, 80 columns by 50 rows). `getImageData` on that small canvas returns only the bytes needed, keeping the per-frame work proportional to the grid size, not the camera resolution.
+- The canvas is flipped horizontally before drawing: `ctx.scale(-1, 1)` after `ctx.translate(cols, 0)`. This mirrors the image so it reads as a selfie view.
+- Luminance is computed as `0.299 * r + 0.587 * g + 0.114 * b`. These are BT.601 coefficients, the standard weights used in video and television encoding.
+- When the component unmounts, every `MediaStreamTrack` is stopped with `track.stop()`. This turns off the camera indicator light in the browser.
+
+## Break it
+
+- Switch "Glyphs" to "Dots." The dots set has very few characters, so the gradient has fewer steps and looks more quantized.
+- Set "Cell size" to maximum. Each character represents a large area. The image becomes abstract and blocky.
+- Hold a uniformly lit white sheet of paper in front of the camera. Most characters should vanish because high brightness maps to sparse glyphs.
+- Try the sketch in a dim room. The contrast slider may need to be raised to see any character variation.
+
+## Recap
+
+Glyph ink density is measured by drawing each character and counting filled pixels. Characters are sorted lightest to densest. Each cell's brightness selects a glyph from that sorted list. The same `getUserMedia` plus `getImageData` pipeline powers this sketch and any other real-time camera effect.

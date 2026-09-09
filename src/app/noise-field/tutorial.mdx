@@ -1,0 +1,34 @@
+# Tutorial: Noise Field
+
+By the end of this tutorial you will understand how Perlin noise becomes a direction, how particles follow that direction, and why overlapping trails glow.
+
+## Predict
+
+Perlin noise at position (x, y) returns a smooth number. The sketch multiplies that number by `TAU * 2` (about 12.6) to convert it to an angle in radians. Radians are a way to measure direction: 0 means "right," 3.14 means "left."
+
+If the noise value at a point is 0.5, what angle does that produce? (Multiply 0.5 by 12.6.) Does that direction point roughly right, up, left, or down?
+
+## Run
+
+1. Open the sketch and watch the particles for fifteen seconds. Identify two or three places where trails concentrate.
+2. Click "New seed" and find where the trails concentrate in the new field. Notice that the concentration spots are in different places.
+3. Watch a single particle for several frames. It follows a curved path, not a straight line, because the direction field changes from cell to cell.
+4. Let the sketch run for a full minute without interruption. Watch the glowing regions grow.
+
+## Look closer
+
+- The canvas is never fully cleared each frame. Instead a nearly-transparent dark rectangle is painted over it, dimming old trails slightly. Over many frames old trails fade, while heavily visited paths stay bright.
+- The blend mode is set to `"lighter"` before drawing particles. This makes overlapping colors add rather than cover. Ten dim strokes at the same spot produce one bright spot.
+- 2000 particles are created at random positions. Each particle is stored as an `{ x, y }` pair with no velocity. The flow field provides all the direction.
+- Particles that move off the edge of the canvas wrap to the opposite edge (toroidal boundary). No particle is ever lost.
+
+## Break it
+
+- Try changing the field scale in the source. A smaller scale value means the noise changes slowly, so particles take long sweeping paths. A larger scale means tight, turbulent spirals.
+- Try running with 500 particles instead of 2000. The trails become sparse and thread-like.
+- Watch what happens immediately after clicking "New seed." The old trails fade rapidly but are still visible for a moment.
+- Notice that particles always move in the direction the field points, never backward. The field only determines direction, not speed.
+
+## Recap
+
+Perlin noise gives each location a smooth angle. Particles follow that angle step by step. Additive blending makes paths glow where they overlap. Those three ideas, combined, turn 2000 moving dots into a luminous flowing field.

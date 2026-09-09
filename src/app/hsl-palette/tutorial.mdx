@@ -1,0 +1,34 @@
+# Tutorial: HSL Palette
+
+By the end of this tutorial you will understand how each harmony scheme is computed and why the contrast threshold is set at 55% lightness.
+
+## Predict
+
+The "Complementary" scheme uses hue offsets 0 and 180. The "Triadic" scheme uses 0, 120, and 240. These offsets are added to the base hue and the result is wrapped around 360.
+
+If you set the base hue to 300 and use the Triadic scheme, what are the three resulting hues? (Hint: add 120 and 240 to 300, then wrap any result above 360 back around.)
+
+## Run
+
+1. Open the sketch. Set hue to 0 (red), saturation to 0.7, lightness to 0.5. Note the Complementary swatches.
+2. Change the scheme to Triadic. The third swatch appears. Calculate what the three hues should be (0, 120, 240) and confirm.
+3. Change the scheme to Monochromatic. All swatches share the same hue but have different lightness values.
+4. Set lightness to 0.55 (the contrast threshold) and note which swatches switch from white text to black text.
+
+## Look closer
+
+- The `Hsl` type stores hue in degrees (0 to 360) and saturation and lightness as fractions (0 to 1). This makes arithmetic easy: `hue + 180` gives the complement.
+- The `shift` helper wraps hue values using modular arithmetic. Adding 180 to hue 300 gives 480, which wraps to 120.
+- Readable text uses a single rule: lightness at or above 0.55 means black text, below means white. This works across all hue and saturation values without checking contrast ratios.
+- Clicking a swatch writes the hex code using `navigator.clipboard.writeText`. The "Copied" label replaces the hex for 1.5 seconds, then restores it.
+
+## Break it
+
+- Set saturation to 0. Change between all five schemes. The swatches stay grey because there is no hue to rotate.
+- Set lightness to 0 or 1. All swatches go black or white. Hue and saturation have no effect at the extremes.
+- Pick Triadic, then choose Tetradic. Count the swatches in each scheme and confirm they match the description (3 and 4).
+- Slowly drag lightness past 0.55. Find the exact point where the readable text on a swatch switches color.
+
+## Recap
+
+Color harmonies are fixed hue offsets on a 360-degree circle. HSL makes those offsets easy to compute. One lightness threshold handles readable text for all 360 possible hues.

@@ -1,0 +1,25 @@
+# Sphere Spectrum
+
+An icosphere whose surface erupts into colored peaks driven by your microphone, with each latitude band responding to a different pitch range.
+
+Learners see how an audio FFT (fast Fourier transform) signal drives 3D geometry in real time, using log-frequency banding to match how pitch works perceptually.
+
+## What you see
+
+- A smooth, slowly rotating sphere at rest.
+- After enabling the microphone, the sphere surface pushes outward into peaks where sound is loud.
+- Cool blue means quiet; hot red means loud.
+- Bands near the top of the sphere respond to bass; bands near the bottom respond to treble.
+
+## What it teaches
+
+- **Vertex displacement:** each point on the sphere surface is pushed outward along its normal direction by an amount proportional to the sound energy in that point's frequency band.
+- **Log-frequency banding:** pitch is logarithmic, so raw FFT bins are grouped into bands with geometric spacing. This maps bass and treble more evenly.
+- **Envelope (attack/release):** each band's energy follows a fast-attack, slow-release curve. This makes the sphere punchy without flickering.
+- **Refs over state:** audio data changes 60 times per second. Using React refs (not state) avoids re-rendering the component tree on every frame.
+
+## Try this
+
+- Enable the microphone and hum at different pitches. Watch which latitude of the sphere spikes.
+- Snap fingers near the microphone. The spike should be brief and sharp, then fade.
+- Raise the audio slider for more dramatic spikes. Lower it for a gentle shimmer.

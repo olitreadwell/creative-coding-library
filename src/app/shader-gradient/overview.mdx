@@ -1,0 +1,25 @@
+# Shader Gradient
+
+A fullscreen animated color field computed entirely on the GPU, using a GLSL fragment shader and a cosine color palette.
+
+Learners see what a fragment shader is and why GPU-parallel computation produces smooth animation even at full screen resolution.
+
+## What you see
+
+- A slowly morphing field of smooth color blobs that fill the entire screen.
+- The animation never stops or repeats exactly.
+- Three palette buttons (calm, warm, wild) shift the hue region while keeping the blob shapes the same.
+- No images or video files are loaded. Every color is computed fresh each frame.
+
+## What it teaches
+
+- **Fragment shader:** a small program that runs on the GPU once per pixel, producing a color from the pixel's position and a time value.
+- **GPU parallelism:** the GPU runs the shader on every pixel simultaneously, which is why a fullscreen animation is smooth.
+- **Domain warping:** the pixel's position is bent using sine waves before sampling a color function. Bending the input creates organic blob shapes from simple math.
+- **Cosine palette:** a formula `a + b * cos(angle)` produces a smooth color cycle from four short vectors, with no texture files.
+
+## Try this
+
+- Switch between "calm," "warm," and "wild." Watch the hue region shift while the blob shapes stay the same.
+- Leave it running for several minutes without touching anything. Notice the animation never repeats.
+- Open browser dev tools, go to the Network tab, and confirm no image or video files are loaded.

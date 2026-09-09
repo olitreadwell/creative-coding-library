@@ -1,0 +1,25 @@
+# Mondrian
+
+An endless tunnel of Mondrian-style grid panels flying toward you, with perspective scaling and depth-of-field blur.
+
+Learners see how three independent ideas (recursive subdivision, perspective projection, and depth of field) combine to produce a convincing 3D effect on a flat canvas.
+
+## What you see
+
+- A continuous stream of colorful grid panels rushing toward the camera.
+- Panels near the focus depth look sharp and fully opaque. Distant panels look faint.
+- Each panel is a unique Mondrian-style layout: primary-colored rectangles divided by thick black lines.
+- Clicking the canvas scrambles all layers with new random layouts.
+
+## What it teaches
+
+- **Perspective projection:** the formula `scale = focal / (focal + z)` makes far panels small and near panels large.
+- **Recursive subdivision:** the `subdivide` function splits a rectangle randomly, then calls itself on each half, producing a tree of rectangles.
+- **Depth of field:** alpha (transparency) is mapped to distance from the focus depth, simulating a camera's focus window.
+- **Recycling:** panels that pass the camera are assigned a new seed and placed at the far end of the tunnel, creating an endless loop from a finite pool.
+
+## Try this
+
+- Drag "focus" from 0 to 2000 and watch the sharpness window sweep through the tunnel.
+- Set "density" to 2 for large, bold blocks per panel.
+- Set "speed" to maximum and watch the tunnel blur into a pattern.

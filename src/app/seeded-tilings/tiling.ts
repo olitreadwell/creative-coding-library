@@ -2,6 +2,14 @@ import type { Rng } from "@/lib/creative/random";
 
 export type Orientation = 0 | 1;
 
+/**
+ * Visual motif for each tile.
+ * - "arcs"      — quarter-circle arcs connecting opposite edge midpoints (original).
+ * - "diagonals" — straight lines crossing the tile corner-to-corner midpoints.
+ * - "wedges"    — filled quarter-circle wedges in opposite corners.
+ */
+export type TileStyle = "arcs" | "diagonals" | "wedges";
+
 export type GridDimensions = {
   cols: number;
   rows: number;
@@ -99,5 +107,111 @@ export function drawTile(
     ctx.strokeStyle = colorB;
     ctx.arc(x, y + size, half, Math.PI * 1.5, Math.PI * 2);
     ctx.stroke();
+  }
+}
+
+/**
+ * Draw a single Truchet tile using a selectable visual style.
+ * Delegates to `drawTile` for "arcs"; implements "diagonals" and "wedges" inline.
+ *
+ * "diagonals": two straight stroked lines crossing the tile at the two possible
+ *   orientations. Each line connects opposite edge midpoints through the tile.
+ *
+ * "wedges": two filled quarter-circle sectors at opposite corners — same geometry
+ *   as arcs but filled instead of stroked, so the motif reads at any line width.
+ *
+ * @param ctx - Canvas 2D rendering context (already scaled for DPR)
+ * @param x - Pixel x of tile top-left
+ * @param y - Pixel y of tile top-left
+ * @param size - Tile side length in pixels
+ * @param orientation - 0 or 1
+ * @param colorA - CSS color string for the first element
+ * @param colorB - CSS color string for the second element
+ * @param lineWidth - Stroke width in pixels (used by arcs and diagonals)
+ * @param style - Visual motif ("arcs" | "diagonals" | "wedges")
+ */
+export function drawTileStyled(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  size: number,
+  orientation: Orientation,
+  colorA: string,
+  colorB: string,
+  lineWidth: number,
+  style: TileStyle,
+): void {
+  if (style === "arcs") {
+    drawTile(ctx, x, y, size, orientation, colorA, colorB, lineWidth);
+    return;
+  }
+
+  const half = size / 2;
+  const cx = x + half;
+  const cy = y + half;
+
+  if (style === "diagonals") {
+    ctx.lineWidth = lineWidth;
+    ctx.lineCap = "round";
+
+    if (orientation === 0) {
+      // Top-left to bottom-right midpoints through center.
+      ctx.beginPath();
+      ctx.strokeStyle = colorA;
+      ctx.moveTo(cx, y); // top edge midpoint
+      ctx.lineTo(x, cy); // left edge midpoint
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.strokeStyle = colorB;
+      ctx.moveTo(cx, y + size); // bottom edge midpoint
+      ctx.lineTo(x + size, cy); // right edge midpoint
+      ctx.stroke();
+    } else {
+      // Top-right to bottom-left midpoints.
+      ctx.beginPath();
+      ctx.strokeStyle = colorA;
+      ctx.moveTo(cx, y); // top edge midpoint
+      ctx.lineTo(x + size, cy); // right edge midpoint
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.strokeStyle = colorB;
+      ctx.moveTo(cx, y + size); // bottom edge midpoint
+      ctx.lineTo(x, cy); // left edge midpoint
+      ctx.stroke();
+    }
+    return;
+  }
+
+  // style === "wedges": filled quarter-circle sectors at opposite corners.
+  if (orientation === 0) {
+    ctx.beginPath();
+    ctx.fillStyle = colorA;
+    ctx.moveTo(x, y);
+    ctx.arc(x, y, half, 0, Math.PI / 2);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.fillStyle = colorB;
+    ctx.moveTo(x + size, y + size);
+    ctx.arc(x + size, y + size, half, Math.PI, Math.PI * 1.5);
+    ctx.closePath();
+    ctx.fill();
+  } else {
+    ctx.beginPath();
+    ctx.fillStyle = colorA;
+    ctx.moveTo(x + size, y);
+    ctx.arc(x + size, y, half, Math.PI / 2, Math.PI);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.fillStyle = colorB;
+    ctx.moveTo(x, y + size);
+    ctx.arc(x, y + size, half, Math.PI * 1.5, Math.PI * 2);
+    ctx.closePath();
+    ctx.fill();
   }
 }

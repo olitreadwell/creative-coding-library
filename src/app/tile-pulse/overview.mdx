@@ -1,0 +1,25 @@
+# Tile Pulse
+
+A grid of geometric tiles animated with a travelling wave, reacting to cursor hover and expanding rings when you click.
+
+Learners see how phase offsets, radial falloff functions, and event-driven ripples combine to produce interactive motion.
+
+## What you see
+
+- A grid of colored tiles animating in a diagonal wave pattern.
+- Tiles near your cursor scale up and rotate toward you.
+- Clicking sends an expanding ring outward. Tiles briefly react as the ring passes.
+- Dragging leaves a continuous trail of disturbance.
+
+## What it teaches
+
+- **Phase offset:** each tile gets a different start time in the animation cycle based on its grid position. This is what makes the wave travel across the grid.
+- **Radial falloff:** a function that returns 1 at distance 0 and fades to 0 at a set radius. This controls how far the cursor influence reaches.
+- **Ripple influence:** a bell-curve value that peaks when a tile sits exactly on the ring edge, and is zero inside or outside it.
+- **Refs for performance:** pointer position and ripple data are stored in refs (not React state) so the canvas does not re-render on every pointer move.
+
+## Try this
+
+- Move the cursor slowly across the grid and watch the influence field spread around it.
+- Click in the center of the grid and watch the ring expand outward. Count how many tile rings it passes.
+- Hold the mouse button and drag. Overlapping ripple rings from the drag trail interact with each other.

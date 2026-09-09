@@ -1,0 +1,34 @@
+# Tutorial: Fourier Epicycles
+
+By the end of this tutorial you will understand what each rotating arm contributes to the traced shape and why only odd-numbered circles appear in a square wave.
+
+## Predict
+
+A square wave is a signal that jumps between two values, making sharp corners. Sine waves are smooth and round. Yet this sketch traces a square-wave shape using only sine waves attached to rotating circles.
+
+The circles use frequencies 1, 3, 5, 7, and so on (odd numbers only). Why do you think even frequencies are absent from a square wave? Think about what symmetry a square wave has.
+
+## Run
+
+1. Open the sketch and watch until the path completes one full cycle. Notice the shape that appears.
+2. Press "Reset" to clear the path. Now count the circles in the chain. Each circle is one Fourier term.
+3. Watch the tip of the outermost arm. Its path is what gets recorded each frame.
+4. Compare how the shape looks after half a cycle (rough) versus one full cycle (smoother). More frames means more of the path is drawn.
+
+## Look closer
+
+- The largest circle (the one attached to the center) spins at frequency 1: one rotation per full cycle. Its radius is the largest because the fundamental frequency contributes the most to the shape.
+- Each subsequent circle is smaller and faster. The size of each circle is `4 / (pi * frequency)`. That formula comes directly from the Fourier series for a square wave.
+- The path is stored as an array of up to 1200 points. Older points are not removed; the full path draws as a polyline each frame.
+- The canvas uses `devicePixelRatio` to stay sharp on high-density screens. The drawing coordinates are still in regular CSS pixels.
+
+## Break it
+
+- Try watching the sketch until the path closes and then continuing for one more cycle. The path should trace exactly the same shape again.
+- Compare the traced corners to an actual right-angle square. Are the corners perfectly sharp? More circles would bring them closer.
+- Imagine adding one more circle at frequency 9. Where would it sit in the chain (smallest or largest)? What would it contribute to the shape?
+- Think about what shape you would get if you kept only the first circle and removed all others.
+
+## Recap
+
+Adding rotating circles of the right sizes and speeds can trace any repeating shape. For a square wave, only odd-numbered frequencies appear, and each one's radius is `4 / (pi * frequency)`. That is the Fourier series made visible.

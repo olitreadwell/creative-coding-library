@@ -1,0 +1,34 @@
+# Tutorial: Boids
+
+By the end of this tutorial you will be able to explain what each of the three boid rules does and predict what happens when one is removed.
+
+## Predict
+
+Each boid follows three rules: move away from neighbors that are too close, steer toward the average direction of nearby neighbors, and steer toward the average position of nearby neighbors. The flock has no leader.
+
+If you removed the separation rule but kept the other two, what would happen to the flock over time? Think about it before reading on.
+
+## Run
+
+1. Press Play and watch for about ten seconds. Notice that the triangles form groups without being told to.
+2. Click "New flock" to start with a different seed. Same rules, different starting positions, different result.
+3. Watch one triangle near the edge of a flock. Watch it turn as the group turns. That turn came from alignment.
+4. Watch two groups collide. Some triangles separate from the group for a moment before being drawn back. That is separation and cohesion working at the same time.
+
+## Look closer
+
+- The edges of the canvas are toroidal, meaning a boid that exits the right side enters from the left. Boids near the boundary treat boids on the opposite edge as neighbors.
+- Color comes from heading and speed. A boid traveling fast in one direction looks different from one hovering slowly.
+- Each boid scans all other boids every frame, but only responds to those inside its perception radius. Boids outside that radius are invisible to it.
+- The three force weights (separation, alignment, cohesion) use small multipliers. If one weight were too large it would overpower the others and break the flock.
+
+## Break it
+
+- Try disabling cohesion in the source code: set the cohesion weight to 0. The flock should scatter and never regroup.
+- Try setting the perception radius very small: boids become nearly blind and the flock dissolves into independent wanderers.
+- Try setting separation weight to 0: boids should collapse into a dense clump.
+- Try `New flock` ten times in a row. Count how many distinct sub-flocks you see in each run.
+
+## Recap
+
+Three local rules, applied independently by each boid every frame, produce a flock with no central controller. That is emergence: the whole is more organized than any single rule.

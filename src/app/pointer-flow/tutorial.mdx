@@ -1,0 +1,34 @@
+# Tutorial: Pointer Flow
+
+By the end of this tutorial you will understand how the shockwave produces a timed impulse per balloon and how the squash spring restores the balloon shape.
+
+## Predict
+
+The shockwave ring expands outward at a fixed speed. Its impulse on a balloon is computed using a Gaussian (bell-curve) shape centered on the ring edge. The impulse is near zero when the ring is far from the balloon center.
+
+If the ring expands at 400 pixels per second and a balloon is 300 pixels from the click point, roughly how many seconds pass before the ring reaches that balloon?
+
+## Run
+
+1. Click in an empty area. Watch the ring expand outward. Count approximately how many balloons it passes.
+2. Click very close to one balloon. The squash should be immediate and strong.
+3. Click far from all balloons. The ring passes them with a lighter impulse because the ring is fading with age.
+4. Switch to repel mode and move the cursor slowly toward a group of balloons. Watch them spread apart as you approach.
+
+## Look closer
+
+- Velocity is multiplied by 0.82 each frame, regardless of forces. This is friction. Without it, balloons would accelerate indefinitely.
+- The squash value is a scalar on the balloon's shape. When the ring hits, it kicks the squash downward. The spring equation `squash += (1 - squash) * restoreRate` gradually brings it back to 1 (round).
+- Each balloon has a per-balloon wobble phase. The wobble adds a small sine offset to the radius of each point in the balloon shape, so each blob looks independently alive.
+- A shockwave ring expires after 1.4 seconds. Rings that age past that point are removed from the array each frame.
+
+## Break it
+
+- Click rapidly in the same spot five times. Watch the balloons receive multiple impulses in quick succession.
+- Set strength to maximum. Balloons should fly fast and the squash should be dramatic.
+- Set the balloon count to 1 and click around it repeatedly. Study the squash-and-spring behavior in isolation.
+- Hold the button down and drag slowly. Notice how overlapping rings from the drag trail combine.
+
+## Recap
+
+Each click spawns a ring. The ring expands. Each frame, each balloon checks how close the ring edge is and takes a proportional impulse. The squash spring restores the shape. Three forces (cursor, ring, soft separation) plus friction produce the full behavior.

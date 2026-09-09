@@ -1,0 +1,25 @@
+# Wireframe
+
+A solid 3D shape spinning on a flat canvas, using only rotation matrices and one perspective division to fake depth.
+
+Learners see how every 3D renderer works at its core: rotate points, then project them to 2D by dividing by distance.
+
+## What you see
+
+- A spinning wireframe shape (cube, sphere, or other solid) that reads as three-dimensional.
+- Near edges look larger and brighter. Far edges look smaller and dimmer.
+- Dragging the canvas with a mouse or finger spins the shape directly.
+- A perspective slider changes how extreme the depth effect is.
+
+## What it teaches
+
+- **Rotation matrices:** sine and cosine rotate a 3D point around an axis. Applied each frame with increasing angles, the shape spins.
+- **Perspective projection:** dividing a point's x and y by its z distance makes near things large and far things small. That one division is the core of all perspective rendering.
+- **Painter's algorithm:** edges are sorted by depth and drawn back-to-front. Far edges are drawn first so near edges paint over them correctly.
+- **Depth tinting:** near edges are brighter, far edges are dimmer. The eye reads this as light and distance.
+
+## Try this
+
+- Drag the perspective slider to a small value. The depth effect becomes very exaggerated, like a fisheye lens.
+- Drag it to a large value. The shape looks almost flat, as if viewed from very far away.
+- Drag the canvas to spin the shape manually.

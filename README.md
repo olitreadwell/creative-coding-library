@@ -1,12 +1,21 @@
 # creative-coding-library
 
-A scheduled creative-coding learning lab. Two agents (a curator and a builder) take turns finding ideas, building small apps, and shipping them to new routes. Each app is a stand-alone page that teaches one concept cleanly.
+30 generative-art sketches. Built to be broken.
 
-## What you'll see here
+Each sketch teaches one concept. You predict what it does, run it, break it, fix it, then say what you learned. The home page orders sketches by what you need to know first, so you build up knowledge one step at a time.
 
-- A growing catalog of small interactive apps, each at its own URL.
-- A coverage map: concepts the lab has touched vs. concepts still to cover.
-- Two playbooks (creative coding + data viz) that the agents follow each run.
+## For learners
+
+Open the site at the Journey view (it's the default). Start with sketches that have no locked prerequisites. Each sketch has a predict prompt, a live demo, and a "mark as understood" button. When you mark one done, the next ones unlock.
+
+The Catalog view shows all sketches with search and filters. Use it when you want to browse or find something specific.
+
+## For contributors
+
+- Each sketch lives in `src/app/<slug>/`. It exports a typed `meta` record in `app.meta.ts`.
+- `scripts/build-app-registry.mjs` reads those files and generates `src/lib/creative/registry.generated.ts`. The home page reads from that file.
+- Never edit the generated file by hand. Two sketch PRs can run in parallel because each one only touches its own `<slug>/` folder.
+- Shared helpers (math, color, seeded random, noise, an animation-frame hook) live in `src/lib/creative/`. Use these before writing your own.
 
 ## Quick start
 
@@ -18,35 +27,28 @@ pnpm test         # vitest
 pnpm build        # next build
 ```
 
-## How it works
+## How to add a sketch
 
-- Apps live under `src/app/<slug>/`. Each one exports a typed `meta` record in `app.meta.ts`.
-- `scripts/build-app-registry.mjs` globs those, generates `src/lib/creative/registry.generated.ts`, and the home + `/creative` catalog page read from it.
-- The aggregator never gets hand-edited. Two parallel app PRs never touch the same file.
-- Shared helpers (math, color, seeded random, value/Perlin noise, an animation-frame hook) live in `src/lib/creative/`.
-
-## How to add an app by hand
-
-1. Make a folder: `src/app/<slug>/`.
+1. Create a folder: `src/app/<slug>/`.
 2. Add `page.tsx` and `app.meta.ts` (use `defineApp({ ... })` from `@/lib/creative/registry`).
 3. Run `pnpm registry`.
-4. Visit `/` and `/creative`. Your app should be listed.
+4. Visit `/`. Your sketch appears in both Journey and Catalog views.
 
-## How the schedules run
+See [`docs/creative-coding/CONVENTIONS.md`](./docs/creative-coding/CONVENTIONS.md) for the full app shape spec. Read [`docs/creative-coding/LICENSING.md`](./docs/creative-coding/LICENSING.md) before copying any upstream source.
 
-See [`docs/creative-coding/TRIGGER-PROMPT.md`](./docs/creative-coding/TRIGGER-PROMPT.md) and [`docs/data-viz/TRIGGER-PROMPT.md`](./docs/data-viz/TRIGGER-PROMPT.md) for paste-ready prompts for Claude Code on the web (https://code.claude.com/docs/en/claude-code-on-the-web). One curator schedule files `app-idea` GitHub issues. One builder schedule picks issues up and ships PRs that auto-merge on green CI.
+## Parallel work
 
-## The docs
+One worktree per sketch: `git worktree add ../wt-<slug> -b app/<slug> dev`. The registry script regenerates on each worktree, so no merge conflict ever touches the catalog.
 
-- [`docs/creative-coding/KNOWLEDGE-MAP.md`](./docs/creative-coding/KNOWLEDGE-MAP.md) — the concept tree + coverage
-- [`docs/creative-coding/PLAYBOOK.md`](./docs/creative-coding/PLAYBOOK.md) — what the builder does
-- [`docs/creative-coding/CURATION.md`](./docs/creative-coding/CURATION.md) — what the curator does
-- [`docs/creative-coding/SOURCES.md`](./docs/creative-coding/SOURCES.md) — where ideas + code come from
-- [`docs/creative-coding/LICENSING.md`](./docs/creative-coding/LICENSING.md) — license decision table
-- [`docs/creative-coding/CONVENTIONS.md`](./docs/creative-coding/CONVENTIONS.md) — the gold-standard app shape
-- [`docs/creative-coding/ROADMAP.md`](./docs/creative-coding/ROADMAP.md) — L1 → L2 → L3 curriculum
-- [`docs/data-viz/`](./docs/data-viz/) — the sibling bundle for data-viz apps
-- [`NOTICES.md`](./NOTICES.md) — attribution log + dependency list
+## Docs
+
+- [`docs/creative-coding/KNOWLEDGE-MAP.md`](./docs/creative-coding/KNOWLEDGE-MAP.md) — concept tree and coverage map
+- [`docs/creative-coding/PLAYBOOK.md`](./docs/creative-coding/PLAYBOOK.md) — builder playbook
+- [`docs/creative-coding/CURATION.md`](./docs/creative-coding/CURATION.md) — curator playbook
+- [`docs/creative-coding/SOURCES.md`](./docs/creative-coding/SOURCES.md) — where ideas and code come from
+- [`docs/creative-coding/ROADMAP.md`](./docs/creative-coding/ROADMAP.md) — L1 to L3 curriculum
+- [`docs/data-viz/`](./docs/data-viz/) — data-viz sibling bundle
+- [`NOTICES.md`](./NOTICES.md) — attribution log and dependency list
 
 ## Stack
 

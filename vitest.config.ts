@@ -1,4 +1,4 @@
-import { defineConfig } from "vitest/config";
+import { defineConfig, configDefaults } from "vitest/config";
 import react from "@vitejs/plugin-react";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
@@ -12,6 +12,9 @@ export default defineConfig({
     setupFiles: ["./vitest.setup.ts"],
     globals: true,
     include: ["src/**/*.{test,spec}.{ts,tsx}"],
+    // Archived apps are prefixed with "_" (also skipped by the registry and Next
+    // routing); don't run their tests either.
+    exclude: [...configDefaults.exclude, "src/app/_*/**"],
     passWithNoTests: true,
   },
   resolve: {

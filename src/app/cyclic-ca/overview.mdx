@@ -1,0 +1,25 @@
+# Cyclic Automaton
+
+A grid simulation where each color "eats" the next one in a cycle, like rock-paper-scissors, until spirals form across the whole canvas.
+
+Learners see how a simple eating rule, applied to a random grid, produces rotating spiral structures that no individual cell planned.
+
+## What you see
+
+- A grid that starts as random patches of color.
+- Clusters form, spread, and start to curve within a few seconds.
+- Rotating spirals grow and fill the canvas.
+- The spirals keep rotating indefinitely, with no cell ever "winning."
+
+## What it teaches
+
+- **Cyclic dynamics:** in a loop where each state beats one other and loses to one, no state takes over. The system cycles endlessly.
+- **Local rules, global patterns:** each cell only looks at its eight neighbors, yet spirals appear across the whole grid.
+- **Threshold:** a cell only changes if enough neighbors already hold the next state. Changing the threshold changes the character of the spirals.
+- **Flat array indexing:** the grid is stored as a single array with a formula to convert row and column to an index.
+
+## Try this
+
+- Drag "threshold" to 1 and watch how quickly and sharply the spirals form.
+- Increase "states" to 7 or 8 for more colors and more complex spiral arms.
+- Click "Randomize" and watch the random noise organize itself into spirals within a few seconds.

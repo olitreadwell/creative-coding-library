@@ -1,0 +1,34 @@
+# Tutorial: Sphere Field
+
+By the end of this tutorial you will understand how instancing draws thousands of spheres efficiently and how `useFrame` drives the wave animation.
+
+## Predict
+
+The wave formula is `y = sin((col + row) * spatialFreq - time * temporalFreq) * amplitude`. Two spheres at the same diagonal (`col + row = constant`) have the same phase value and therefore the same height at any given time.
+
+If two spheres are at positions (0, 5) and (5, 0), do they rise and fall together or at different times? Work out what `col + row` equals for each.
+
+## Run
+
+1. Open the sketch and watch the diagonal wave pattern. Identify which direction the wave travels.
+2. Drag "amplitude" from 0 to 1 and back. Notice the spheres scale slightly as they rise (taller spheres are a bit wider too).
+3. Find a row of spheres that is currently at the top of the wave. Count how many columns of spheres are at that peak simultaneously.
+4. Let it run for 30 seconds without touching anything. Notice the wave never pauses or loops back.
+
+## Look closer
+
+- `tempObject` and `tempColor` are created once outside the render loop. Allocating new objects every frame stresses the garbage collector, which causes hitches. Reusing objects avoids that.
+- `setMatrixAt(i, matrix)` writes the position, rotation, and scale for sphere `i` into the instance buffer. After the loop, `instanceMatrix.needsUpdate = true` tells the GPU to re-read the buffer.
+- Three light sources illuminate the spheres: ambient fill, two directional beams, and one warm point light. Without lights, `meshStandardMaterial` is completely black.
+- Fog uses `args={[backgroundColor, 18, 66]}`. Objects closer than 18 units are fully visible. Objects past 66 units blend into the background. The grid extends past 66 units in all directions, so the far edge is never visible.
+
+## Break it
+
+- Try dragging "amplitude" to 0. All spheres flatten to the same y level. The scene looks like a flat disc field.
+- Try a very high amplitude. The wave peaks become tall spikes rather than smooth swell.
+- Imagine removing the fog. The scene would show a hard edge where the grid ends, breaking the "ocean" illusion.
+- Change the wave speed slider. At very low speed the wave appears almost still; at very high speed it becomes a blur.
+
+## Recap
+
+three.js organizes 3D scenes as a tree of objects, lights, and a camera. React Three Fiber lets you write that tree with JSX. `useFrame` runs the animation loop. Instancing draws thousands of spheres in one GPU call by writing transform and color data into buffers.

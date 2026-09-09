@@ -1,0 +1,34 @@
+# Tutorial: Reaction Diffusion
+
+By the end of this tutorial you will understand what the feed and kill rates control and why A diffuses faster than B.
+
+## Predict
+
+Chemical A starts everywhere at 1.0 (maximum). Chemical B starts at 0 everywhere, except in a few seeded patches. The reaction converts A into B wherever A and B are both present.
+
+If A diffuses much faster than B, which chemical do you expect to spread further from a seeded patch: A or B? Think about which one has more mobility.
+
+## Run
+
+1. Open the sketch and watch for ten seconds. Note what shape the first patterns take.
+2. Press "Reset" and watch again. The shapes start from different seed positions but follow the same rules.
+3. Wait two minutes without resetting. The pattern continues to evolve and fill the canvas.
+4. Open the source file `grayscott.ts` and change `feed` from 0.055 to 0.04. Reset and compare.
+
+## Look closer
+
+- The simulation runs on a 200 by 150 grid, not at full screen resolution. This small grid is scaled up with `drawImage` to fill the screen. The CSS property `imageRendering: pixelated` keeps cell edges crisp rather than blurred.
+- Each update step clamps both A and B to the range [0, 1]. This prevents floating-point drift from accumulating across thousands of frames.
+- The Laplacian for a cell is computed as a weighted sum: the center cell subtracts its own value, and the eight neighbors add a weighted share. Cardinal neighbors (up, down, left, right) count twice as much as diagonals.
+- Multiple steps run per frame. Running the simulation several times before drawing gives the impression of faster development without changing the frame rate.
+
+## Break it
+
+- Change `feed` from 0.055 to 0.04 in the source. The spots should grow into stripes.
+- Change `kill` from 0.062 to 0.055. The pattern becomes broader and more maze-like.
+- Lower `STEPS_PER_FRAME` to 1. The pattern develops much more slowly, and you can watch individual cells change.
+- Change the starting density of seeded patches. More seeds means the pattern meets itself sooner and produces finer detail.
+
+## Recap
+
+Three ideas together produce everything you see: diffusion (spreading), reaction (A converts to B on contact), and imbalanced rates (A spreads faster than B). That is enough to grow the biological-looking patterns in this sketch.

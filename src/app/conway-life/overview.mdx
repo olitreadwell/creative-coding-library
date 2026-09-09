@@ -1,0 +1,25 @@
+# Conway's Game of Life
+
+A grid simulation where cells live or die each tick based on how many neighbors they have.
+
+Learners see that four short rules can produce moving patterns, stable shapes, and structures that repeat indefinitely.
+
+## What you see
+
+- A grid of colored cells that changes each tick.
+- Some clusters pulse and repeat. Others grow outward. Some vanish.
+- The grid wraps around: cells at the right edge neighbor cells at the left edge.
+- Pressing "Randomize" generates a new starting grid with the same rules.
+
+## What it teaches
+
+- **Cellular automata:** a grid where every cell updates based on its neighbors, one generation at a time.
+- **Emergence:** no one codes "gliders" or "oscillators." Those patterns appear because the rules allow them.
+- **Flat array indexing:** the grid is stored as a one-dimensional array. A formula converts row and column into an index.
+- **Toroidal grid:** edges wrap around, so every cell always has exactly eight neighbors.
+
+## Try this
+
+- Click "Pause" and find a small cluster of two or three live cells. Predict whether it will survive the next tick.
+- Look for a repeating pattern. Count how many ticks it takes to return to the same shape.
+- Click "Randomize" and compare how different starting arrangements produce different long-term behavior.

@@ -1,0 +1,25 @@
+# Lissajous
+
+A glowing curve traced by a point moving in two sine waves at once, slowly morphing as the phase between them shifts.
+
+Learners see one of the clearest examples of a parametric curve: both x and y computed from a single shared variable, producing shapes that look almost hand-drawn.
+
+## What you see
+
+- A glowing loop on a dark background, continuously shifting in shape.
+- The curve rotates and stretches as time passes, never repeating exactly.
+- The outer loops fade toward the center, giving a harmonograph-like decay.
+- Four ratio buttons (3:2, 5:4, 3:4, 5:6) each produce a different family of shapes.
+
+## What it teaches
+
+- **Parametric curve:** both x and y are computed from a shared variable `t`, not from a single equation `y = f(x)`.
+- **Frequency ratio:** the ratio of the two sine wave frequencies sets the basic shape. 3:2 makes a different shape from 5:4.
+- **Phase:** a time offset between the two sine waves. Advancing it each frame makes the shape continuously morph.
+- **Additive blending:** overlapping line segments add their colors together, creating bright glowing intersections.
+
+## Try this
+
+- Switch between the four ratio buttons and watch the shape change. Notice which ratios produce simple loops and which produce complex figures.
+- Watch one shape for a full minute. Does it ever return to exactly where it started?
+- Switch from 3:2 to 5:4 while the animation is running. The shape morphs without jumping because the phase continues from where it left off.

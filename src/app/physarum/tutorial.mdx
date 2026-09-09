@@ -1,0 +1,34 @@
+# Tutorial: Physarum Letters
+
+By the end of this tutorial you will understand the three-step agent loop and how the text mask steers agents into letter shapes.
+
+## Predict
+
+Each agent samples the trail at three points ahead: one straight, one to the left, one to the right. It turns toward the strongest reading.
+
+If the trail in the letter "A" is much stronger than the trail outside it, which way will an agent turn when it is near the edge of the letter? Think about which of the three sample points is inside the letter boundary.
+
+## Run
+
+1. Open the sketch and watch the current word form. Notice that the trails are thickest at the center of the strokes and thinner at the edges.
+2. Wait for the word to change automatically. Watch the old word fade while the new one grows.
+3. Adjust the sense angle slider from narrow to wide. Watch the trail character change from parallel lines to branching webs.
+4. Reduce agent count to a small value. The letter shapes become sparse and you can see individual trail threads.
+
+## Look closer
+
+- The trail map is a `Float32Array` with one value per grid cell, sized 260 by 195 cells. This fixed size keeps the simulation cost constant regardless of screen size.
+- After all agents move, the trail map is blurred with a 3x3 box average (nine neighbors, equal weights) and then multiplied by 0.95. Strong paths fade slowly; quiet areas fade quickly.
+- The text mask is built by drawing the word in a large font on a hidden canvas and reading its pixel data. Cells where the alpha is above 128 count as inside the mask.
+- When the word changes, the existing trail fades to 25% and new agents spawn inside the new word's mask.
+
+## Break it
+
+- Change the sense angle to its minimum. Agents walk in tight parallel lines and barely branch.
+- Change the sense angle to its maximum. Agents turn sharply and the trails swirl and tangle.
+- Switch the word manually before the auto-cycle runs. Ghost traces of the previous word should still be faintly visible.
+- Raise the agent count to maximum. The letter fills become dense and solid rather than vein-like.
+
+## Recap
+
+Each agent senses three points, turns toward the strongest trail, moves, and deposits. Diffusion and decay keep only reinforced paths. A text mask injects extra trail inside each word, steering agents to form letters.

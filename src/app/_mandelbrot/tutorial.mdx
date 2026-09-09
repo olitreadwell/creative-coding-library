@@ -1,0 +1,54 @@
+## How it works, step by step
+
+This app draws the Mandelbrot set with plain Canvas 2D. No special library. Here is the whole idea, broken into small pieces.
+
+## Step 1: every pixel is a point
+
+The screen is a grid of pixels. We map each pixel to a point on the math plane. The middle of the screen is the center of our view. As we move right, the point moves right. As we move down, the point moves down.
+
+The helper that does this is `pixelToComplex`. Give it a pixel `(px, py)` and the current view, and it returns a point `{ x, y }` on the plane.
+
+## Step 2: the escape game
+
+Now we play the game for that point. We start at zero and repeat one step. The step uses the point's `(x, y)` as a fixed ingredient. We count how many repeats it takes before the value grows too big (escapes).
+
+```ts
+function mandelEscape(cx, cy, maxIter) {
+  let x = 0;
+  let y = 0;
+  for (let i = 0; i < maxIter; i++) {
+    // the squaring step, written out without complex-number syntax
+    const xx = x * x - y * y + cx;
+    const yy = 2 * x * y + cy;
+    x = xx;
+    y = yy;
+    if (x * x + y * y > 4) return i; // escaped: return how many steps it took
+  }
+  return maxIter; // never escaped: this point is inside the set
+}
+```
+
+Two outcomes:
+
+- The loop finishes without escaping. The point is **inside**. We return `maxIter`.
+- The value crosses the line `x*x + y*y > 4`. The point **escaped**. We return the step count `i`.
+
+## Step 3: turn the count into a color
+
+A small count means "escaped fast". A big count means "escaped slowly, near the edge". We turn that number into a hue with the shared `hsl` helper, then write the pixel color into an `ImageData` buffer. Points that never escape get painted black.
+
+Filling an `ImageData` buffer and drawing it once is much faster than drawing pixels one at a time.
+
+## Step 4: zoom
+
+Zooming is just changing the view. When you click, we move the center to the point you clicked and shrink the span (the width of the plane we show). Smaller span means we are looking at a tiny region, so more detail appears. Then we run steps 1 to 3 again.
+
+## Try this yourself
+
+- Click near the boundary, not the black middle. The edge is where the interesting detail lives.
+- Notice how the same curl shapes keep appearing as you zoom. That repeating detail is what makes it a fractal.
+- The deeper you zoom, the more steps each point needs before it escapes, so very deep zooms get slower. That is the honest tradeoff of this simple approach.
+
+## What to remember
+
+One short rule, repeated and fed back into itself, plus a 2D number plane, is enough to draw infinite detail. That is the heart of fractal math, and you just read the entire algorithm.

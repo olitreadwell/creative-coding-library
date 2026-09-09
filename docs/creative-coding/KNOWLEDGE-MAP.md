@@ -11,27 +11,27 @@ The tree of concepts this lab is teaching. Libraries are vehicles. Concepts over
 
 ## Top-level concepts
 
-| Concept                         | Sub-concepts                                 | Vehicles (libraries)             | Coverage             | Apps |
-| ------------------------------- | -------------------------------------------- | -------------------------------- | -------------------- | ---- |
-| Coordinate systems / transforms | translate, scale, rotate, matrix, DPR        | Canvas 2D, SVG, three.js, GSAP   | gap                  |      |
-| Vectors / trig                  | dot, cross, polar, angles                    | plain TS, three.js, two.js       | gap                  |      |
-| Animation / easing              | rAF, tween, spring, stagger                  | GSAP, motion, plain TS           | gap                  |      |
-| Randomness / noise              | seeded PRNG, value noise, Perlin, Simplex    | plain TS (in `src/lib/creative`) | partial (lib seeded) |      |
-| Color                           | HSL/HSV, palette, gradient, contrast         | plain TS, culori                 | partial (lib seeded) |      |
-| Generative systems              | grids, tilings, recursion                    | Canvas 2D, SVG                   | gap                  |      |
-| Particle systems                | emitters, fields, integration                | Canvas 2D, three.js, regl        | gap                  |      |
-| Physics                         | rigid body, springs, soft body               | matter.js, rapier, p2            | gap                  |      |
-| Recursion / fractals            | L-systems, IFS, Mandelbrot family            | Canvas 2D, GLSL shaders          | gap                  |      |
-| Cellular automata               | Conway, totalistic, Wolfram                  | Canvas 2D                        | gap                  |      |
-| Shaders / GPU pipeline          | full-screen quad, fragment, vertex, uniforms | regl, three.js, ogl, raw WebGL   | gap                  |      |
-| 3D math                         | scene graph, camera, lighting, models        | three.js, R3F, ogl, babylon      | gap                  |      |
-| Audio analysis                  | FFT, beat detect, mic input                  | Web Audio API, Meyda             | gap                  |      |
-| Pointer / touch input           | drag, gestures, pressure                     | plain TS, use-gesture            | gap                  |      |
-| Webcam input                    | video frame, segmentation                    | MediaStream, MediaPipe           | gap                  |      |
-| MIDI input                      | notes, CC, controllers                       | Web MIDI                         | gap                  |      |
-| Audio output / synthesis        | osc, env, FX                                 | Web Audio, Tone.js               | gap                  |      |
-| Typography                      | variable fonts, text-as-shape, kinetic type  | Canvas, SVG, opentype.js         | gap                  |      |
-| Data viz                        | open data fetch, encode, render              | d3, Visx, Observable Plot        | gap                  |      |
+| Concept                         | Sub-concepts                                 | Vehicles (libraries)             | Coverage             | Apps                 |
+| ------------------------------- | -------------------------------------------- | -------------------------------- | -------------------- | -------------------- |
+| Coordinate systems / transforms | translate, scale, rotate, matrix, DPR        | Canvas 2D, SVG, three.js, GSAP   | gap                  |                      |
+| Vectors / trig                  | dot, cross, polar, angles                    | plain TS, three.js, two.js       | partial              | maurer-rose, chladni |
+| Animation / easing              | rAF, tween, spring, stagger                  | GSAP, motion, plain TS           | gap                  |                      |
+| Randomness / noise              | seeded PRNG, value noise, Perlin, Simplex    | plain TS (in `src/lib/creative`) | partial (lib seeded) |                      |
+| Color                           | HSL/HSV, palette, gradient, contrast         | plain TS, culori                 | partial (lib seeded) |                      |
+| Generative systems              | grids, tilings, recursion                    | Canvas 2D, SVG                   | partial              | circle-packing       |
+| Particle systems                | emitters, fields, integration                | Canvas 2D, three.js, regl        | gap                  |                      |
+| Physics                         | rigid body, springs, soft body               | matter.js, rapier, p2            | gap                  |                      |
+| Recursion / fractals            | L-systems, IFS, Mandelbrot family            | Canvas 2D, GLSL shaders          | gap                  |                      |
+| Cellular automata               | Conway, totalistic, Wolfram                  | Canvas 2D                        | gap                  |                      |
+| Shaders / GPU pipeline          | full-screen quad, fragment, vertex, uniforms | regl, three.js, ogl, raw WebGL   | gap                  |                      |
+| 3D math                         | scene graph, camera, lighting, models        | three.js, R3F, ogl, babylon      | gap                  |                      |
+| Audio analysis                  | FFT, beat detect, mic input                  | Web Audio API, Meyda             | gap                  |                      |
+| Pointer / touch input           | drag, gestures, pressure                     | plain TS, use-gesture            | gap                  |                      |
+| Webcam input                    | video frame, segmentation                    | MediaStream, MediaPipe           | gap                  |                      |
+| MIDI input                      | notes, CC, controllers                       | Web MIDI                         | gap                  |                      |
+| Audio output / synthesis        | osc, env, FX                                 | Web Audio, Tone.js               | gap                  |                      |
+| Typography                      | variable fonts, text-as-shape, kinetic type  | Canvas, SVG, opentype.js         | gap                  |                      |
+| Data viz                        | open data fetch, encode, render              | d3, Visx, Observable Plot        | gap                  |                      |
 
 Coverage values: `gap` | `partial` | `covered`. Update when an app lands.
 

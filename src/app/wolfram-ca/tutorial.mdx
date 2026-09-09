@@ -1,0 +1,34 @@
+# Tutorial: Elementary CA
+
+By the end of this tutorial you will understand how a rule number maps to eight answers and how those answers produce the visible pattern row by row.
+
+## Predict
+
+Rule 90 in binary is `01011010`. Reading from bit 7 (leftmost) to bit 0: the answers for the eight neighborhood patterns are 0, 1, 0, 1, 1, 0, 1, 0. Neighborhood `110` maps to bit 6, which is 1.
+
+If you see neighborhood `101` in a row, what does rule 90 say the next cell should be? (Find bit 5 in `01011010`, reading from the left.)
+
+## Run
+
+1. Open the sketch with rule 90. Identify the triangle structure in the pattern.
+2. Switch to rule 30. The pattern looks random with no repeating structure.
+3. Switch to rule 110. The pattern is irregular but not fully chaotic.
+4. Switch to rule 184. The pattern shows simple horizontal bands.
+
+## Look closer
+
+- The neighborhood is encoded as a 3-bit integer: left is the most significant bit, right is the least. Neighborhood `110` is `(1 << 2) | (1 << 1) | 0 = 6`.
+- Extracting the rule bit for a neighborhood uses `(rule >> neighborhood) & 1`. Right-shifting by the neighborhood index and masking with 1 reads the correct bit.
+- The grid wraps at the edges. The leftmost cell's left neighbor is the rightmost cell. Rule 90 produces the Sierpinski triangle because of this: XOR of the left and right neighbors, which depends on the wrap, fills in the fractal structure symmetrically.
+- Rendering uses `ImageData` and `putImageData`. All cell colors are computed and written into a byte array first, then painted in one call. This is much faster than drawing a rectangle per cell.
+
+## Break it
+
+- Type rule 255 in the input. Every neighborhood maps to 1, so every cell in every row is alive. The pattern fills completely black after one row.
+- Type rule 0. Every cell dies immediately.
+- Type rule 90 and count the rows until the pattern repeats. (On a toroidal 1D grid with a power-of-2 width, rule 90 does repeat.)
+- Type rule 184 and watch the pattern. It looks like bands sliding to the right. This is used as a simple traffic flow model.
+
+## Recap
+
+Eight 3-cell neighborhoods. One bit per neighborhood. Eight bits form a number from 0 to 255. That number is the rule. Apply the lookup to every cell in a row to get the next row. Repeat downward. The pattern is everything you can see.

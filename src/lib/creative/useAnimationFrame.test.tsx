@@ -1,14 +1,10 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { render, cleanup } from "@testing-library/react";
 import { useAnimationFrame } from "./useAnimationFrame";
+import { setPlaying } from "./motion";
 
 function Harness({ onFrame }: { onFrame: (t: number) => void }) {
-  useAnimationFrame(({ t }) => onFrame(t), { respectReducedMotion: false });
-  return null;
-}
-
-function ReducedMotionHarness({ onFrame }: { onFrame: () => void }) {
-  useAnimationFrame(() => onFrame(), { respectReducedMotion: true });
+  useAnimationFrame(({ t }) => onFrame(t));
   return null;
 }
 
@@ -30,7 +26,8 @@ describe("useAnimationFrame", () => {
     vi.restoreAllMocks();
   });
 
-  it("invokes the callback on each frame", () => {
+  it("loops, invoking the callback each frame, when playing", () => {
+    setPlaying(true);
     const onFrame = vi.fn();
     render(<Harness onFrame={onFrame} />);
     rafCallbacks[0]?.(16);
@@ -38,20 +35,12 @@ describe("useAnimationFrame", () => {
     expect(onFrame).toHaveBeenCalledTimes(2);
   });
 
-  it("does not start when prefers-reduced-motion matches and option is honored", () => {
-    vi.spyOn(window, "matchMedia").mockReturnValue({
-      matches: true,
-      media: "",
-      onchange: null,
-      addListener: () => {},
-      removeListener: () => {},
-      addEventListener: () => {},
-      removeEventListener: () => {},
-      dispatchEvent: () => false,
-    } as MediaQueryList);
+  it("composes a single static still and does not loop when paused", () => {
+    setPlaying(false);
     const onFrame = vi.fn();
-    render(<ReducedMotionHarness onFrame={onFrame} />);
+    render(<Harness onFrame={onFrame} />);
+    // Paused: no rAF loop, but one still frame is painted so it isn't blank.
     expect(rafCallbacks.length).toBe(0);
-    expect(onFrame).not.toHaveBeenCalled();
+    expect(onFrame).toHaveBeenCalledTimes(1);
   });
 });

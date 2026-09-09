@@ -1,0 +1,20 @@
+## What this is
+
+Poster Poetry generates an expressive, angular typographic poster around a quote fetched live from the web. Every time you click "New quote," the app pulls a fresh quote from a public API, then breaks it into word chunks and scatters them across a canvas at varied rotations, sizes, and overlapping positions.
+
+## The big idea in plain words
+
+Wild Swiss design smashes rigid grids into collision. A strong color block, bold rotated type, and deliberate overlap produce a poster that feels hand-made and urgent rather than tidy and safe.
+
+Generative typography takes that idea and automates it. The quote text is hashed into a seed for a small pseudorandom number generator, so every quote always produces the exact same composition. Change the quote and a completely different arrangement falls out. The chaos is controlled.
+
+The data comes from a free JSON API. On load, the app shows a well-known public-domain quote immediately so the poster is never blank. When the fetch resolves, the poster updates with the live quote. If the network is unavailable, the app keeps using the bundled quotes quietly, with no error thrown.
+
+## Why these ideas matter
+
+- **Seeded layouts** make generative output reproducible. The same quote in, the same poster out -- no matter how many times you refresh.
+- **External data** makes a static sketch alive. The same drawing code produces a different poster every time you press a button.
+- **Graceful fallback** is a real-world skill. Network requests fail. A good app shows something useful while it waits and recovers silently when it cannot.
+- **Canvas transforms** (`save`, `translate`, `rotate`, `restore`) let you draw each word in its own coordinate space, then compose them into a chaotic whole.
+
+Hit "New quote" to pull a fresh idea from the API. Switch layouts to see three different angular compositions. Change the color scheme to explore four colorblind-safe palettes drawn from the Okabe-Ito set.

@@ -1,0 +1,34 @@
+# Tutorial: Tile Pulse
+
+By the end of this tutorial you will understand how phase offsets produce the diagonal wave and how ripple influence peaks at the ring edge.
+
+## Predict
+
+The phase for each tile is `(col + row) % 8) / 8`. Tiles along the same diagonal (where `col + row` is constant) share the same phase value and therefore animate in sync.
+
+If a tile is at column 3, row 2, and another is at column 1, row 4, do they animate together or at different times? Calculate `col + row` for each.
+
+## Run
+
+1. Open the sketch and identify the direction the wave travels. It should move diagonally.
+2. Move your cursor to the center of the canvas. Watch the tiles nearest you scale up.
+3. Move the cursor to a corner. The influence field moves with you.
+4. Click in the center and watch the ring expand. Find the tile farthest from the click that still reacts.
+
+## Look closer
+
+- The base wave uses `easeInOutCubic` to smooth the animation. Without easing, the tiles would animate at a constant speed and feel mechanical.
+- Hover influence is stored in a ref and updated on every `onPointerMove` event. This avoids triggering a React re-render on every pixel of cursor movement.
+- A ripple expires after its lifetime elapses. Expired ripples are removed from the array each frame. The array is held in a ref so adding and removing ripples does not cause re-renders.
+- Drag stirring adds a new ripple every ~60 pixels of travel. At normal drag speeds this produces several overlapping rings per second.
+
+## Break it
+
+- Try clicking rapidly in the same spot five times. The rings should expand at different ages simultaneously and interfere with each other.
+- Try the square tile shape instead of the default. The wave and hover behavior stay identical because shape only affects how the tile is drawn.
+- Increase density to maximum. More tiles means the wave looks finer and more detailed.
+- Set speed to 0. The base wave stops. Only hover and click effects remain active.
+
+## Recap
+
+Phase offsets turn identical per-tile animations into a visible wave. Radial falloff creates a smooth cursor influence field. A bell-curve ripple peaks at the ring edge. All three combine each frame to set each tile's final scale and rotation.

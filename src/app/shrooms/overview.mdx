@@ -1,0 +1,25 @@
+# Mushrooms
+
+A patch of procedurally generated mushrooms, each built from three simple shapes, swaying in a gentle breeze.
+
+Learners see how parameterized shapes and seeded randomness let you describe a whole scene from a short list of rules.
+
+## What you see
+
+- A field of mushrooms of varying sizes, colors, and lean angles.
+- Each mushroom sways slightly. Larger caps sway more than smaller ones.
+- Mushrooms sorted by depth: farther ones appear smaller and more transparent.
+- Clicking the canvas plants a new mushroom at that spot.
+
+## What it teaches
+
+- **Parameterized shapes:** each mushroom is a typed data object (position, stem height, cap size, lean, color, depth). Drawing is separate from the data.
+- **Painter's algorithm:** mushrooms are sorted back-to-front by depth so near ones paint over far ones correctly. No 3D math needed.
+- **Sine sway:** a sine wave with a per-mushroom phase offset makes each cap move independently rather than in lockstep.
+- **Seeded PRNG:** the same seed produces the same patch every time. "Regenerate" advances to a new seed.
+
+## Try this
+
+- Click in the foreground (lower part of the canvas) to plant a large, near mushroom.
+- Click near the top for a small, distant mushroom.
+- Press "Regenerate" several times to see the variety possible from the same short set of rules.

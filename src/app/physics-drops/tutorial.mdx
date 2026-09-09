@@ -1,0 +1,34 @@
+# Tutorial: Physics Drops
+
+By the end of this tutorial you will understand the three-part physics engine setup and why the simulation stops dropping shapes before the container is completely full.
+
+## Predict
+
+The sketch stops dropping new shapes when the total area of all bodies reaches roughly 60% of the canvas area.
+
+Why stop at 60% instead of 100%? Think about what would happen physically if shapes kept dropping into a container that was already 60% full. Would they fit without spilling?
+
+## Run
+
+1. Open the sketch and watch shapes drop one at a time.
+2. Count how many shapes land before the dropping stops. Notice that the count depends on shape size.
+3. Press "Reset" and immediately change "shape" to "circle." Watch the difference in how circles stack versus polygons.
+4. Press "Reset" again and raise "gravity" before any shapes drop. The shapes hit the floor harder and bounce more.
+
+## Look closer
+
+- Shapes are described as `BodySpec` objects before any matter.js code runs. Each spec says: position, kind, size, sides, and hue. This keeps shape-generation code separate from physics code and makes it easy to test.
+- Static walls are `isStatic: true` bodies. The engine never moves them, no matter how hard other bodies collide with them.
+- The dropping timer fires a few times per second. After each drop it adds up the area of all existing bodies and compares to the target fill ratio.
+- matter.js handles cleanup carefully: the cleanup function stops the runner, stops the renderer, clears the world and engine, and removes the canvas element. Skipping any of these steps causes memory leaks.
+
+## Break it
+
+- Try "shape" set to 3-sided polygons (triangles). Triangles stack differently from circles or 6-sided shapes.
+- Set "gravity" to its maximum and watch where shapes land. High gravity makes shapes drop faster and stack tighter.
+- Set "bounciness" to maximum. Some shapes may bounce off the pile and out of the visible area.
+- Press "Reset" many times and look for seeds where shapes form interesting pile patterns.
+
+## Recap
+
+A physics engine follows three steps: create an engine, add bodies to its world, and let the runner update every frame. You supply the setup. The engine handles collision detection and response.

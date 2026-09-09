@@ -1,0 +1,25 @@
+# Phyllotaxis
+
+The spiral packing pattern found in sunflowers, pinecones, and pineapples, drawn from two lines of math and one special angle.
+
+Learners see why the golden angle (approximately 137.5 degrees) produces even packing, and what happens when you move slightly away from it.
+
+## What you see
+
+- A bloom of colored dots packed in interlocking spirals.
+- Scrolling up adds more seeds; scrolling down removes them.
+- The angle slider shifts the pattern: near 137.5 degrees you see even spirals, at other angles you see spokes and gaps.
+- The bloom slowly rotates.
+
+## What it teaches
+
+- **Golden angle:** rotating each new seed by approximately 137.5 degrees places it in the largest remaining gap, producing even packing.
+- **Square root spacing:** seed `i` sits at distance `sqrt(i)` from the center. This keeps the area between seeds roughly equal at all distances.
+- **Polar to Cartesian:** each seed's angle and distance are converted to x and y using `cos` and `sin`.
+- **Scroll interactivity:** a wheel event listener calls `preventDefault()` to control seed count without scrolling the page.
+
+## Try this
+
+- Scroll to grow the bloom from a handful of seeds to thousands.
+- Set the angle exactly to 137.5 degrees, then nudge it by 0.1 degree and watch the spirals collapse into spokes.
+- Try 90 degrees and compare the regular grid that appears to the uneven spiral at 137.5 degrees.

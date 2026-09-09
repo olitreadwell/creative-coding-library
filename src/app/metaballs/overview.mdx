@@ -1,0 +1,25 @@
+# Metaballs
+
+Organic blobs that merge when they get close and split when they move apart, drawn from a shared scalar field using the marching squares algorithm.
+
+Learners see how an implicit surface works: the shape is never defined directly, but appears wherever a mathematical function crosses a threshold.
+
+## What you see
+
+- Several blobs drifting and bouncing around the canvas.
+- When two blobs approach each other they merge into one shape. When they separate the single shape splits cleanly.
+- The outline of each blob is a smooth, organic curve.
+- Clicking "Shuffle" respawns the blobs with new starting positions.
+
+## What it teaches
+
+- **Scalar field:** each ball contributes a value at every point on the canvas. The value falls off with distance squared.
+- **Threshold (iso-contour):** the visible outline is drawn wherever the combined field value equals a specific cutoff number.
+- **Marching squares:** an algorithm that checks each tiny grid cell, classifies which corners are above the threshold, and places a line segment to trace the boundary.
+- **Implicit surface:** the shape is implied by a function, not drawn directly. Merging behavior comes free from the additive field.
+
+## Try this
+
+- Click "Shuffle" several times and notice how different starting positions change how quickly the blobs merge.
+- Watch two blobs approach each other. The connection between them grows from a thin neck to a full merge.
+- Watch a single blob near an edge. The blob shape deforms as it approaches the wall (because the wall is not part of the field calculation).

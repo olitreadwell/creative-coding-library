@@ -1,0 +1,25 @@
+# Stagger Grid
+
+A 12 by 8 grid of tiles that animate in a ripple wave from the center, using the GSAP animation library.
+
+Learners see how giving each element a slightly different start time turns one simple animation into a visible wave.
+
+## What you see
+
+- 96 colored tiles arranged in a grid.
+- A ripple wave starts at the center and spreads outward.
+- Each tile shrinks and rotates, then the wave reverses.
+- The animation loops continuously, playing forward then backward.
+
+## What it teaches
+
+- **Stagger:** each tile starts its animation a fixed delay after its neighbor, creating a wave from a single animation.
+- **GSAP timeline:** a container that holds animations and controls their playback, including looping and reversing.
+- **Easing:** the tiles do not move at constant speed. They accelerate in and decelerate out (`sine.inOut`), which makes the motion feel natural.
+- **Scoped animation:** GSAP's `context()` keeps the animation tied to one component so it cleans up correctly when the page changes.
+
+## Try this
+
+- Watch the center tile versus an outer tile. Count how many tiles start moving before the corner tiles begin.
+- Notice the wave reverses. Tiles return to their original position in the opposite order they left it.
+- Look at the color of the tiles. Center tiles are blue-purple and outer tiles shift toward pink.

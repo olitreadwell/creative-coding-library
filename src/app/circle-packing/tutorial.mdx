@@ -1,0 +1,34 @@
+# Tutorial: Circle Packing
+
+By the end of this tutorial you will understand how the packing algorithm guarantees no two circles overlap and why early circles grow larger than later ones.
+
+## Predict
+
+The algorithm places each new circle at a random position and grows it until it touches something. The first circle placed on an empty canvas has the whole space available.
+
+What happens to the maximum possible radius of circles as more circles are already placed? Think about how much open space is left as the canvas fills.
+
+## Run
+
+1. Open the sketch with the default settings and watch the first several circles appear. Notice that the first circles are the largest.
+2. Pause when the canvas is about half full. Find the largest open gap. That is where the next large circle will likely appear.
+3. Let the animation finish. Count how many small circles appear near the edges.
+4. Click "Shuffle" and compare the final pattern to the previous one.
+
+## Look closer
+
+- The algorithm checks the distance from the candidate center to every existing circle and to all four walls. The minimum of those distances is the maximum safe radius.
+- Each new circle leaves a small padding gap between itself and its neighbors. That gap is why circles appear to touch but not fuse.
+- The circles are computed all at once before any animation starts. The growing animation is purely visual, replaying a pre-computed list.
+- Colors map to size using a colorblind-safe ramp. This makes large and small circles visually distinct even in grayscale.
+
+## Break it
+
+- Try dragging "density" to 1 (minimum). Very few positions are tried, so the packing is sparse and uneven.
+- Try "min size" at maximum. Only large circles survive, and the canvas stays mostly empty.
+- Shuffle several times with "density" at maximum. Notice how much more complete the packing looks.
+- Watch the animation at full speed. Each circle scales from zero using a smooth curve called smoothstep. Try to catch the moment a circle starts growing.
+
+## Recap
+
+The packing algorithm grows each circle to the largest safe size, checks one rule (no overlap), and discards circles that are too small. Repeating this for hundreds of candidate positions fills the space with circles of varying sizes, with no two ever touching.

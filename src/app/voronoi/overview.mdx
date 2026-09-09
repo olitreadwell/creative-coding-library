@@ -1,0 +1,25 @@
+# Voronoi
+
+A diagram that divides the canvas into colored regions, where every point in each region is closer to that region's site than to any other.
+
+Learners see the nearest-neighbor concept made visible, and how moving sites in real time keeps the partition correct at every frame.
+
+## What you see
+
+- A set of moving colored regions that shift and rearrange as their center points (sites) drift.
+- Borders between regions appear as thin lines wherever adjacent cells belong to different sites.
+- Clicking the canvas adds a new site and immediately reshapes the surrounding regions.
+- The "sites" slider and "Reset" button control the number and starting positions.
+
+## What it teaches
+
+- **Nearest-neighbor partition:** each point on the canvas belongs to whichever site is closest. That single rule defines the entire diagram.
+- **Squared distance:** the sketch skips `Math.sqrt` when comparing distances, because squaring both values preserves the winner without the computation cost.
+- **Downsampled grid:** instead of checking every pixel, the canvas is divided into 6-pixel cells. One check per cell is fast enough to animate.
+- **Cell borders:** wherever two adjacent cells belong to different sites, the sketch draws a border. No geometric edge-finding algorithm is needed.
+
+## Try this
+
+- Click the canvas several times in one area. Watch the new regions crowd together and grow small.
+- Drag "sites" to 3. With only three sites, the regions are large and easy to trace.
+- Set "speed" to 0.1 and watch the slow drift. Each site bounces off the edges.

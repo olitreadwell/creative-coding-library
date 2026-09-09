@@ -1,0 +1,108 @@
+## How it works, step by step
+
+The physics runs entirely in TypeScript, with no external library. It lives in `softbody.ts` and is called from the animation loop in `play/page.tsx`.
+
+### Step 1: represent a blob as a ring of points
+
+Each blob is an array of `Point` objects arranged in a circle. A `Point` stores its current position (`x`, `y`) and its previous position (`px`, `py`). There is no velocity field.
+
+```ts
+type Point = { x: number; y: number; px: number; py: number };
+```
+
+We also store the rest length for each edge between neighboring points, and the rest area of the whole polygon.
+
+### Step 2: Verlet integration
+
+Each frame, we update every point with `verletStep`. The formula is:
+
+```
+velocity = current - previous
+next = current + velocity * damping + gravity * dt²
+```
+
+Written as code:
+
+```ts
+function verletStep(p: Point, dt: number, gravityPx: number, damping: number): Point {
+  const vx = (p.x - p.px) * damping;
+  const vy = (p.y - p.py) * damping;
+  return {
+    x: p.x + vx,
+    y: p.y + vy + gravityPx * dt * dt,
+    px: p.x,
+    py: p.y,
+  };
+}
+```
+
+The `damping` factor (slightly below 1) bleeds off a little energy each frame so blobs eventually settle rather than bouncing forever. Gravity is in pixels per second squared, so a canvas that is 600px tall at `gravity=400` feels realistic.
+
+### Step 3: constraint relaxation
+
+After integration, neighboring points have drifted. We fix this by solving distance constraints. The `solveDistanceConstraint` function moves both points halfway toward the correct distance:
+
+```ts
+function solveDistanceConstraint(a: Point, b: Point, restLen: number, stiffness: number): void {
+  const dx = b.x - a.x;
+  const dy = b.y - a.y;
+  const dist = Math.sqrt(dx * dx + dy * dy);
+  if (dist < 1e-6) return;
+  const correction = ((dist - restLen) / dist) * 0.5 * stiffness;
+  a.x += dx * correction;
+  a.y += dy * correction;
+  b.x -= dx * correction;
+  b.y -= dy * correction;
+}
+```
+
+We run this for every edge, then repeat the whole loop 4 times. Multiple iterations let the corrections propagate around the ring, so the skin stays closed even under fast motion.
+
+### Step 4: pressure
+
+Constraints alone make a floppy noodle. Pressure is what makes a blob look like a balloon. The idea: compute the polygon area using the shoelace formula, compare it to the stored rest area, and push each edge outward proportionally.
+
+```ts
+function applyPressure(blob: Blob, pressureStrength: number): void {
+  const area = polygonArea(blob.points);
+  const deficit = blob.restArea - area;
+  for each edge (a, b):
+    outward normal = perpendicular to (b - a), normalized
+    force = deficit * pressureStrength * edgeLength
+    push a and b outward by force
+}
+```
+
+Low `pressureStrength` gives a saggy water-balloon. High `pressureStrength` gives a hard ball.
+
+### Step 5: collide with walls
+
+After constraints and pressure, we clamp every point inside the canvas:
+
+```ts
+if (p.y > floorY) {
+  const vy = p.y - p.py;
+  p.py = floorY + vy * restitution; // reflect velocity
+  p.y = floorY;
+}
+```
+
+Moving `py` rather than introducing a separate impulse keeps things consistent with Verlet: the next frame's integration will read the modified `py` and correctly compute a reduced or reversed velocity.
+
+### Step 6: grab interaction
+
+On pointer down, we find the nearest point across all blobs. While dragging, we pin that point to the cursor each frame (both `x` and `px` get set to the cursor position, zeroing its velocity). On pointer up, we release the pin and the blob flies free, carrying the momentum from the last cursor movement.
+
+### Step 7: render as a smooth curve
+
+We draw each blob with a series of quadratic Bezier curves through the midpoints of consecutive edges. This rounds the polygon into a smooth, organic shape even with only 16 points per blob.
+
+## Try this
+
+- Drag the **squish** slider to minimum, then grab and stretch a blob very far. Watch how it slowly springs back.
+- Set **gravity** to zero, then fling blobs across the canvas. They float and wobble in place.
+- Add more blobs with the **blobs** slider to see performance degrade gracefully as the constraint solver does more work.
+
+## What to remember
+
+Soft-body physics needs just three primitives: **Verlet integration** (position-based, no velocity field), **distance constraints** (relax to rest length, repeat a few times), and **pressure** (outward force to restore area). These three ideas together reproduce the feel of jelly, balloons, and cloth without a physics library.

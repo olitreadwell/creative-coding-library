@@ -1,0 +1,25 @@
+# Maurer Rose
+
+A woven web of straight lines drawn across a flower-shaped polar curve, controlled by two sliders.
+
+Learners see how sampling a smooth curve at coarse intervals produces completely different visual results, and how overlapping lines create patterns that no single line contains.
+
+## What you see
+
+- A dense web of colored lines against a dark background, slowly rotating.
+- A faint pink outline showing the smooth rose curve underneath the chords.
+- Two sliders: `n` (petal count of the underlying rose) and `d` (step angle between connected points).
+- Changing either slider redraws the whole web instantly.
+
+## What it teaches
+
+- **Polar coordinates:** a point described by its distance from the center and its angle, rather than by x and y.
+- **Rose curves:** `r = sin(n * angle)` produces a petal-shaped curve in polar space.
+- **Sampling:** connecting 361 points at coarse angle steps produces chords that cut across the curve, not along it.
+- **Emergence:** the web pattern is not in any single line. It appears only when hundreds of lines overlap.
+
+## Try this
+
+- Try `n = 2, d = 39` for a clean star shape.
+- Try `n = 6, d = 71` for the dense default web.
+- Change `d` by 1 degree and watch the entire pattern reorganize.

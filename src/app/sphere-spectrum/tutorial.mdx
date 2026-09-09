@@ -1,0 +1,34 @@
+# Tutorial: Sphere Spectrum
+
+By the end of this tutorial you will understand how each vertex on the sphere is assigned to a frequency band and how the envelope makes the response feel punchy.
+
+## Predict
+
+Each vertex is assigned a band by its latitude (its y direction from the center). Band 0 is at the top (bass). The highest band is at the bottom (treble).
+
+If you sing a high note, which part of the sphere do you expect to spike: the top, the bottom, or the equator? (A high note is treble, not bass.)
+
+## Run
+
+1. Click "Enable" and allow microphone access.
+2. Hum a low note for two seconds, then a high note for two seconds. Watch which latitude spikes for each.
+3. Snap your fingers once near the microphone. Notice how quickly the spike rises and how slowly it decays.
+4. Set the audio slider to maximum and hum. The spikes should be more dramatic.
+
+## Look closer
+
+- The sphere geometry is computed once at startup. For every vertex the sketch pre-computes two things: the unit direction vector (which way the vertex points from the center) and the band index (which latitude ring it belongs to). These are cached so the per-frame loop stays fast.
+- Log-frequency band edges are computed with `edges[k] = round(1 * (hi/1)^(k/N))`. This geometric spacing gives each band roughly the same perceptual pitch range, rather than giving bass almost no bins and treble hundreds.
+- The envelope formula is `env = prev + (target - prev) * rate`. When the target is above `prev`, the rate is fast (attack). When below, the rate is slow (release). This is what makes spikes rise fast and decay gradually.
+- After moving vertices, `geometry.computeVertexNormals()` is called. This recalculates how the surface faces the light, so the lighting follows the new displaced shape.
+
+## Break it
+
+- Enable the mic in a quiet room with "audio" at maximum. Even room tone may cause small, constant spikes.
+- Enable noise gate and compare. The sphere should stay smooth when no intentional sound is present.
+- Whistle a constant pitch and watch the sphere hold a spike at one latitude.
+- Clap with both hands far from the mic and then close. Compare the spike intensity.
+
+## Recap
+
+Each vertex is assigned a frequency band by latitude. Every frame, that band's loudness pushes the vertex outward and shifts its color. An attack/release envelope makes the response punchy. Refs hold the audio data so the React tree does not re-render 60 times per second.

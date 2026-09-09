@@ -1,0 +1,34 @@
+# Tutorial: Vector Grid
+
+By the end of this tutorial you will understand how distance from the center produces the wave effect and how two.js avoids the need for manual redrawing.
+
+## Predict
+
+Each square rotates at `0.008 + distance * 0.014` radians per frame. Squares at `distance = 0` (center) rotate at 0.008. Squares at `distance = 1` (corners) rotate at `0.008 + 0.014 = 0.022`.
+
+How many times faster do the corner squares rotate compared to the center squares? (Divide 0.022 by 0.008 and round to one decimal place.)
+
+## Run
+
+1. Open the sketch and watch the center square rotate. Then watch a corner square. Confirm the corners rotate faster.
+2. Watch the scale pulse travel from the center outward. Time how long it takes for the pulse to reach the corner after leaving the center.
+3. Find a square that is midway between center and corner. Its rotation speed and pulse timing should be between the two extremes.
+4. Let the animation run for one minute. The wave continues without any noticeable drift or loop.
+
+## Look closer
+
+- `two.play()` calls the `update` function every animation frame. Inside `update`, you change properties (`rotation`, `scale`, `fill`) on each shape object. two.js reads those changes and redraws the scene.
+- `centerDistance` normalizes the distance to the range [0, 1] by dividing by the maximum possible distance (the corner distance). This makes it easy to drive all effects from one consistent number.
+- `pulseScale` uses `sin(time - distance * spread)`. The subtraction delays the sine wave for shapes farther from center, which is what creates the travelling wave.
+- Hue and lightness both change with the wave. Lightness is tied to scale: a larger square is also brighter.
+
+## Break it
+
+- Imagine setting `spread` to 0 in `pulseScale`. All squares would pulse together at the same time rather than in a wave.
+- Try imagining what happens if distance drove scale as a fixed value instead of a wave. Every square would hold a constant size based on its position.
+- Think about what would happen if rotation used `rect.rotation = t` instead of `rect.rotation += rate`. Each frame would set a fixed angle based on time, so all squares would turn at the same angular rate.
+- Find the `baseHue` range in the source code. Try changing it to `[0, 120]` to shift from blue to a red-green palette.
+
+## Recap
+
+A scene graph lets you update shapes by changing properties. Distance from the center drives rotation speed, pulse timing, and color. Subtracting distance from the wave phase creates the travelling ripple effect.

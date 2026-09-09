@@ -1,0 +1,25 @@
+# Boids
+
+A simulation where triangles flock together like birds, using only three local rules.
+
+Learners see how complex group behavior can grow from simple individual rules, with no central controller.
+
+## What you see
+
+- A group of small triangles moving across the canvas, forming loose flocks.
+- The flock splits and rejoins as triangles navigate around each other.
+- Triangles wrap off one edge and reappear on the opposite side.
+- Each triangle is colored by its heading and speed.
+
+## What it teaches
+
+- **Emergence:** the flock appears without any code that says "flock together." Three small rules produce it.
+- **Separation, alignment, cohesion:** the three steering forces every boid applies each frame.
+- **Vectors:** each boid stores a velocity as two numbers, `vx` and `vy`, and adds small nudges to them.
+- **Seeded randomness:** the same seed always produces the same starting flock.
+
+## Try this
+
+- Click "New flock" to get a different starting arrangement and watch how the personality of the flock changes.
+- Watch for the moment when two sub-flocks merge. Notice that no single boid decided to join.
+- Cover most of the screen mentally and watch one boid: it responds only to what is nearby, not the whole flock.

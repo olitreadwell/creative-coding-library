@@ -1,0 +1,25 @@
+# Sphere Field
+
+A grid of thousands of spheres rising and falling in a wave pattern, built with React Three Fiber (a React wrapper for the three.js 3D library).
+
+Learners see the core concepts behind real-time 3D: a scene graph, a render loop, instanced drawing, and lighting.
+
+## What you see
+
+- An ocean of spheres stretching to a hazy horizon in every direction.
+- A wave travels diagonally across the field, raising and lowering rows of spheres.
+- Spheres shift from cool teal when low to warm pink/purple when high.
+- Sliders control wave height, speed, and surface shininess.
+
+## What it teaches
+
+- **Scene graph:** three.js organizes 3D objects, lights, and a camera in a tree structure. React Three Fiber lets you write that tree with React components.
+- **Instancing:** one `instancedMesh` draws all spheres in a single GPU call by storing each sphere's transform and color in a buffer.
+- **Render loop:** `useFrame` runs a callback 60 times per second. That callback updates every sphere's position and color before the GPU redraws.
+- **Fog:** the fog node fades distant spheres into the background color, creating the horizon effect.
+
+## Try this
+
+- Drag "amplitude" to 0 to flatten the ocean completely.
+- Drag "amplitude" to maximum for heavy swell.
+- Change between "matte" and "shiny" to see how metalness affects how the spheres catch light.

@@ -1,0 +1,25 @@
+# Pointer Flow
+
+Soft balloons that drift, respond to your cursor, and react to a shockwave ring when you click.
+
+Learners see how a few physics-style forces (attraction, repulsion, shockwave impulse, squash spring) combine to produce satisfying interactive motion.
+
+## What you see
+
+- Several large soft balloons drifting gently on the canvas.
+- In attract mode, the balloons float toward your cursor. In repel mode, they move away.
+- Clicking sends an expanding ring outward. Each balloon squashes flat the moment the ring reaches it, then springs back.
+- The squash-and-spring response makes each hit feel physical.
+
+## What it teaches
+
+- **Forces and velocity:** each frame, forces are added to each balloon's velocity. Friction reduces the velocity. The velocity moves the position.
+- **Shockwave impulse:** the ring's impulse on a balloon peaks when the ring edge aligns with the balloon center, and drops off quickly on either side.
+- **Squash spring:** a spring equation restores the balloon's shape toward round after each hit. It gives motion the feel of weight and elasticity.
+- **Soft separation:** a gentle push keeps overlapping balloons from stacking on top of each other.
+
+## Try this
+
+- Switch between attract and repel mode. Notice how the cursor becomes either a magnet or a repeller.
+- Click in the center of a group of balloons. Watch each balloon's squash happen at a slightly different time as the ring crosses each one.
+- Hold the mouse button down and drag. A trail of ring impulses follows your path.

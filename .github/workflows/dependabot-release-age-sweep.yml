@@ -5,7 +5,7 @@ name: Dependabot release-age sweep
 # every open Dependabot PR so those mature into auto-merge on their own.
 on:
   schedule:
-    - cron: '0 19 * * *'
+    - cron: "0 19 * * *"
   workflow_dispatch:
 
 permissions:
@@ -24,7 +24,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           MIN_AGE_DAYS: 3
-          REQUIRE_GREEN_CHECKS: 'true'
+          REQUIRE_GREEN_CHECKS: "true"
         run: |
           for url in $(gh pr list --state open --app dependabot --json url -q '.[].url'); do
             node scripts/dependabot-auto-merge.mjs "$url" || echo "sweep: error on $url"

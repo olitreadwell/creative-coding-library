@@ -1,3 +1,5 @@
+Read `CODING_STANDARDS.md` and `AGENTS.md` before changing behaviour.
+
 # creative-coding-library — agent context
 
 You are working in a scheduled creative-coding learning lab. Read this file first. Read the playbook for whichever role you're running.
